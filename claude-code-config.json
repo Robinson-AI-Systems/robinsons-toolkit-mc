@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "robinsons-toolkit": {
+      "command": "node",
+      "args": ["C:\\Users\\chris\\Google Drive\\Robinson's Toolkit MCP\\index.js"],
+      "env": {
+        "WORKSPACE_ROOT": "C:\\Users\\chris\\Git Local"
+      }
+    }
+  }
+}

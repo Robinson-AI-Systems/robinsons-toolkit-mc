@@ -1,0 +1,9 @@
+# Sensitive API keys and credentials
+.env
+
+# Massive downloaded dependency folders
+node_modules/
+
+# System-specific junk files
+.DS_Store
+Thumbs.db

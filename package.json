@@ -1,0 +1,18 @@
+{
+  "name": "robinsons-toolkit-mcp",
+  "version": "2.0.0",
+  "description": "Robinson's Toolkit MCP Server - 1400+ tools across 28 categories",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
