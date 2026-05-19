@@ -1,104 +1,273 @@
 /**
- * Postgres Handler — 12 tools
- * Direct SQL execution against any PostgreSQL database.
- * Uses the DATABASE_URL / POSTGRES_CONNECTION_STRING env var.
- * Falls back to Neon's HTTP SQL API if a neon.tech host is detected.
+ * Postgres Handler — 52 tools
+ * Direct PostgreSQL operations: SQL, schema inspection, data ops,
+ * indexes, roles, extensions, maintenance, monitoring, and Super Tools.
+ * Uses pg via POSTGRES_CONNECTION_STRING.
  */
 
-import { execSync } from 'child_process';
-
-function getConnectionString(override) {
-  const conn = override || process.env.POSTGRES_CONNECTION_STRING || process.env.DATABASE_URL;
-  if (!conn) throw new Error('POSTGRES_CONNECTION_STRING or DATABASE_URL not set in .env');
-  return conn;
-}
-
-function isNeonHost(connStr) {
-  return connStr.includes('.neon.tech');
-}
-
-async function runViaNeonHttp(sql, connStr) {
-  // Extract host from connection string
-  const match = connStr.match(/@([^\/]+)\//);
-  if (!match) throw new Error('Could not parse host from connection string');
-  const host = match[1];
-  const res = await fetch(`https://${host}/sql`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Neon-Connection-String': connStr },
-    body: JSON.stringify({ query: sql })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`SQL error: ${data.message || JSON.stringify(data)}`);
-  return data;
-}
-
-function runViaPsql(sql, connStr) {
+async function pg(sql, params = []) {
+  const connStr = process.env.POSTGRES_CONNECTION_STRING;
+  if (!connStr) throw new Error('POSTGRES_CONNECTION_STRING not set in .env');
+  // Dynamic import to avoid startup errors when not configured
+  const { default: postgres } = await import('postgres');
+  const sql_client = postgres(connStr, { max: 1, idle_timeout: 5 });
   try {
-    const result = execSync(`psql "${connStr}" -c "${sql.replace(/"/g, '\\"')}" --csv --tuples-only 2>&1`, { timeout: 30000, encoding: 'utf8' });
-    return { output: result, note: 'Executed via psql CLI' };
-  } catch (e) {
-    throw new Error(`psql execution failed: ${e.message}. Install psql or use a Neon/Supabase database with HTTP SQL support.`);
+    const result = await sql_client.unsafe(sql, params);
+    return result;
+  } finally {
+    await sql_client.end({ timeout: 3 });
   }
-}
-
-async function runSQL(sql, connStr) {
-  if (isNeonHost(connStr)) return await runViaNeonHttp(sql, connStr);
-  return runViaPsql(sql, connStr);
 }
 
 async function execute(tool, args) {
-  const conn = getConnectionString(args.connection_string);
 
-  // ── QUERY EXECUTION ───────────────────────────────────────────────────────
+  // ── RAW SQL ───────────────────────────────────────────────────────────────
   if (tool === 'postgres_run_sql') {
-    const { sql } = args;
-    if (!sql) throw new Error('sql is required');
-    return await runSQL(sql, conn);
+    if (!args.sql) throw new Error('sql is required');
+    const result = await pg(args.sql, args.params || []);
+    return Array.isArray(result) ? result : { rows: result, count: result.count };
   }
   if (tool === 'postgres_run_transaction') {
     const { statements } = args;
-    if (!statements || !Array.isArray(statements)) throw new Error('statements array is required');
-    return await runSQL(`BEGIN;\n${statements.join(';\n')};\nCOMMIT;`, conn);
+    if (!statements?.length) throw new Error('statements array is required');
+    const allSql = ['BEGIN', ...statements, 'COMMIT'].join('; ');
+    return await pg(allSql);
+  }
+  if (tool === 'postgres_explain_query') {
+    const result = await pg(`EXPLAIN ${args.analyze ? 'ANALYZE' : ''} ${args.sql}`);
+    return { plan: result.map(r => Object.values(r)[0]).join('\n') };
   }
 
   // ── SCHEMA INSPECTION ─────────────────────────────────────────────────────
+  if (tool === 'postgres_list_schemas') {
+    const result = await pg(`SELECT schema_name, schema_owner FROM information_schema.schemata WHERE schema_name NOT IN ('pg_catalog','information_schema','pg_toast') ORDER BY schema_name`);
+    return result;
+  }
   if (tool === 'postgres_list_tables') {
-    return await runSQL(`SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size FROM pg_tables WHERE schemaname NOT IN ('pg_catalog','information_schema') ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;`, conn);
+    const schema = args.schema || 'public';
+    const result = await pg(`SELECT table_name, table_type FROM information_schema.tables WHERE table_schema = $1 ORDER BY table_name`, [schema]);
+    return result;
   }
   if (tool === 'postgres_describe_table') {
-    const { table_name, schema = 'public' } = args;
-    return await runSQL(`SELECT column_name, data_type, is_nullable, column_default, character_maximum_length FROM information_schema.columns WHERE table_name='${table_name}' AND table_schema='${schema}' ORDER BY ordinal_position;`, conn);
+    const result = await pg(`SELECT c.column_name, c.data_type, c.character_maximum_length, c.is_nullable, c.column_default, c.ordinal_position FROM information_schema.columns c WHERE c.table_name = $1 AND c.table_schema = $2 ORDER BY c.ordinal_position`, [args.table_name, args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_columns') {
+    const result = await pg(`SELECT table_name, column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_schema = $1 ORDER BY table_name, ordinal_position`, [args.schema || 'public']);
+    return result;
   }
   if (tool === 'postgres_list_indexes') {
-    return await runSQL(`SELECT indexname, tablename, indexdef FROM pg_indexes WHERE schemaname='${args.schema || 'public'}' ORDER BY tablename, indexname;`, conn);
+    const result = await pg(`SELECT schemaname, tablename, indexname, indexdef, indisunique FROM pg_indexes WHERE schemaname = $1 ORDER BY tablename, indexname`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_views') {
+    const result = await pg(`SELECT table_name AS view_name, view_definition FROM information_schema.views WHERE table_schema = $1 ORDER BY table_name`, [args.schema || 'public']);
+    return result;
   }
   if (tool === 'postgres_list_functions') {
-    return await runSQL(`SELECT routine_name, routine_type, data_type FROM information_schema.routines WHERE routine_schema='${args.schema || 'public'}' ORDER BY routine_name;`, conn);
+    const result = await pg(`SELECT routine_name, routine_type, data_type AS return_type FROM information_schema.routines WHERE routine_schema = $1 ORDER BY routine_name`, [args.schema || 'public']);
+    return result;
   }
-  if (tool === 'postgres_get_table_row_count') {
-    return await runSQL(`SELECT relname as table, n_live_tup as approx_rows FROM pg_stat_user_tables WHERE schemaname='${args.schema || 'public'}' ORDER BY n_live_tup DESC;`, conn);
+  if (tool === 'postgres_list_triggers') {
+    const result = await pg(`SELECT trigger_name, event_object_table, event_manipulation, action_timing FROM information_schema.triggers WHERE trigger_schema = $1 ORDER BY event_object_table, trigger_name`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_sequences') {
+    const result = await pg(`SELECT sequence_name, data_type, start_value, minimum_value, maximum_value, increment FROM information_schema.sequences WHERE sequence_schema = $1 ORDER BY sequence_name`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_foreign_keys') {
+    const result = await pg(`SELECT kcu.table_name, kcu.column_name, ccu.table_name AS foreign_table, ccu.column_name AS foreign_column, tc.constraint_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.constraint_schema = $1 ORDER BY kcu.table_name`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_constraints') {
+    const result = await pg(`SELECT tc.table_name, tc.constraint_name, tc.constraint_type, kcu.column_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name WHERE tc.constraint_schema = $1 ORDER BY tc.table_name, tc.constraint_type`, [args.schema || 'public']);
+    return result;
   }
 
-  // ── PERFORMANCE ───────────────────────────────────────────────────────────
-  if (tool === 'postgres_list_slow_queries') {
-    return await runSQL(`SELECT query, calls, mean_exec_time::int as avg_ms, total_exec_time::int as total_ms, rows FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT ${args.limit || 20};`, conn);
+  // ── DATA OPERATIONS ───────────────────────────────────────────────────────
+  if (tool === 'postgres_select') {
+    const { table, columns = '*', where, order_by, limit = 50, offset = 0, schema = 'public' } = args;
+    if (!table) throw new Error('table is required');
+    let sql = `SELECT ${columns} FROM ${schema}.${table}`;
+    const params = [];
+    if (where) { sql += ` WHERE ${where}`; }
+    if (order_by) sql += ` ORDER BY ${order_by}`;
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+    return await pg(sql, params);
   }
-  if (tool === 'postgres_explain_query') {
-    return await runSQL(`EXPLAIN ANALYZE ${args.sql}`, conn);
+  if (tool === 'postgres_insert') {
+    const { table, data, schema = 'public', returning = '*' } = args;
+    if (!table || !data) throw new Error('table and data are required');
+    const keys = Object.keys(data);
+    const vals = keys.map((_, i) => `$${i + 1}`).join(', ');
+    const sql = `INSERT INTO ${schema}.${table} (${keys.join(', ')}) VALUES (${vals}) RETURNING ${returning}`;
+    return await pg(sql, Object.values(data));
+  }
+  if (tool === 'postgres_update') {
+    const { table, data, where, schema = 'public', returning = '*' } = args;
+    if (!table || !data || !where) throw new Error('table, data, and where are required');
+    const keys = Object.keys(data);
+    const params = Object.values(data);
+    const sets = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
+    const sql = `UPDATE ${schema}.${table} SET ${sets} WHERE ${where} RETURNING ${returning}`;
+    return await pg(sql, params);
+  }
+  if (tool === 'postgres_delete') {
+    const { table, where, schema = 'public', returning = 'id' } = args;
+    if (!table || !where) throw new Error('table and where are required');
+    return await pg(`DELETE FROM ${schema}.${table} WHERE ${where} RETURNING ${returning}`);
+  }
+  if (tool === 'postgres_upsert') {
+    const { table, data, conflict_column, schema = 'public', returning = '*' } = args;
+    if (!table || !data || !conflict_column) throw new Error('table, data, and conflict_column are required');
+    const keys = Object.keys(data);
+    const vals = keys.map((_, i) => `$${i + 1}`).join(', ');
+    const updates = keys.filter(k => k !== conflict_column).map((k, i) => `${k} = EXCLUDED.${k}`).join(', ');
+    const sql = `INSERT INTO ${schema}.${table} (${keys.join(', ')}) VALUES (${vals}) ON CONFLICT (${conflict_column}) DO UPDATE SET ${updates} RETURNING ${returning}`;
+    return await pg(sql, Object.values(data));
+  }
+
+  // ── TABLE STATS & MONITORING ──────────────────────────────────────────────
+  if (tool === 'postgres_get_table_row_count') {
+    const result = await pg(`SELECT relname AS table_name, n_live_tup AS estimated_rows FROM pg_stat_user_tables WHERE schemaname = $1 ORDER BY n_live_tup DESC`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_list_slow_queries') {
+    const result = await pg(`SELECT query, calls, total_exec_time, mean_exec_time, rows FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT ${args.limit || 10}`);
+    return result;
   }
   if (tool === 'postgres_get_active_connections') {
-    return await runSQL(`SELECT pid, usename, application_name, state, LEFT(query,200) as query FROM pg_stat_activity WHERE state != 'idle' ORDER BY state;`, conn);
+    const result = await pg(`SELECT pid, usename, application_name, client_addr, state, wait_event, LEFT(query, 100) AS query_snippet FROM pg_stat_activity WHERE state != 'idle' ORDER BY state`);
+    return result;
   }
   if (tool === 'postgres_kill_query') {
-    return await runSQL(`SELECT pg_terminate_backend(${args.pid});`, conn);
+    return await pg(`SELECT pg_terminate_backend($1)`, [args.pid]);
   }
-
-  // ── DATABASE INFO ─────────────────────────────────────────────────────────
   if (tool === 'postgres_get_database_size') {
-    return await runSQL(`SELECT current_database() as database, pg_size_pretty(pg_database_size(current_database())) as size, version();`, conn);
+    const result = await pg(`SELECT datname, pg_size_pretty(pg_database_size(datname)) AS size, pg_database_size(datname) AS size_bytes FROM pg_database ORDER BY pg_database_size(datname) DESC`);
+    return result;
+  }
+  if (tool === 'postgres_get_table_sizes') {
+    const result = await pg(`SELECT schemaname, tablename, pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS total_size, pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) AS table_size FROM pg_tables WHERE schemaname = $1 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC LIMIT ${args.limit || 20}`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_get_index_usage') {
+    const result = await pg(`SELECT schemaname, tablename, indexname, idx_scan AS index_scans, idx_tup_read AS tuples_read, idx_tup_fetch AS tuples_fetched FROM pg_stat_user_indexes WHERE schemaname = $1 ORDER BY idx_scan DESC`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_get_unused_indexes') {
+    const result = await pg(`SELECT schemaname, tablename, indexname, pg_size_pretty(pg_relation_size(indexrelid)) AS index_size FROM pg_stat_user_indexes WHERE idx_scan = 0 AND schemaname = $1 ORDER BY pg_relation_size(indexrelid) DESC`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_get_table_bloat') {
+    const result = await pg(`SELECT schemaname, tablename, n_dead_tup AS dead_tuples, n_live_tup AS live_tuples, CASE WHEN n_live_tup > 0 THEN round(100*n_dead_tup::numeric/n_live_tup,1) ELSE 0 END AS dead_percent, last_vacuum, last_autovacuum FROM pg_stat_user_tables WHERE schemaname = $1 AND n_dead_tup > 100 ORDER BY n_dead_tup DESC`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_get_locks') {
+    const result = await pg(`SELECT l.pid, l.granted, l.locktype, l.relation::regclass AS table_name, l.mode, LEFT(a.query, 100) AS query FROM pg_locks l JOIN pg_stat_activity a ON l.pid = a.pid WHERE NOT l.granted ORDER BY l.pid`);
+    return result;
+  }
+  if (tool === 'postgres_get_replication_status') {
+    const result = await pg(`SELECT client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn FROM pg_stat_replication`);
+    return result;
   }
 
-  throw new Error(`Unknown postgres tool: ${tool}`);
+  // ── SCHEMA MODIFICATION ───────────────────────────────────────────────────
+  if (tool === 'postgres_create_index') {
+    const { index_name, table_name, columns, unique = false, schema = 'public', method = 'btree', concurrently = true } = args;
+    if (!index_name || !table_name || !columns) throw new Error('index_name, table_name, and columns are required');
+    const sql = `CREATE ${unique ? 'UNIQUE ' : ''}INDEX ${concurrently ? 'CONCURRENTLY ' : ''}IF NOT EXISTS ${index_name} ON ${schema}.${table_name} USING ${method} (${Array.isArray(columns) ? columns.join(', ') : columns})`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_index') {
+    return await pg(`DROP INDEX ${args.concurrently ? 'CONCURRENTLY' : ''} IF EXISTS ${args.index_name}`);
+  }
+  if (tool === 'postgres_add_column') {
+    const { table_name, column_name, data_type, nullable = true, default_value, schema = 'public' } = args;
+    let sql = `ALTER TABLE ${schema}.${table_name} ADD COLUMN IF NOT EXISTS ${column_name} ${data_type}`;
+    if (!nullable) sql += ' NOT NULL';
+    if (default_value !== undefined) sql += ` DEFAULT ${default_value}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_column') {
+    return await pg(`ALTER TABLE ${args.schema || 'public'}.${args.table_name} DROP COLUMN IF EXISTS ${args.column_name} ${args.cascade ? 'CASCADE' : ''}`);
+  }
+
+  // ── ROLES & PERMISSIONS ───────────────────────────────────────────────────
+  if (tool === 'postgres_list_roles') {
+    const result = await pg(`SELECT rolname, rolsuper, rolcreatedb, rolcreaterole, rolcanlogin, rolreplication FROM pg_roles ORDER BY rolname`);
+    return result;
+  }
+  if (tool === 'postgres_get_grants') {
+    const result = await pg(`SELECT grantee, table_name, privilege_type FROM information_schema.role_table_grants WHERE table_schema = $1 ORDER BY grantee, table_name`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_grant_privileges') {
+    const { role, table_name, privileges = 'SELECT,INSERT,UPDATE,DELETE', schema = 'public' } = args;
+    return await pg(`GRANT ${privileges} ON ${schema}.${table_name} TO ${role}`);
+  }
+
+  // ── EXTENSIONS ────────────────────────────────────────────────────────────
+  if (tool === 'postgres_list_extensions') {
+    const result = await pg(`SELECT extname, extversion, installed_version FROM pg_available_extensions WHERE installed_version IS NOT NULL ORDER BY extname`);
+    return result;
+  }
+  if (tool === 'postgres_enable_extension') {
+    return await pg(`CREATE EXTENSION IF NOT EXISTS "${args.extension_name}" SCHEMA ${args.schema || 'public'}`);
+  }
+
+  // ── MAINTENANCE ───────────────────────────────────────────────────────────
+  if (tool === 'postgres_vacuum_table') {
+    const { table_name, analyze = true, schema = 'public' } = args;
+    return await pg(`VACUUM${analyze ? ' ANALYZE' : ''} ${schema}.${table_name}`);
+  }
+  if (tool === 'postgres_reindex_table') {
+    return await pg(`REINDEX TABLE ${args.schema || 'public'}.${args.table_name}`);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  SUPER TOOLS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // SUPER: Full schema audit — tables, columns, row counts, indexes, bloat
+  if (tool === 'postgres_schema_audit') {
+    const schema = args.schema || 'public';
+    const [tables, indexes, bloat, sizes, extensions] = await Promise.all([
+      pg(`SELECT table_name FROM information_schema.tables WHERE table_schema = $1 ORDER BY table_name`, [schema]),
+      pg(`SELECT tablename, COUNT(*) AS index_count FROM pg_indexes WHERE schemaname = $1 GROUP BY tablename`, [schema]),
+      pg(`SELECT tablename, n_dead_tup, n_live_tup FROM pg_stat_user_tables WHERE schemaname = $1 AND n_dead_tup > 1000 ORDER BY n_dead_tup DESC LIMIT 5`, [schema]),
+      pg(`SELECT tablename, pg_size_pretty(pg_total_relation_size($1||'.'||tablename)) AS size FROM pg_tables WHERE schemaname = $1 ORDER BY pg_total_relation_size($1||'.'||tablename) DESC LIMIT 10`, [schema]),
+      pg(`SELECT extname FROM pg_extension ORDER BY extname`)
+    ]);
+    return {
+      schema, table_count: tables.length,
+      tables: tables.map(t => t.table_name),
+      indexes_per_table: Object.fromEntries((indexes).map(i => [i.tablename, parseInt(i.index_count)])),
+      bloated_tables: bloat,
+      largest_tables: sizes,
+      installed_extensions: extensions.map(e => e.extname)
+    };
+  }
+
+  // SUPER: Health check — connections, db size, replication lag, bloat summary
+  if (tool === 'postgres_health_check') {
+    const [version, connections, dbSize, bloat] = await Promise.all([
+      pg(`SELECT version()`),
+      pg(`SELECT state, COUNT(*) AS count FROM pg_stat_activity GROUP BY state`),
+      pg(`SELECT pg_size_pretty(pg_database_size(current_database())) AS size`),
+      pg(`SELECT COUNT(*) AS tables_needing_vacuum FROM pg_stat_user_tables WHERE n_dead_tup > 1000`)
+    ]);
+    return {
+      version: version[0]?.version?.split(' ').slice(0,2).join(' '),
+      connections: Object.fromEntries(connections.map(r => [r.state || 'null', parseInt(r.count)])),
+      database_size: dbSize[0]?.size,
+      tables_needing_vacuum: parseInt(bloat[0]?.tables_needing_vacuum || 0),
+      checked_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Postgres tool: ${tool}`);
 }
 
 export default { execute };
