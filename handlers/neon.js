@@ -79,16 +79,23 @@ async function execute(tool, args) {
   if (tool === 'neon_revoke_api_key') { return await n('DELETE', `/api_keys/${args.key_id}`); }
 
   // ── ORGANIZATIONS ─────────────────────────────────────────────────────────
-  if (tool === 'neon_list_organizations') { return await n('GET', '/organizations'); }
+  if (tool === 'neon_list_organizations') { return await n('GET', '/users/me/organizations'); }
 
   // ── PROJECTS ──────────────────────────────────────────────────────────────
   if (tool === 'neon_list_projects') {
-    const { limit = 10, search, org_id } = args;
+    const { limit = 10, search } = args;
+    // Auto-discover org_id if not provided — Neon now requires it for all accounts
+    let org_id = args.org_id;
+    if (!org_id) {
+      const orgsData = await n('GET', '/users/me/organizations');
+      const orgs = orgsData.organizations || [];
+      if (orgs.length) org_id = orgs[0].id;
+    }
     let path = `/projects?limit=${limit}`;
-    if (search) path += `&search=${encodeURIComponent(search)}`;
     if (org_id) path += `&org_id=${org_id}`;
+    if (search) path += `&search=${encodeURIComponent(search)}`;
     const d = await n('GET', path);
-    return { projects: d.projects.map(p => ({ id: p.id, name: p.name, region_id: p.region_id, pg_version: p.pg_version, created_at: p.created_at })), pagination: d.pagination };
+    return { projects: (d.projects||[]).map(p => ({ id: p.id, name: p.name, region_id: p.region_id, pg_version: p.pg_version, created_at: p.created_at })), pagination: d.pagination, org_id };
   }
   if (tool === 'neon_create_project') {
     const { name, region_id = 'aws-us-east-2', pg_version = 16, branch } = args;
