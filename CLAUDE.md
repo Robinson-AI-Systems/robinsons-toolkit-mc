@@ -12,7 +12,7 @@
 | **Name** | Robinson's Toolkit MCP v2.0 |
 | **WSL2 Path** | `/home/robinson_dev/projects/robinsons-toolkit/` |
 | **Windows Path** | `C:\Users\chris\Google Drive\Robinson's Toolkit MCP\` |
-| **GitHub** | `https://github.com/Robinson-AI-Systems/robinsons-toolkit-mc` |
+| **GitHub** | `https://github.com/Robinson-AI-Systems/robinsons-toolkit-mcp` |
 | **Branch** | `main` |
 | **Owner** | Chris Robinson — Robinson AI Systems LLC |
 | **Node** | ESM, requires >=18, no build step |
@@ -47,10 +47,10 @@
 
 ---
 
-## Current State — As of Session 2
+## Current State — As of Session 3
 
-**Total registered tools: 1,084** across 22 namespaces  
-**Active at boot (WSL2 dev env): ~736** (depends on which .env keys are set)
+**Total registered tools: 1,184** across 22 namespaces
+**Active at boot (WSL2 dev env): ~836** (depends on which .env keys are set)
 
 ### Tool Count by Namespace
 
@@ -58,8 +58,8 @@
 |---|---|---|---|---|---|
 | `github` | 201 | 201 | ✅ | 250+ | ~50 |
 | `vercel` | 150 | 150 | ✅ | 150 | **COMPLETE** |
+| `neon` | 187 | 187 | ✅ | 187 | **COMPLETE** |
 | `upstash` | 149 | 149 | ✅ | 180+ | ~31 |
-| `neon` | 87 | 89 | ⚠️ | 150+ | ~61 |
 | `stripe` | 71 | 71 | ✅ | 130+ | ~59 |
 | `google` | 60 | 60 | ✅ | 130+ | ~70 |
 | `cloudflare` | 54 | 54 | ✅ | 120+ | ~66 |
@@ -73,7 +73,7 @@
 | `sentry` | 17 | 17 | ✅ | 60+ | ~43 |
 | `anthropic` | 15 | 15 | ✅ | 60+ | ~45 |
 | `mapbox` | 15 | 15 | ✅ | 60+ | ~45 |
-| `local` | 13 | 14 | ⚠️ | 30+ | ~16 |
+| `local` | 13 | 14 | ⚠️ | 30+ | sync + ~16 |
 | `n8n` | 13 | 13 | ✅ | 50+ | ~37 |
 | `postgres` | 12 | 12 | ✅ | 50+ | ~38 |
 | `compound` | 11 | 11 | ✅ | 50+ | ~39 |
@@ -81,10 +81,10 @@
 
 ---
 
-## Known Sync Issues (Fix Before New Tool Work)
+## Known Sync Issues
 
-### ⚠️ `local` — Handler/Registry Mismatch
-**Handler has 14 tools, registry has 13. 7 tools are in handler but NOT registry, 6 in registry but NOT handler.**
+### ⚠️ `local` — Handler/Registry Mismatch (1 outstanding)
+**Handler has 14 tools, registry has 13.**
 
 In handler, missing from registry:
 ```
@@ -97,16 +97,7 @@ In registry, missing from handler:
 local_create_directory, local_run_script, local_git_log,
 local_get_env, local_set_env, local_search_files
 ```
-**Fix:** Reconcile — keep handler as truth, rewrite local.json to match, then expand both.
-
-### ⚠️ `neon` — Handler Has 2 Extra Tools
-**Handler has 89 tools, registry has 87. 2 tools are in handler but NOT registry.**
-
-Missing registry entries:
-```
-neon_get_connection_string, neon_setup_rad_database
-```
-**Fix:** Add these 2 entries to `registry/neon.json`.
+**Fix:** Reconcile — keep handler as truth, rewrite local.json, then expand both to 30+ tools.
 
 ---
 
@@ -118,40 +109,41 @@ neon_get_connection_string, neon_setup_rad_database
 |---|---|---|
 | 8 registry JSON files missing | All 22 registry files written | `c910410` |
 | Google sub-service routing broken | Fixed `parts[1]` → `parts[0]` in index.js | `c910410` |
-| Cloudflare `cf_*` routing broken | Added `cf` → `cloudflare` mapping in index.js | `c910410` |
-| Duplicate `fly(1).json` in registry | Deleted | `c910410` |
+| Cloudflare `cf_*` routing broken | Added `cf` → `cloudflare` mapping | `c910410` |
+| Duplicate `fly(1).json` | Deleted | `c910410` |
 | `vercel.js` incomplete (88/150) | Expanded to 150 + 9 Super Tools | `c910410` |
 | No README | Added `README.md` | `c910410` |
-| No `.env.example` | Added `.env.example` with all 22 namespaces | `c910410` |
+| No `.env.example` | Added with all 22 namespaces | `c910410` |
+| CLAUDE.md + ClaudeBuildPlan.md missing | Created both | `4ca8bc3` |
+| GitHub repo named `robinsons-toolkit-mc` | Renamed to `robinsons-toolkit-mcp` via API | `4ca8bc3` |
+| Git push not working (no PAT) | `GITHUB_PERSONAL_ACCESS_TOKEN` embedded in remote URL | `4ca8bc3` |
+| `neon.js` at 89 tools (87 registry, 2 gaps) | Expanded to 187 tools, 187 registry, perfect sync | `786943b` |
 
 ### 🔴 Open — High Priority
 
 | # | Issue | File | Notes |
 |---|---|---|---|
-| 1 | `local.js` handler/registry out of sync | `handlers/local.js`, `registry/local.json` | 7 in handler not in registry, 6 in registry not in handler |
-| 2 | `neon.js` 2 tools not in registry | `registry/neon.json` | Add `neon_get_connection_string`, `neon_setup_rad_database` |
-| 3 | `neon.js` under-built (89/150 target) | `handlers/neon.js`, `registry/neon.json` | Core stack priority — do after sync fix |
-| 4 | `github.js` needs audit | `handlers/github.js` | 201 tools but need to verify depth vs. official API capabilities |
+| 1 | `local.js` handler/registry out of sync | `handlers/local.js`, `registry/local.json` | 7 in handler not in registry, 6 in registry not in handler — reconcile, then expand to 30+ |
 
-### 🟡 Open — Medium Priority
+### 🟠 Open — Medium Priority
 
 | # | Issue | Notes |
 |---|---|---|
-| 5 | `stripe.js` under-built (71/130 target) | Billing lifecycle, advanced webhooks, Connect platform |
-| 6 | `google.js` under-built (60/130 target) | Deeper Gmail, Drive, Sheets, Calendar, Docs coverage |
-| 7 | `twilio.js` under-built (22/90 target) | Voice, WhatsApp, Verify, Studio, TaskRouter missing |
-| 8 | `fly.js` under-built (37/100 target) | Postgres clusters, certificates, secrets, volumes deeper |
-| 9 | `cloudflare.js` under-built (54/120 target) | D1, Workers AI, Analytics Engine, Queues, Durable Objects |
-| 10 | `openai.js` under-built (41/100 target) | Realtime API, Evals, structured outputs, batch deeper |
+| 2 | `github.js` needs depth audit | 201 tools but need to verify Actions, Dependabot, code scanning, traffic coverage |
+| 3 | `stripe.js` under-built (71/130 target) | Connect platform, Checkout, billing lifecycle |
+| 4 | `google.js` under-built (60/130 target) | Deeper Gmail, Drive, Sheets, Calendar, Docs |
+| 5 | `twilio.js` under-built (22/90 target) | Voice, WhatsApp, Verify, Studio missing |
+| 6 | `fly.js` under-built (37/100 target) | Postgres clusters, volumes, certificates |
+| 7 | `cloudflare.js` under-built (54/120 target) | D1, Workers AI, Queues, Durable Objects |
+| 8 | `openai.js` under-built (41/100 target) | Realtime API, Batch, Evals, Vector Stores |
 
-### 🟢 Open — Low Priority (planned namespaces not yet built)
+### 🟢 Open — Low Priority
 
 | # | Issue | Notes |
 |---|---|---|
-| 11 | `playwright` namespace missing | Handler + registry to create from scratch |
-| 12 | Upstash Vector namespace | Within upstash.js handler, separate registry section |
-| 13 | Upstash Kafka namespace | Within upstash.js handler, separate registry section |
-| 14 | More `compound` Super Tools | See ClaudeBuildPlan.md for planned list |
+| 9 | `playwright` namespace missing | New handler + registry, 60 tools from scratch |
+| 10 | Upstash Vector + Kafka | Within upstash.js namespace |
+| 11 | More `compound` Super Tools | Cross-service orchestrations |
 
 ---
 
@@ -162,18 +154,27 @@ neon_get_connection_string, neon_setup_rad_database
 - All 22 handler files written (baseline implementations)
 - Smart Discovery system built in `index.js`
 - Registry folder created with partial JSON files
-- SETUP.bat, claude-code-config.json, package.json added
 - Server boots and serves tools via MCP stdio
 
 ### Session 2 — Registry, Routing, Vercel Expansion (commit `c910410`)
-- Read all Creation Docs to understand architecture context
-- Completed all 8 missing registry JSON files (neon, upstash, openai, cloudflare, supabase, google, compound + vercel base)
-- Fixed 3 routing bugs in `index.js` (Google sub-services, Cloudflare `cf_*` prefix)
-- Expanded `vercel.js`: 88 → 150 tools (+62), added 9 Super Tools
-- Wrote `README.md` (full setup guide, namespace reference, philosophy)
-- Wrote `.env.example` (all 22 namespaces with key source links)
-- Cleaned up: deleted `fly(1).json` duplicate, old `.docx` reference file
-- Total toolkit: 333 → 736 active / 1,084 registered
+- All 8 missing registry JSON files completed (22/22 namespaces)
+- Fixed 3 routing bugs (Google sub-services, Cloudflare `cf_*`)
+- `vercel.js`: 88 → 150 tools + 9 Super Tools
+- Added `README.md` and `.env.example`
+- Cleaned up duplicate files
+- Total: 333 → 736 active / 1,084 registered
+
+### Session 3 — Docs, Repo Rename, Neon Expansion (commits `4ca8bc3`, `786943b`)
+- Created `CLAUDE.md` master session tracker
+- Created `ClaudeBuildPlan.md` systematic build roadmap
+- Renamed GitHub repo: `robinsons-toolkit-mc` → `robinsons-toolkit-mcp` via API
+- Fixed git push with `GITHUB_PERSONAL_ACCESS_TOKEN` embedded in remote URL
+- Tested Vercel toolkit against live projects (confirmed working)
+- Expanded `neon.js`: 89 → 187 tools (+98), registry 87 → 187, perfect sync
+  - 11 categories: SQL utilities, schema inspection, schema modification,
+    data operations, pgvector/AI, full-text search, permissions/RLS,
+    advanced monitoring, branching, billing, 8 Super Tools
+- Total: 1,084 → 1,184 registered / 836 active
 
 ---
 
@@ -188,27 +189,20 @@ neon_get_connection_string, neon_setup_rad_database
 | `calendar_{action}` | `calendar_create_event` | google handler |
 | `sheets_{action}` | `sheets_get_values` | google handler |
 | `docs_{action}` | `docs_get_document` | google handler |
-| `{namespace}_{operation}_and_{operation}` | `vercel_deploy_and_wait` | Super Tool pattern |
 
-**Super Tool naming:** Should clearly indicate it's multi-step. Use `_and_` for combined ops, descriptive verb phrases for orchestrations (e.g. `vercel_emergency_rollback`, `neon_safe_migration`).
+**Super Tool naming:** Descriptive verb phrases. Use `_and_` for combined ops (e.g. `vercel_deploy_and_wait`), plain descriptive names for orchestrations (e.g. `neon_safe_migration`, `neon_full_health_report`). Always prefix registry description with `SUPER TOOL:`.
 
 ---
 
 ## Development Workflow — Adding Tools Correctly
 
 ```
-1. Read the handler file first to understand existing patterns
-2. Check the registry file to see what's already defined
-3. Add new tool implementation to handler/{namespace}.js
-4. Add matching registry entry to registry/{namespace}.json
+1. Read the handler file to understand existing patterns
+2. Check the registry for what's already defined
+3. Add tool implementation to handler/{namespace}.js
+4. Add matching entry to registry/{namespace}.json
    - name, description, namespace, tags[], inputSchema
-5. Run sync audit:
-   node -e "const fs=require('fs'); const h=fs.readFileSync('handlers/{ns}.js','utf-8');
-   const r=JSON.parse(fs.readFileSync('registry/{ns}.json','utf-8'));
-   const hT=new Set([...h.matchAll(/tool==='({ns}_[^']+)'/g)].map(m=>m[1]));
-   const rT=new Set(r.map(t=>t.name));
-   console.log('Missing registry:',[...hT].filter(t=>!rT.has(t)));
-   console.log('Missing handler:',[...rT].filter(t=>!hT.has(t)));"
+5. Run sync audit (see Quick Commands below)
 6. Boot test: timeout 4s node index.js 2>&1
 7. Commit with clear conventional message
 ```
@@ -230,59 +224,84 @@ neon_get_connection_string, neon_setup_rad_database
 
 ---
 
-## Environment Variables Reference
-
-```
-WORKSPACE_ROOT=        # Local directory Claude can read/write (always required)
-GITHUB_TOKEN=          # github namespace
-VERCEL_TOKEN=          # vercel namespace
-VERCEL_TEAM_ID=        # optional — auto-appended to Vercel API calls
-NEON_API_KEY=          # neon namespace
-FLY_API_TOKEN=         # fly namespace
-STRIPE_SECRET_KEY=     # stripe namespace
-TWILIO_ACCOUNT_SID=    # twilio namespace (both required)
-TWILIO_AUTH_TOKEN=     # twilio namespace
-RESEND_API_KEY=        # resend namespace
-CLOUDFLARE_API_TOKEN=  # cloudflare namespace (both required)
-CLOUDFLARE_ACCOUNT_ID= # cloudflare namespace
-OPENAI_API_KEY=        # openai namespace
-ANTHROPIC_API_KEY=     # anthropic namespace
-SUPABASE_URL=          # supabase namespace (both required)
-SUPABASE_SERVICE_ROLE_KEY= # supabase namespace
-UPSTASH_REDIS_REST_URL=    # upstash namespace (both required)
-UPSTASH_REDIS_REST_TOKEN=  # upstash namespace
-GOOGLE_ACCESS_TOKEN=       # google namespace (either/or)
-GOOGLE_SERVICE_ACCOUNT_KEY_PATH= # google namespace
-MAPBOX_ACCESS_TOKEN=   # mapbox namespace
-CLERK_SECRET_KEY=      # clerk namespace
-SENTRY_AUTH_TOKEN=     # sentry namespace
-BRAVE_SEARCH_API_KEY=  # search namespace (either/or)
-TAVILY_API_KEY=        # search namespace
-QDRANT_URL=            # qdrant namespace
-N8N_BASE_URL=          # n8n namespace (both required)
-N8N_API_KEY=           # n8n namespace
-POSTGRES_CONNECTION_STRING= # postgres namespace
-```
-
----
-
 ## Quick Commands
 
 ```bash
 # Boot test
 cd /home/robinson_dev/projects/robinsons-toolkit && timeout 4s node index.js 2>&1
 
-# Full sync audit across all namespaces
-node -e "const fs=require('fs'); const handlers=fs.readdirSync('handlers').filter(f=>f.endsWith('.js')); for(const hf of handlers){ const ns=hf.replace('.js',''); const reg='registry/'+ns+'.json'; if(!fs.existsSync(reg)) continue; const h=fs.readFileSync('handlers/'+hf,'utf-8'); const r=JSON.parse(fs.readFileSync(reg,'utf-8')); const hT=new Set([...h.matchAll(/tool === '("+ns+"_[^']+)'/g)].map(m=>m[1])); const rT=new Set(r.map(t=>t.name)); const gaps=[...hT].filter(t=>!rT.has(t)).length+[...rT].filter(t=>!hT.has(t)).length; console.log(ns+':'+(gaps?'❌ '+gaps+' gap(s)':'✅')); }"
+# Full sync audit (all namespaces)
+node -e "
+const fs=require('fs');
+const handlers=fs.readdirSync('handlers').filter(f=>f.endsWith('.js'));
+let total=0;
+for(const hf of handlers){
+  const ns=hf.replace('.js','');
+  const reg='registry/'+ns+'.json';
+  if(!fs.existsSync(reg)) continue;
+  const h=fs.readFileSync('handlers/'+hf,'utf-8');
+  const r=JSON.parse(fs.readFileSync(reg,'utf-8'));
+  const hT=new Set([...h.matchAll(new RegExp(\"tool === '(\"+ns+\"_[^']+)'\", 'g'))].map(m=>m[1]));
+  const rT=new Set(r.map(t=>t.name));
+  const inHnotR=[...hT].filter(t=>!rT.has(t));
+  const inRnotH=[...rT].filter(t=>!hT.has(t));
+  total+=rT.size;
+  if(inHnotR.length||inRnotH.length){
+    console.log('⚠️  '+ns+': H='+hT.size+' R='+rT.size);
+    if(inHnotR.length) console.log('   In H not R:',inHnotR);
+    if(inRnotH.length) console.log('   In R not H:',inRnotH);
+  } else {
+    console.log('✅ '+ns+': '+rT.size);
+  }
+}
+console.log('Total:',total);
+"
 
-# Count all tools
-node -e "const fs=require('fs'); let t=0; fs.readdirSync('registry').filter(f=>f.endsWith('.json')).forEach(f=>{const r=JSON.parse(fs.readFileSync('registry/'+f,'utf-8'));t+=r.length;}); console.log('Total tools:',t);"
+# Total tool count
+node -e "const fs=require('fs'); let t=0; fs.readdirSync('registry').filter(f=>f.endsWith('.json')).forEach(f=>{const r=JSON.parse(fs.readFileSync('registry/'+f,'utf-8'));t+=r.length;}); console.log('Total:',t);"
 
-# Git status
-git status && git log --oneline -5
+# Git push
+git push origin main
 ```
 
 ---
 
-*Last updated: Session 2 — vercel.js completed to 150 tools, all registries written, routing fixed.*
-*Next session should start with: Fix local.js sync, fix neon.js registry gap, then build neon.js to 150+ tools.*
+## Environment Variables Reference
+
+```
+WORKSPACE_ROOT=             # Local directory root (always required)
+GITHUB_TOKEN=               # github namespace
+GITHUB_PERSONAL_ACCESS_TOKEN=  # git push auth (embedded in remote URL)
+VERCEL_TOKEN=               # vercel namespace
+VERCEL_TEAM_ID=             # optional
+NEON_API_KEY=               # neon namespace
+FLY_API_TOKEN=              # fly namespace
+STRIPE_SECRET_KEY=          # stripe namespace
+TWILIO_ACCOUNT_SID=         # twilio namespace
+TWILIO_AUTH_TOKEN=          # twilio namespace
+RESEND_API_KEY=             # resend namespace
+CLOUDFLARE_API_TOKEN=       # cloudflare namespace
+CLOUDFLARE_ACCOUNT_ID=      # cloudflare namespace
+OPENAI_API_KEY=             # openai namespace
+ANTHROPIC_API_KEY=          # anthropic namespace
+SUPABASE_URL=               # supabase namespace
+SUPABASE_SERVICE_ROLE_KEY=  # supabase namespace
+UPSTASH_REDIS_REST_URL=     # upstash namespace
+UPSTASH_REDIS_REST_TOKEN=   # upstash namespace
+GOOGLE_ACCESS_TOKEN=        # google namespace (either/or)
+GOOGLE_SERVICE_ACCOUNT_KEY_PATH=  # google namespace
+MAPBOX_ACCESS_TOKEN=        # mapbox namespace
+CLERK_SECRET_KEY=           # clerk namespace
+SENTRY_AUTH_TOKEN=          # sentry namespace
+BRAVE_SEARCH_API_KEY=       # search namespace (either/or)
+TAVILY_API_KEY=             # search namespace
+QDRANT_URL=                 # qdrant namespace
+N8N_BASE_URL=               # n8n namespace
+N8N_API_KEY=                # n8n namespace
+POSTGRES_CONNECTION_STRING= # postgres namespace
+```
+
+---
+
+*Last updated: Session 3 — neon.js expanded to 187 tools (complete), repo renamed, git push fixed.*
+*Next session: Fix local.js sync, then tackle github.js audit or stripe.js expansion per ClaudeBuildPlan.md.*
