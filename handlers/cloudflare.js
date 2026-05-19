@@ -1,6 +1,8 @@
 /**
- * Cloudflare Handler — 58 tools
- * Workers, KV, R2, DNS, Zones, Pages, and firewall rules.
+ * Cloudflare Handler — 127 tools
+ * Workers (deploy/secrets/versions/analytics/logs), KV, R2, D1, Queues,
+ * Durable Objects, Workers AI, Hyperdrive, Stream, Pages, DNS, Zones,
+ * Page Rules, WAF/Firewall, Cache, Zero Trust Access, and Super Tools.
  */
 
 const BASE = 'https://api.cloudflare.com/client/v4';
@@ -71,8 +73,24 @@ async function execute(tool, args) {
   }
   if (tool === 'cf_delete_dns_record') { return await cf('DELETE', `/zones/${zone_id}/dns_records/${args.record_id}`); }
   if (tool === 'cf_import_dns_records') {
-    // BIND format import — send as multipart (simplified version)
-    return { note: 'DNS import requires multipart upload. Use the Cloudflare dashboard or CLI for bulk imports. Use cf_create_dns_record for individual records.' };
+    const { bind_zone_file, proxied = false } = args;
+    if (!bind_zone_file) throw new Error('bind_zone_file (BIND format text) required');
+    const form = new FormData();
+    form.append('file', new Blob([bind_zone_file], { type: 'text/plain' }), 'zone.txt');
+    form.append('proxied', String(proxied));
+    const res = await fetch(`${BASE}/zones/${zone_id}/dns_records/import`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` },
+      body: form
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(`DNS import failed: ${data.errors?.map(e => e.message).join(', ')}`);
+    return data.result;
+  }
+  if (tool === 'cf_export_dns_records') {
+    const res = await fetch(`${BASE}/zones/${zone_id}/dns_records/export`, { headers: headers() });
+    if (!res.ok) throw new Error(`DNS export failed: ${res.status}`);
+    return { zone_file: await res.text() };
   }
 
   // ── WORKERS ───────────────────────────────────────────────────────────────
@@ -227,6 +245,386 @@ async function execute(tool, args) {
   // ── ACCOUNT ───────────────────────────────────────────────────────────────
   if (tool === 'cf_get_account') { return await cf('GET', `/accounts/${ACCT()}`); }
   if (tool === 'cf_list_account_members') { return await cf('GET', `/accounts/${ACCT()}/members?per_page=${args.per_page || 20}`); }
+
+  // ── D1 DATABASE ───────────────────────────────────────────────────────────
+  if (tool === 'cf_list_d1_databases') { return await cf('GET', `/accounts/${ACCT()}/d1/database?per_page=${args.per_page || 20}`); }
+  if (tool === 'cf_get_d1_database') { return await cf('GET', `/accounts/${ACCT()}/d1/database/${args.database_id}`); }
+  if (tool === 'cf_create_d1_database') { return await cf('POST', `/accounts/${ACCT()}/d1/database`, { name: args.name, primary_location_hint: args.primary_location_hint }); }
+  if (tool === 'cf_delete_d1_database') { return await cf('DELETE', `/accounts/${ACCT()}/d1/database/${args.database_id}`); }
+  if (tool === 'cf_query_d1') {
+    const { database_id, sql, params = [] } = args;
+    if (!database_id || !sql) throw new Error('database_id and sql required');
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${database_id}/query`, { sql, params });
+  }
+  if (tool === 'cf_d1_raw_query') {
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${args.database_id}/raw`, { sql: args.sql, params: args.params || [] });
+  }
+  if (tool === 'cf_d1_list_tables') {
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${args.database_id}/query`, { sql: "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'" });
+  }
+  if (tool === 'cf_d1_table_schema') {
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${args.database_id}/query`, { sql: `PRAGMA table_info(${args.table_name})` });
+  }
+  if (tool === 'cf_d1_export') {
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${args.database_id}/export`, { output_format: args.output_format || 'polling', dump_options: args.dump_options });
+  }
+  if (tool === 'cf_d1_import') {
+    return await cf('POST', `/accounts/${ACCT()}/d1/database/${args.database_id}/import`, { action: args.action || 'init', etag: args.etag, filename: args.filename });
+  }
+
+  // ── WORKERS AI ────────────────────────────────────────────────────────────
+  if (tool === 'cf_run_ai_model') {
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${args.model}`, args.inputs || args);
+  }
+  if (tool === 'cf_list_ai_models') {
+    return await cf('GET', `/accounts/${ACCT()}/ai/models/search?per_page=${args.per_page || 50}${args.task?`&task=${args.task}`:''}`);
+  }
+  if (tool === 'cf_text_generation') {
+    const { prompt, model = '@cf/meta/llama-3.1-8b-instruct', max_tokens = 512, system } = args;
+    if (!prompt) throw new Error('prompt required');
+    const messages = system ? [{ role: 'system', content: system }, { role: 'user', content: prompt }] : [{ role: 'user', content: prompt }];
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${model}`, { messages, max_tokens });
+  }
+  if (tool === 'cf_text_embedding') {
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${args.model || '@cf/baai/bge-base-en-v1.5'}`, { text: Array.isArray(args.text) ? args.text : [args.text] });
+  }
+  if (tool === 'cf_image_classification') {
+    const { image_base64, model = '@cf/microsoft/resnet-50' } = args;
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${model}`, { image: Array.from(Buffer.from(image_base64, 'base64')) });
+  }
+  if (tool === 'cf_text_to_image') {
+    const { prompt, model = '@cf/stabilityai/stable-diffusion-xl-base-1.0', num_steps = 20 } = args;
+    const res = await fetch(`${BASE}/accounts/${ACCT()}/ai/run/${model}`, {
+      method: 'POST', headers: headers(),
+      body: JSON.stringify({ prompt, num_steps })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(`Cloudflare AI: ${e.errors?.[0]?.message || res.status}`); }
+    const buf = await res.arrayBuffer();
+    return { image_base64: Buffer.from(buf).toString('base64'), size_bytes: buf.byteLength, format: 'png' };
+  }
+  if (tool === 'cf_speech_to_text') {
+    const { audio_base64, model = '@cf/openai/whisper' } = args;
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${model}`, { audio: Array.from(Buffer.from(audio_base64, 'base64')) });
+  }
+  if (tool === 'cf_translation') {
+    const { text, source_lang = 'english', target_lang, model = '@cf/meta/m2m100-1.2b' } = args;
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${model}`, { text, source_lang, target_lang });
+  }
+  if (tool === 'cf_summarization') {
+    const { input_text, max_length = 1024, model = '@cf/facebook/bart-large-cnn' } = args;
+    return await cf('POST', `/accounts/${ACCT()}/ai/run/${model}`, { input_text, max_length });
+  }
+  if (tool === 'cf_get_ai_finetunes') {
+    return await cf('GET', `/accounts/${ACCT()}/ai/finetunes`);
+  }
+
+  // ── QUEUES ────────────────────────────────────────────────────────────────
+  if (tool === 'cf_list_queues') { return await cf('GET', `/accounts/${ACCT()}/queues?per_page=${args.per_page||20}`); }
+  if (tool === 'cf_create_queue') { return await cf('POST', `/accounts/${ACCT()}/queues`, { queue_name: args.queue_name }); }
+  if (tool === 'cf_get_queue') { return await cf('GET', `/accounts/${ACCT()}/queues/${args.queue_id}`); }
+  if (tool === 'cf_delete_queue') { return await cf('DELETE', `/accounts/${ACCT()}/queues/${args.queue_id}`); }
+  if (tool === 'cf_update_queue') { return await cf('PATCH', `/accounts/${ACCT()}/queues/${args.queue_id}`, { queue_name: args.queue_name, settings: args.settings }); }
+  if (tool === 'cf_send_queue_message') {
+    return await cf('POST', `/accounts/${ACCT()}/queues/${args.queue_id}/messages`, { body: args.body, content_type: args.content_type || 'json', delay_seconds: args.delay_seconds });
+  }
+  if (tool === 'cf_send_queue_messages_batch') {
+    return await cf('POST', `/accounts/${ACCT()}/queues/${args.queue_id}/messages/batch`, { messages: args.messages });
+  }
+  if (tool === 'cf_purge_queue') { return await cf('POST', `/accounts/${ACCT()}/queues/${args.queue_id}/purge`, {}); }
+  if (tool === 'cf_list_queue_consumers') { return await cf('GET', `/accounts/${ACCT()}/queues/${args.queue_id}/consumers`); }
+  if (tool === 'cf_create_queue_consumer') {
+    return await cf('POST', `/accounts/${ACCT()}/queues/${args.queue_id}/consumers`, { script_name: args.script_name, settings: args.settings, type: args.type || 'worker' });
+  }
+  if (tool === 'cf_delete_queue_consumer') {
+    return await cf('DELETE', `/accounts/${ACCT()}/queues/${args.queue_id}/consumers/${args.consumer_id}`);
+  }
+
+  // ── DURABLE OBJECTS ───────────────────────────────────────────────────────
+  if (tool === 'cf_list_durable_object_namespaces') { return await cf('GET', `/accounts/${ACCT()}/workers/durable_objects/namespaces`); }
+  if (tool === 'cf_get_durable_object_namespace') { return await cf('GET', `/accounts/${ACCT()}/workers/durable_objects/namespaces/${args.namespace_id}`); }
+  if (tool === 'cf_list_durable_objects') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/durable_objects/namespaces/${args.namespace_id}/objects?limit=${args.limit||20}`);
+  }
+
+  // ── WORKERS DEEPER (secrets, versions, deployments, analytics) ────────────
+  if (tool === 'cf_list_worker_secrets') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/secrets`);
+  }
+  if (tool === 'cf_put_worker_secret') {
+    return await cf('PUT', `/accounts/${ACCT()}/workers/scripts/${worker_name}/secrets`, { name: args.name, text: args.text, type: args.type || 'secret_text' });
+  }
+  if (tool === 'cf_delete_worker_secret') {
+    return await cf('DELETE', `/accounts/${ACCT()}/workers/scripts/${worker_name}/secrets/${args.name}`);
+  }
+  if (tool === 'cf_list_worker_versions') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/versions?per_page=${args.per_page||10}`);
+  }
+  if (tool === 'cf_get_worker_version') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/versions/${args.version_id}`);
+  }
+  if (tool === 'cf_list_worker_deployments') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/deployments`);
+  }
+  if (tool === 'cf_create_worker_deployment') {
+    return await cf('POST', `/accounts/${ACCT()}/workers/scripts/${worker_name}/deployments`, { strategy: args.strategy || 'percentage', versions: args.versions });
+  }
+  if (tool === 'cf_get_worker_settings') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/script-settings`);
+  }
+  if (tool === 'cf_update_worker_settings') {
+    return await cf('PATCH', `/accounts/${ACCT()}/workers/scripts/${worker_name}/script-settings`, args.settings);
+  }
+  if (tool === 'cf_list_worker_tail_logs') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/tails`);
+  }
+  if (tool === 'cf_get_worker_analytics') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/scripts/${worker_name}/analytics`);
+  }
+  if (tool === 'cf_list_worker_domains') {
+    return await cf('GET', `/accounts/${ACCT()}/workers/domains`);
+  }
+  if (tool === 'cf_attach_worker_domain') {
+    return await cf('PUT', `/accounts/${ACCT()}/workers/domains`, { environment: 'production', hostname: args.hostname, service: args.service, zone_id: args.zone_id });
+  }
+
+  // ── ZERO TRUST / ACCESS ───────────────────────────────────────────────────
+  if (tool === 'cf_list_access_applications') {
+    return await cf('GET', `/accounts/${ACCT()}/access/apps?per_page=${args.per_page||20}`);
+  }
+  if (tool === 'cf_get_access_application') {
+    return await cf('GET', `/accounts/${ACCT()}/access/apps/${args.app_id}`);
+  }
+  if (tool === 'cf_create_access_application') {
+    return await cf('POST', `/accounts/${ACCT()}/access/apps`, { name: args.name, domain: args.domain, type: args.type || 'self_hosted', session_duration: args.session_duration || '24h' });
+  }
+  if (tool === 'cf_update_access_application') {
+    return await cf('PUT', `/accounts/${ACCT()}/access/apps/${args.app_id}`, args.config || {});
+  }
+  if (tool === 'cf_delete_access_application') {
+    return await cf('DELETE', `/accounts/${ACCT()}/access/apps/${args.app_id}`);
+  }
+  if (tool === 'cf_list_access_policies') {
+    return await cf('GET', `/accounts/${ACCT()}/access/apps/${args.app_id}/policies`);
+  }
+  if (tool === 'cf_create_access_policy') {
+    return await cf('POST', `/accounts/${ACCT()}/access/apps/${args.app_id}/policies`, { name: args.name, decision: args.decision || 'allow', include: args.include || [], exclude: args.exclude, require: args.require });
+  }
+  if (tool === 'cf_delete_access_policy') {
+    return await cf('DELETE', `/accounts/${ACCT()}/access/apps/${args.app_id}/policies/${args.policy_id}`);
+  }
+  if (tool === 'cf_list_access_groups') {
+    return await cf('GET', `/accounts/${ACCT()}/access/groups?per_page=${args.per_page||20}`);
+  }
+  if (tool === 'cf_create_access_group') {
+    return await cf('POST', `/accounts/${ACCT()}/access/groups`, { name: args.name, include: args.include || [], exclude: args.exclude, require: args.require });
+  }
+
+  // ── HYPERDRIVE ────────────────────────────────────────────────────────────
+  if (tool === 'cf_list_hyperdrive_configs') { return await cf('GET', `/accounts/${ACCT()}/hyperdrive/configs`); }
+  if (tool === 'cf_get_hyperdrive_config') { return await cf('GET', `/accounts/${ACCT()}/hyperdrive/configs/${args.hyperdrive_id}`); }
+  if (tool === 'cf_create_hyperdrive_config') {
+    return await cf('POST', `/accounts/${ACCT()}/hyperdrive/configs`, { name: args.name, origin: args.origin, caching: args.caching });
+  }
+  if (tool === 'cf_delete_hyperdrive_config') { return await cf('DELETE', `/accounts/${ACCT()}/hyperdrive/configs/${args.hyperdrive_id}`); }
+
+  // ── STREAM (video) ────────────────────────────────────────────────────────
+  if (tool === 'cf_list_stream_videos') { return await cf('GET', `/accounts/${ACCT()}/stream?limit=${args.limit||20}`); }
+  if (tool === 'cf_get_stream_video') { return await cf('GET', `/accounts/${ACCT()}/stream/${args.video_id}`); }
+  if (tool === 'cf_delete_stream_video') { return await cf('DELETE', `/accounts/${ACCT()}/stream/${args.video_id}`); }
+  if (tool === 'cf_create_stream_url_upload') {
+    return await cf('POST', `/accounts/${ACCT()}/stream/copy`, { url: args.url, meta: args.meta });
+  }
+  if (tool === 'cf_create_stream_direct_upload') {
+    return await cf('POST', `/accounts/${ACCT()}/stream/direct_upload`, { maxDurationSeconds: args.max_duration_seconds || 3600, expiry: args.expiry, meta: args.meta });
+  }
+
+  // ── PAGES (DEEPER) ────────────────────────────────────────────────────────
+  if (tool === 'cf_create_pages_project') {
+    return await cf('POST', `/accounts/${ACCT()}/pages/projects`, { name: args.name, production_branch: args.production_branch || 'main', source: args.source, build_config: args.build_config });
+  }
+  if (tool === 'cf_delete_pages_project') { return await cf('DELETE', `/accounts/${ACCT()}/pages/projects/${args.project_name}`); }
+  if (tool === 'cf_remove_pages_domain') { return await cf('DELETE', `/accounts/${ACCT()}/pages/projects/${args.project_name}/domains/${args.domain}`); }
+  if (tool === 'cf_create_pages_deployment') {
+    return await cf('POST', `/accounts/${ACCT()}/pages/projects/${args.project_name}/deployments`, args.body || {});
+  }
+
+  // ── CACHE (DEEPER) ────────────────────────────────────────────────────────
+  if (tool === 'cf_purge_cache_by_tag') {
+    return await cf('POST', `/zones/${zone_id}/purge_cache`, { tags: args.tags });
+  }
+  if (tool === 'cf_purge_cache_by_host') {
+    return await cf('POST', `/zones/${zone_id}/purge_cache`, { hosts: args.hosts });
+  }
+  if (tool === 'cf_purge_cache_by_prefix') {
+    return await cf('POST', `/zones/${zone_id}/purge_cache`, { prefixes: args.prefixes });
+  }
+
+  // ── PAGE RULES ────────────────────────────────────────────────────────────
+  if (tool === 'cf_list_page_rules') {
+    return await cf('GET', `/zones/${zone_id}/pagerules?per_page=${args.per_page||20}`);
+  }
+  if (tool === 'cf_create_page_rule') {
+    return await cf('POST', `/zones/${zone_id}/pagerules`, { targets: args.targets, actions: args.actions, priority: args.priority || 1, status: args.status || 'active' });
+  }
+  if (tool === 'cf_update_page_rule') {
+    return await cf('PUT', `/zones/${zone_id}/pagerules/${args.rule_id}`, args.config);
+  }
+  if (tool === 'cf_delete_page_rule') {
+    return await cf('DELETE', `/zones/${zone_id}/pagerules/${args.rule_id}`);
+  }
+
+  // ── R2 (DEEPER) ───────────────────────────────────────────────────────────
+  if (tool === 'cf_get_r2_bucket_lifecycle') { return await cf('GET', `/accounts/${ACCT()}/r2/buckets/${bucket_name}/lifecycle`); }
+  if (tool === 'cf_put_r2_bucket_lifecycle') {
+    return await cf('PUT', `/accounts/${ACCT()}/r2/buckets/${bucket_name}/lifecycle`, { rules: args.rules });
+  }
+  if (tool === 'cf_get_r2_bucket_usage') { return await cf('GET', `/accounts/${ACCT()}/r2/buckets/${bucket_name}/usage`); }
+  if (tool === 'cf_create_r2_api_token') {
+    return await cf('POST', `/accounts/${ACCT()}/r2/api_tokens`, { name: args.name, permission: args.permission || 'object-read-only', bucket: args.bucket });
+  }
+
+  // ── KV (DEEPER) ───────────────────────────────────────────────────────────
+  if (tool === 'cf_kv_get_metadata') {
+    return await cf('GET', `/accounts/${ACCT()}/storage/kv/namespaces/${namespace_id}/metadata/${encodeURIComponent(args.key)}`);
+  }
+  if (tool === 'cf_kv_get_with_metadata') {
+    const v = await fetch(`${BASE}/accounts/${ACCT()}/storage/kv/namespaces/${namespace_id}/values/${encodeURIComponent(args.key)}`, { headers: headers() });
+    if (v.status === 404) return null;
+    if (!v.ok) throw new Error(`KV get failed: ${v.status}`);
+    const value = await v.text();
+    const meta = await cf('GET', `/accounts/${ACCT()}/storage/kv/namespaces/${namespace_id}/metadata/${encodeURIComponent(args.key)}`).catch(() => null);
+    return { value, metadata: meta };
+  }
+
+  // ── ANALYTICS ENGINE / GRAPHQL ANALYTICS ──────────────────────────────────
+  if (tool === 'cf_query_analytics') {
+    return await cf('GET', `/zones/${zone_id}/analytics/colos?since=${args.since||'-1440'}&until=${args.until||'0'}`);
+  }
+  if (tool === 'cf_get_workers_analytics') {
+    return await cf('GET', `/accounts/${ACCT()}/analytics/dashboard?since=${args.since||'-1440'}&until=${args.until||'0'}`);
+  }
+
+  // ── LOAD BALANCING ────────────────────────────────────────────────────────
+  if (tool === 'cf_list_load_balancers') {
+    return await cf('GET', `/zones/${zone_id}/load_balancers`);
+  }
+  if (tool === 'cf_list_load_balancer_pools') {
+    return await cf('GET', `/accounts/${ACCT()}/load_balancers/pools`);
+  }
+  if (tool === 'cf_list_load_balancer_monitors') {
+    return await cf('GET', `/accounts/${ACCT()}/load_balancers/monitors`);
+  }
+
+  // ╔══════════════════════════════════════════════════════════════════════╗
+  // ║                         SUPER TOOLS                                  ║
+  // ╚══════════════════════════════════════════════════════════════════════╝
+
+  // SUPER TOOL: cf_deploy_full_worker
+  // Deploy worker + set bindings + create route + add secrets in one call
+  if (tool === 'cf_deploy_full_worker') {
+    const { name, script, route_pattern, route_zone_id, bindings = [], secrets = {}, compatibility_date = '2024-01-01' } = args;
+    if (!name || !script) throw new Error('name and script required');
+    // 1. Deploy script
+    const form = new FormData();
+    form.append('worker.js', new Blob([script], { type: 'application/javascript' }), 'worker.js');
+    form.append('metadata', JSON.stringify({ main_module: 'worker.js', compatibility_date, bindings }));
+    const dep = await fetch(`${BASE}/accounts/${ACCT()}/workers/scripts/${name}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` }, body: form });
+    const depData = await dep.json();
+    if (!depData.success) throw new Error(`Deploy failed: ${depData.errors?.map(e=>e.message).join(', ')}`);
+    // 2. Set secrets
+    const secretResults = [];
+    for (const [k, v] of Object.entries(secrets)) {
+      try { const r = await cf('PUT', `/accounts/${ACCT()}/workers/scripts/${name}/secrets`, { name: k, text: v, type: 'secret_text' }); secretResults.push({ name: k, ok: true }); }
+      catch (e) { secretResults.push({ name: k, ok: false, error: e.message }); }
+    }
+    // 3. Create route if requested
+    let route = null;
+    if (route_pattern && route_zone_id) {
+      route = await cf('POST', `/zones/${route_zone_id}/workers/routes`, { pattern: route_pattern, script: name });
+    }
+    return { deployed: depData.result, secrets_set: secretResults, route };
+  }
+
+  // SUPER TOOL: cf_setup_d1_schema
+  // Create D1 database + run migration SQL
+  if (tool === 'cf_setup_d1_schema') {
+    const { database_name, schema_sql, primary_location_hint } = args;
+    if (!database_name || !schema_sql) throw new Error('database_name and schema_sql required');
+    const db = await cf('POST', `/accounts/${ACCT()}/d1/database`, { name: database_name, primary_location_hint });
+    const statements = schema_sql.split(';').map(s => s.trim()).filter(Boolean);
+    const results = [];
+    for (const stmt of statements) {
+      try { const r = await cf('POST', `/accounts/${ACCT()}/d1/database/${db.uuid}/query`, { sql: stmt }); results.push({ ok: true, meta: r[0]?.meta }); }
+      catch (e) { results.push({ ok: false, sql: stmt.slice(0,80), error: e.message }); }
+    }
+    return { database: { id: db.uuid, name: db.name }, statements_run: results.length, results };
+  }
+
+  // SUPER TOOL: cf_edge_cache_purge_and_verify
+  // Purge cache for URLs + optionally fetch them to verify fresh
+  if (tool === 'cf_edge_cache_purge_and_verify') {
+    const { zone_id: zid, urls, verify = true } = args;
+    if (!zid || !Array.isArray(urls)) throw new Error('zone_id and urls[] required');
+    const purge = await cf('POST', `/zones/${zid}/purge_cache`, { files: urls });
+    if (!verify) return { purged: purge, verified: false };
+    const checks = [];
+    for (const u of urls) {
+      try {
+        const r = await fetch(u, { method: 'HEAD' });
+        checks.push({ url: u, status: r.status, cf_cache: r.headers.get('cf-cache-status'), age: r.headers.get('age') });
+      } catch (e) { checks.push({ url: u, error: e.message }); }
+    }
+    return { purged: purge, verified: true, checks };
+  }
+
+  // SUPER TOOL: cf_worker_canary_deploy
+  // Deploy to a staging worker name + smoke test + promote to production
+  if (tool === 'cf_worker_canary_deploy') {
+    const { production_name, script, smoke_test_url, compatibility_date = '2024-01-01', bindings = [] } = args;
+    if (!production_name || !script || !smoke_test_url) throw new Error('production_name, script, smoke_test_url required');
+    const canary_name = `${production_name}-canary`;
+    const form = new FormData();
+    form.append('worker.js', new Blob([script], { type: 'application/javascript' }), 'worker.js');
+    form.append('metadata', JSON.stringify({ main_module: 'worker.js', compatibility_date, bindings }));
+    const dep = await fetch(`${BASE}/accounts/${ACCT()}/workers/scripts/${canary_name}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` }, body: form });
+    if (!dep.ok) { const e = await dep.json(); throw new Error(`Canary deploy failed: ${e.errors?.[0]?.message}`); }
+    const smoke = await fetch(smoke_test_url, { method: 'GET' });
+    if (smoke.status >= 500) {
+      await cf('DELETE', `/accounts/${ACCT()}/workers/scripts/${canary_name}`);
+      throw new Error(`Smoke test failed (HTTP ${smoke.status}). Canary deleted, production unchanged.`);
+    }
+    const formProd = new FormData();
+    formProd.append('worker.js', new Blob([script], { type: 'application/javascript' }), 'worker.js');
+    formProd.append('metadata', JSON.stringify({ main_module: 'worker.js', compatibility_date, bindings }));
+    const prod = await fetch(`${BASE}/accounts/${ACCT()}/workers/scripts/${production_name}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` }, body: formProd });
+    const prodData = await prod.json();
+    await cf('DELETE', `/accounts/${ACCT()}/workers/scripts/${canary_name}`).catch(()=>null);
+    return { canary_smoke_test: { status: smoke.status, ok: true }, production_deployed: prodData.success, production: prodData.result };
+  }
+
+  // SUPER TOOL: cf_rag_with_workers_ai
+  // Embed query + query a vector store (KV-backed simple version) + answer with Workers AI
+  if (tool === 'cf_rag_with_workers_ai') {
+    const { query, kv_namespace_id, embedding_model = '@cf/baai/bge-base-en-v1.5', generation_model = '@cf/meta/llama-3.1-8b-instruct', max_results = 3 } = args;
+    if (!query || !kv_namespace_id) throw new Error('query and kv_namespace_id required');
+    const emb = await cf('POST', `/accounts/${ACCT()}/ai/run/${embedding_model}`, { text: [query] });
+    // Naive: list KV keys + fetch first N values (real implementation would use Vectorize)
+    const keys = await cf('GET', `/accounts/${ACCT()}/storage/kv/namespaces/${kv_namespace_id}/keys?limit=${max_results}`);
+    const docs = [];
+    for (const k of (keys || []).slice(0, max_results)) {
+      const v = await fetch(`${BASE}/accounts/${ACCT()}/storage/kv/namespaces/${kv_namespace_id}/values/${encodeURIComponent(k.name)}`, { headers: headers() });
+      if (v.ok) docs.push({ key: k.name, content: await v.text() });
+    }
+    const context = docs.map((d, i) => `[Doc ${i+1}: ${d.key}]\n${d.content}`).join('\n\n');
+    const answer = await cf('POST', `/accounts/${ACCT()}/ai/run/${generation_model}`, {
+      messages: [
+        { role: 'system', content: 'Answer using ONLY the provided context. Cite docs as [Doc N].' },
+        { role: 'user', content: `CONTEXT:\n${context}\n\nQUESTION: ${query}` }
+      ],
+      max_tokens: 1024
+    });
+    return { answer: answer.response, query_embedding_size: emb.data?.[0]?.length, sources: docs.map(d => d.key) };
+  }
 
   throw new Error(`Unknown Cloudflare tool: ${tool}`);
 }
