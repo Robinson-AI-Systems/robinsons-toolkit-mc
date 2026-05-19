@@ -8,7 +8,7 @@
 
 Robinson's Toolkit connects Claude (via Claude Code or any MCP-compatible client) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a Vercel deployment, or send a dispatch SMS — it just does it, without you having to copy-paste API calls or switch context.
 
-The toolkit currently houses **1,780 tools** across **23 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always see exactly what your credentials unlock, nothing more.
+The toolkit currently houses **1,949 tools** across **23 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always see exactly what your credentials unlock, nothing more.
 
 ---
 
@@ -20,7 +20,7 @@ Robinson's Toolkit solves this with **Smart Discovery**.
 
 ### How Smart Discovery Works
 
-Instead of flooding the context with 1,780 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
+Instead of flooding the context with 1,949 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
 
 | Meta-Tool | What It Does |
 |---|---|
