@@ -1,7 +1,8 @@
 /**
- * GitHub Handler — 241 tools
+ * GitHub Handler — 256 tools
  * Full GitHub REST API coverage: repos, branches, commits, PRs, issues,
- * actions, releases, security, teams, orgs, gists, projects, and more.
+ * actions, runners, releases, security, teams, orgs, gists, codespaces,
+ * reactions, stars, forks, and Super Tools.
  */
 
 const BASE = 'https://api.github.com';
@@ -453,6 +454,274 @@ async function execute(tool, args) {
 
   // ── RATE LIMIT ────────────────────────────────────────────────────────────
   if (tool === 'github_get_rate_limit') { return await gh('GET', '/rate_limit'); }
+
+  // ── ACTIONS — LOGS & ARTIFACTS (deep) ─────────────────────────────────────
+  if (tool === 'github_download_workflow_run_logs') {
+    const res = await fetch(`${BASE}/repos/${owner}/${repo}/actions/runs/${args.run_id}/logs`, { headers: headers(), redirect: 'follow' });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}: failed to fetch workflow run logs`);
+    const buf = await res.arrayBuffer();
+    return { run_id: args.run_id, size_bytes: buf.byteLength, content_base64: Buffer.from(buf).toString('base64').slice(0, MAX_BYTES) };
+  }
+  if (tool === 'github_download_workflow_job_logs') {
+    const res = await fetch(`${BASE}/repos/${owner}/${repo}/actions/jobs/${args.job_id}/logs`, { headers: headers(), redirect: 'follow' });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}: failed to fetch job logs`);
+    const text = await res.text();
+    return { job_id: args.job_id, size_bytes: text.length, log: text.slice(0, MAX_BYTES) };
+  }
+  if (tool === 'github_get_artifact') { return await gh('GET', `/repos/${owner}/${repo}/actions/artifacts/${args.artifact_id}`); }
+  if (tool === 'github_delete_artifact') { return await gh('DELETE', `/repos/${owner}/${repo}/actions/artifacts/${args.artifact_id}`); }
+  if (tool === 'github_download_artifact') {
+    const fmt = args.archive_format || 'zip';
+    const res = await fetch(`${BASE}/repos/${owner}/${repo}/actions/artifacts/${args.artifact_id}/${fmt}`, { headers: headers(), redirect: 'follow' });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}: failed to download artifact`);
+    const buf = await res.arrayBuffer();
+    return { artifact_id: args.artifact_id, format: fmt, size_bytes: buf.byteLength, content_base64: Buffer.from(buf).toString('base64').slice(0, MAX_BYTES) };
+  }
+  if (tool === 'github_get_workflow_run_attempt') { return await gh('GET', `/repos/${owner}/${repo}/actions/runs/${args.run_id}/attempts/${args.attempt_number}`); }
+  if (tool === 'github_get_workflow_run_usage') { return await gh('GET', `/repos/${owner}/${repo}/actions/runs/${args.run_id}/timing`); }
+  if (tool === 'github_get_workflow_usage') { return await gh('GET', `/repos/${owner}/${repo}/actions/workflows/${args.workflow_id}/timing`); }
+
+  // ── ACTIONS — ORG SECRETS & VARIABLES ─────────────────────────────────────
+  if (tool === 'github_list_org_secrets') { return await gh('GET', `/orgs/${org||owner}/actions/secrets?per_page=${args.per_page||30}`); }
+  if (tool === 'github_get_org_secret') { return await gh('GET', `/orgs/${org||owner}/actions/secrets/${args.secret_name}`); }
+  if (tool === 'github_delete_org_secret') { return await gh('DELETE', `/orgs/${org||owner}/actions/secrets/${args.secret_name}`); }
+  if (tool === 'github_list_org_variables') { return await gh('GET', `/orgs/${org||owner}/actions/variables?per_page=${args.per_page||30}`); }
+  if (tool === 'github_get_org_variable') { return await gh('GET', `/orgs/${org||owner}/actions/variables/${args.name}`); }
+  if (tool === 'github_create_org_variable') { return await gh('POST', `/orgs/${org||owner}/actions/variables`, { name: args.name, value: args.value, visibility: args.visibility || 'all', selected_repository_ids: args.selected_repository_ids }); }
+  if (tool === 'github_delete_org_variable') { return await gh('DELETE', `/orgs/${org||owner}/actions/variables/${args.name}`); }
+
+  // ── ACTIONS — ENVIRONMENT SECRETS & VARIABLES ─────────────────────────────
+  if (tool === 'github_list_environment_secrets') { return await gh('GET', `/repos/${owner}/${repo}/environments/${args.environment_name}/secrets`); }
+  if (tool === 'github_delete_environment_secret') { return await gh('DELETE', `/repos/${owner}/${repo}/environments/${args.environment_name}/secrets/${args.secret_name}`); }
+  if (tool === 'github_list_environment_variables') { return await gh('GET', `/repos/${owner}/${repo}/environments/${args.environment_name}/variables?per_page=${args.per_page||30}`); }
+  if (tool === 'github_get_environment_variable') { return await gh('GET', `/repos/${owner}/${repo}/environments/${args.environment_name}/variables/${args.name}`); }
+  if (tool === 'github_create_environment_variable') { return await gh('POST', `/repos/${owner}/${repo}/environments/${args.environment_name}/variables`, { name: args.name, value: args.value }); }
+  if (tool === 'github_update_environment_variable') { return await gh('PATCH', `/repos/${owner}/${repo}/environments/${args.environment_name}/variables/${args.name}`, { name: args.new_name || args.name, value: args.value }); }
+  if (tool === 'github_delete_environment_variable') { return await gh('DELETE', `/repos/${owner}/${repo}/environments/${args.environment_name}/variables/${args.name}`); }
+
+  // ── SELF-HOSTED RUNNERS ───────────────────────────────────────────────────
+  if (tool === 'github_list_self_hosted_runners') { return await gh('GET', `/repos/${owner}/${repo}/actions/runners?per_page=${args.per_page||30}`); }
+  if (tool === 'github_get_self_hosted_runner') { return await gh('GET', `/repos/${owner}/${repo}/actions/runners/${args.runner_id}`); }
+  if (tool === 'github_delete_self_hosted_runner') { return await gh('DELETE', `/repos/${owner}/${repo}/actions/runners/${args.runner_id}`); }
+  if (tool === 'github_list_runner_applications') { return await gh('GET', `/repos/${owner}/${repo}/actions/runners/downloads`); }
+  if (tool === 'github_create_runner_registration_token') { return await gh('POST', `/repos/${owner}/${repo}/actions/runners/registration-token`); }
+  if (tool === 'github_list_org_self_hosted_runners') { return await gh('GET', `/orgs/${org||owner}/actions/runners?per_page=${args.per_page||30}`); }
+
+  // ── STARS & WATCHERS ──────────────────────────────────────────────────────
+  if (tool === 'github_list_stargazers') { return (await gh('GET', `/repos/${owner}/${repo}/stargazers?per_page=${args.per_page||30}&page=${args.page||1}`)).map(u=>({login:u.login, id:u.id})); }
+  if (tool === 'github_list_watchers') { return (await gh('GET', `/repos/${owner}/${repo}/subscribers?per_page=${args.per_page||30}&page=${args.page||1}`)).map(u=>({login:u.login, id:u.id})); }
+  if (tool === 'github_star_repo') { return await gh('PUT', `/user/starred/${owner}/${repo}`); }
+  if (tool === 'github_unstar_repo') { return await gh('DELETE', `/user/starred/${owner}/${repo}`); }
+  if (tool === 'github_check_starred') {
+    try { const res = await fetch(`${BASE}/user/starred/${owner}/${repo}`, { headers: headers() }); return { is_starred: res.status === 204 }; }
+    catch { return { is_starred: false }; }
+  }
+  if (tool === 'github_list_user_starred') { return (await gh('GET', `/users/${args.username}/starred?per_page=${args.per_page||10}`)).map(minRepo); }
+  if (tool === 'github_get_repo_subscription') {
+    try { return await gh('GET', `/repos/${owner}/${repo}/subscription`); }
+    catch { return { subscribed: false }; }
+  }
+  if (tool === 'github_set_repo_subscription') { return await gh('PUT', `/repos/${owner}/${repo}/subscription`, { subscribed: args.subscribed !== false, ignored: args.ignored || false }); }
+  if (tool === 'github_unsubscribe_repo') { return await gh('DELETE', `/repos/${owner}/${repo}/subscription`); }
+
+  // ── FORKS ─────────────────────────────────────────────────────────────────
+  if (tool === 'github_list_forks') { return (await gh('GET', `/repos/${owner}/${repo}/forks?sort=${args.sort||'newest'}&per_page=${args.per_page||10}`)).map(minRepo); }
+  if (tool === 'github_create_fork') {
+    const body = {};
+    if (args.organization) body.organization = args.organization;
+    if (args.name) body.name = args.name;
+    if (args.default_branch_only) body.default_branch_only = args.default_branch_only;
+    return minRepo(await gh('POST', `/repos/${owner}/${repo}/forks`, body));
+  }
+  if (tool === 'github_sync_fork') {
+    return await gh('POST', `/repos/${owner}/${repo}/merge-upstream`, { branch: args.branch || 'main' });
+  }
+
+  // ── REACTIONS ─────────────────────────────────────────────────────────────
+  if (tool === 'github_list_issue_reactions') { return await gh('GET', `/repos/${owner}/${repo}/issues/${args.issue_number}/reactions?per_page=${args.per_page||30}`); }
+  if (tool === 'github_create_issue_reaction') { return await gh('POST', `/repos/${owner}/${repo}/issues/${args.issue_number}/reactions`, { content: args.content }); }
+  if (tool === 'github_delete_issue_reaction') { return await gh('DELETE', `/repos/${owner}/${repo}/issues/${args.issue_number}/reactions/${args.reaction_id}`); }
+  if (tool === 'github_list_issue_comment_reactions') { return await gh('GET', `/repos/${owner}/${repo}/issues/comments/${args.comment_id}/reactions?per_page=${args.per_page||30}`); }
+  if (tool === 'github_create_issue_comment_reaction') { return await gh('POST', `/repos/${owner}/${repo}/issues/comments/${args.comment_id}/reactions`, { content: args.content }); }
+  if (tool === 'github_list_pr_review_comment_reactions') { return await gh('GET', `/repos/${owner}/${repo}/pulls/comments/${args.comment_id}/reactions?per_page=${args.per_page||30}`); }
+  if (tool === 'github_create_pr_review_comment_reaction') { return await gh('POST', `/repos/${owner}/${repo}/pulls/comments/${args.comment_id}/reactions`, { content: args.content }); }
+  if (tool === 'github_create_commit_reaction') { return await gh('POST', `/repos/${owner}/${repo}/commits/${args.sha}/comments/${args.comment_id}/reactions`, { content: args.content }); }
+
+  // ── BRANCH PROTECTION (DEEPER) ────────────────────────────────────────────
+  if (tool === 'github_get_required_status_checks') { return await gh('GET', `/repos/${owner}/${repo}/branches/${args.branch}/protection/required_status_checks`); }
+  if (tool === 'github_set_admin_branch_protection') { return await gh('POST', `/repos/${owner}/${repo}/branches/${args.branch}/protection/enforce_admins`); }
+  if (tool === 'github_remove_admin_branch_protection') { return await gh('DELETE', `/repos/${owner}/${repo}/branches/${args.branch}/protection/enforce_admins`); }
+  if (tool === 'github_get_pr_review_protection') { return await gh('GET', `/repos/${owner}/${repo}/branches/${args.branch}/protection/required_pull_request_reviews`); }
+  if (tool === 'github_get_branch_signature_protection') { return await gh('GET', `/repos/${owner}/${repo}/branches/${args.branch}/protection/required_signatures`); }
+  if (tool === 'github_set_branch_signature_protection') { return await gh('POST', `/repos/${owner}/${repo}/branches/${args.branch}/protection/required_signatures`); }
+
+  // ── CODESPACES ────────────────────────────────────────────────────────────
+  if (tool === 'github_list_codespaces') { return await gh('GET', `/user/codespaces?per_page=${args.per_page||30}`); }
+  if (tool === 'github_list_repo_codespaces') { return await gh('GET', `/repos/${owner}/${repo}/codespaces?per_page=${args.per_page||30}`); }
+  if (tool === 'github_get_codespace') { return await gh('GET', `/user/codespaces/${args.codespace_name}`); }
+  if (tool === 'github_create_codespace') {
+    return await gh('POST', `/repos/${owner}/${repo}/codespaces`, { ref: args.ref, location: args.location, machine: args.machine, devcontainer_path: args.devcontainer_path });
+  }
+  if (tool === 'github_delete_codespace') { return await gh('DELETE', `/user/codespaces/${args.codespace_name}`); }
+  if (tool === 'github_start_codespace') { return await gh('POST', `/user/codespaces/${args.codespace_name}/start`); }
+  if (tool === 'github_stop_codespace') { return await gh('POST', `/user/codespaces/${args.codespace_name}/stop`); }
+  if (tool === 'github_list_codespace_machines') { return await gh('GET', `/repos/${owner}/${repo}/codespaces/machines`); }
+
+  // ── RELEASE ASSETS ────────────────────────────────────────────────────────
+  if (tool === 'github_get_release_asset') { return await gh('GET', `/repos/${owner}/${repo}/releases/assets/${args.asset_id}`); }
+  if (tool === 'github_update_release_asset') { return await gh('PATCH', `/repos/${owner}/${repo}/releases/assets/${args.asset_id}`, { name: args.name, label: args.label }); }
+  if (tool === 'github_delete_release_asset') { return await gh('DELETE', `/repos/${owner}/${repo}/releases/assets/${args.asset_id}`); }
+  if (tool === 'github_upload_release_asset') {
+    const url = `https://uploads.github.com/repos/${owner}/${repo}/releases/${args.release_id}/assets?name=${encodeURIComponent(args.name)}${args.label?`&label=${encodeURIComponent(args.label)}`:''}`;
+    const res = await fetch(url, { method: 'POST', headers: { ...headers(), 'Content-Type': args.content_type || 'application/octet-stream' }, body: Buffer.from(args.content_base64, 'base64') });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`GitHub upload ${res.status}: ${data.message}`);
+    return data;
+  }
+
+  // ── REPO CONTRIBUTORS & ADDITIONAL DATA ───────────────────────────────────
+  if (tool === 'github_list_repo_contributors') { return (await gh('GET', `/repos/${owner}/${repo}/contributors?per_page=${args.per_page||30}`)).map(c=>({login:c.login, id:c.id, contributions:c.contributions})); }
+  if (tool === 'github_get_codeowners_errors') { return await gh('GET', `/repos/${owner}/${repo}/codeowners/errors`); }
+  if (tool === 'github_list_repo_activity') { return await gh('GET', `/repos/${owner}/${repo}/activity?per_page=${args.per_page||30}&activity_type=${args.activity_type||''}`); }
+
+  // ── DEPENDABOT (DEEPER) ───────────────────────────────────────────────────
+  if (tool === 'github_get_dependabot_alert') { return await gh('GET', `/repos/${owner}/${repo}/dependabot/alerts/${args.alert_number}`); }
+  if (tool === 'github_update_dependabot_alert') { return await gh('PATCH', `/repos/${owner}/${repo}/dependabot/alerts/${args.alert_number}`, { state: args.state, dismissed_reason: args.dismissed_reason, dismissed_comment: args.dismissed_comment }); }
+  if (tool === 'github_list_dependabot_secrets') { return await gh('GET', `/repos/${owner}/${repo}/dependabot/secrets?per_page=${args.per_page||30}`); }
+  if (tool === 'github_delete_dependabot_secret') { return await gh('DELETE', `/repos/${owner}/${repo}/dependabot/secrets/${args.secret_name}`); }
+
+  // ── ISSUE TIMELINE & SUB-ISSUES ───────────────────────────────────────────
+  if (tool === 'github_list_issue_timeline') { return await gh('GET', `/repos/${owner}/${repo}/issues/${args.issue_number}/timeline?per_page=${args.per_page||30}`); }
+  if (tool === 'github_list_pr_associated_with_commit') { return (await gh('GET', `/repos/${owner}/${repo}/commits/${args.sha}/pulls?per_page=${args.per_page||10}`)).map(minPR); }
+
+  // ── COMMIT PULL REQUESTS ──────────────────────────────────────────────────
+  if (tool === 'github_get_combined_status') { return await gh('GET', `/repos/${owner}/${repo}/commits/${args.ref}/status`); }
+
+  // ╔══════════════════════════════════════════════════════════════════════╗
+  // ║                         SUPER TOOLS                                  ║
+  // ╚══════════════════════════════════════════════════════════════════════╝
+
+  // SUPER TOOL: github_full_pr_review
+  // Fetches PR details + diff + commits + files + reviews + comments + checks in one call
+  if (tool === 'github_full_pr_review') {
+    const { pull_number } = args;
+    const [pr, commits, files, reviews, comments, review_comments] = await Promise.all([
+      gh('GET', `/repos/${owner}/${repo}/pulls/${pull_number}`),
+      gh('GET', `/repos/${owner}/${repo}/pulls/${pull_number}/commits`),
+      gh('GET', `/repos/${owner}/${repo}/pulls/${pull_number}/files`),
+      gh('GET', `/repos/${owner}/${repo}/pulls/${pull_number}/reviews`),
+      gh('GET', `/repos/${owner}/${repo}/issues/${pull_number}/comments`),
+      gh('GET', `/repos/${owner}/${repo}/pulls/${pull_number}/comments`)
+    ]);
+    let checks = null;
+    try { checks = await gh('GET', `/repos/${owner}/${repo}/commits/${pr.head.sha}/check-runs`); } catch { /* ignore */ }
+    let diff = null;
+    if (args.include_diff !== false) {
+      const res = await fetch(`${BASE}/repos/${owner}/${repo}/pulls/${pull_number}`, { headers: { ...headers(), Accept: 'application/vnd.github.diff' } });
+      diff = (await res.text()).slice(0, MAX_BYTES);
+    }
+    return {
+      pr: minPR(pr),
+      mergeable: pr.mergeable,
+      mergeable_state: pr.mergeable_state,
+      additions: pr.additions, deletions: pr.deletions, changed_files: pr.changed_files,
+      commits: commits.map(minCommit),
+      files: files.map(f=>({filename:f.filename, status:f.status, additions:f.additions, deletions:f.deletions, changes:f.changes})),
+      reviews: reviews.map(r=>({user:r.user?.login, state:r.state, submitted_at:r.submitted_at, body_excerpt:(r.body||'').slice(0,300)})),
+      comments_count: comments.length,
+      review_comments_count: review_comments.length,
+      check_runs: checks ? checks.check_runs?.map(c=>({name:c.name, status:c.status, conclusion:c.conclusion, html_url:c.html_url})) : null,
+      diff
+    };
+  }
+
+  // SUPER TOOL: github_setup_branch_protection
+  // Apply a sensible-defaults branch protection ruleset
+  if (tool === 'github_setup_branch_protection') {
+    const { branch = 'main', required_checks = [], required_reviewers = 1, require_codeowners = false, dismiss_stale = true, enforce_admins = false } = args;
+    const body = {
+      required_status_checks: required_checks.length ? { strict: true, contexts: required_checks } : null,
+      enforce_admins,
+      required_pull_request_reviews: { dismiss_stale_reviews: dismiss_stale, require_code_owner_reviews: require_codeowners, required_approving_review_count: required_reviewers },
+      restrictions: null,
+      allow_force_pushes: false,
+      allow_deletions: false,
+      required_linear_history: args.required_linear_history || false,
+      required_conversation_resolution: args.required_conversation_resolution || true
+    };
+    return await gh('PUT', `/repos/${owner}/${repo}/branches/${branch}/protection`, body);
+  }
+
+  // SUPER TOOL: github_release_from_tag
+  // Create a release from a tag + auto-generated notes
+  if (tool === 'github_release_from_tag') {
+    const { tag_name, name, target_commitish = 'main', previous_tag_name, draft = false, prerelease = false, generate_notes = true } = args;
+    let body_text = args.body || '';
+    if (generate_notes) {
+      try {
+        const notes = await gh('POST', `/repos/${owner}/${repo}/releases/generate-notes`, { tag_name, previous_tag_name, target_commitish });
+        body_text = body_text + (body_text ? '\n\n' : '') + notes.body;
+      } catch { /* fall back to manual body */ }
+    }
+    return await gh('POST', `/repos/${owner}/${repo}/releases`, { tag_name, name: name || tag_name, body: body_text, draft, prerelease, target_commitish });
+  }
+
+  // SUPER TOOL: github_repo_health_audit
+  // Health snapshot: protection rules + secrets count + open PRs + recent runs + community profile
+  if (tool === 'github_repo_health_audit') {
+    const r = await gh('GET', `/repos/${owner}/${repo}`);
+    const [protection, secrets, prs, runs, community, vulnAlerts] = await Promise.allSettled([
+      gh('GET', `/repos/${owner}/${repo}/branches/${r.default_branch}/protection`),
+      gh('GET', `/repos/${owner}/${repo}/actions/secrets`),
+      gh('GET', `/repos/${owner}/${repo}/pulls?state=open&per_page=100`),
+      gh('GET', `/repos/${owner}/${repo}/actions/runs?per_page=10`),
+      gh('GET', `/repos/${owner}/${repo}/community/profile`),
+      fetch(`${BASE}/repos/${owner}/${repo}/vulnerability-alerts`, { headers: headers() }).then(res => ({ enabled: res.status === 204 }))
+    ]);
+    const recent_runs = runs.status === 'fulfilled' ? runs.value.workflow_runs || [] : [];
+    const failed_runs = recent_runs.filter(r => r.conclusion === 'failure').length;
+    return {
+      repo: minRepo(r),
+      branch_protection: {
+        protected: protection.status === 'fulfilled',
+        enforce_admins: protection.status === 'fulfilled' ? protection.value.enforce_admins?.enabled : null,
+        required_approving_review_count: protection.status === 'fulfilled' ? protection.value.required_pull_request_reviews?.required_approving_review_count : null
+      },
+      secrets_count: secrets.status === 'fulfilled' ? secrets.value.total_count : null,
+      open_prs_count: prs.status === 'fulfilled' ? prs.value.length : null,
+      stale_prs: prs.status === 'fulfilled' ? prs.value.filter(p => (Date.now() - new Date(p.updated_at).getTime()) > 30 * 86400 * 1000).length : null,
+      recent_workflow_runs: recent_runs.length,
+      failed_workflow_runs: failed_runs,
+      vulnerability_alerts_enabled: vulnAlerts.status === 'fulfilled' ? vulnAlerts.value.enabled : null,
+      community_health_score: community.status === 'fulfilled' ? community.value.health_percentage : null,
+      has_readme: community.status === 'fulfilled' ? !!community.value.files?.readme : null,
+      has_license: community.status === 'fulfilled' ? !!community.value.files?.license : null,
+      has_code_of_conduct: community.status === 'fulfilled' ? !!community.value.files?.code_of_conduct : null
+    };
+  }
+
+  // SUPER TOOL: github_safe_delete_merged_branches
+  // List merged branches and optionally delete (excluding protected branches and a deny-list)
+  if (tool === 'github_safe_delete_merged_branches') {
+    const { default_branch = 'main', dry_run = true, exclude = [] } = args;
+    const branches = await gh('GET', `/repos/${owner}/${repo}/branches?per_page=100`);
+    const guard = new Set([default_branch, 'main', 'master', 'develop', 'dev', 'staging', 'production', ...exclude]);
+    const candidates = [];
+    for (const b of branches) {
+      if (guard.has(b.name) || b.protected) continue;
+      try {
+        const cmp = await gh('GET', `/repos/${owner}/${repo}/compare/${default_branch}...${b.name}`);
+        if (cmp.behind_by > 0 && cmp.ahead_by === 0) candidates.push(b.name);
+      } catch { /* skip */ }
+    }
+    if (dry_run) return { dry_run: true, mergeable_count: candidates.length, would_delete: candidates };
+    const results = [];
+    for (const name of candidates) {
+      try { await gh('DELETE', `/repos/${owner}/${repo}/git/refs/heads/${name}`); results.push({ branch: name, deleted: true }); }
+      catch (e) { results.push({ branch: name, deleted: false, error: e.message }); }
+    }
+    return { dry_run: false, deleted_count: results.filter(r => r.deleted).length, results };
+  }
 
   throw new Error(`Unknown GitHub tool: ${tool}`);
 }
