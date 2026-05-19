@@ -129,10 +129,16 @@ async function routeToolCall(toolName, args, handlers) {
   const parts = toolName.split('_');
   let namespace = parts[0];
 
-  // Handle multi-word namespaces (e.g., google_gmail_send → google)
-  if (['gmail','drive','calendar','sheets','docs','slides','tasks','people','admin','forms','chat'].includes(parts[1])) {
+  // Map Google sub-service prefixes to the google handler
+  if (['gmail','drive','calendar','sheets','docs','slides','tasks','people','admin','forms','chat'].includes(namespace)) {
     namespace = 'google';
   }
+
+  // Map brave/tavily prefixes to the unified search handler
+  if (namespace === 'brave' || namespace === 'tavily') namespace = 'search';
+
+  // Map cf_ prefix to the cloudflare handler
+  if (namespace === 'cf') namespace = 'cloudflare';
 
   const handler = handlers[namespace];
   if (!handler) {

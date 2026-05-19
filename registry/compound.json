@@ -1,0 +1,192 @@
+[
+  {
+    "name": "compound_scaffold_feature",
+    "description": "Full-stack feature scaffold: create a GitHub branch, generate Neon DB branch, scaffold API routes and UI components, and open a draft PR — all in one command",
+    "namespace": "compound",
+    "tags": ["compound","scaffold","feature","branch","github","neon","fullstack","boilerplate","new-feature"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "feature_name": { "type": "string", "description": "Feature name in kebab-case e.g. customer-portal" },
+        "description": { "type": "string", "description": "What this feature does" },
+        "base_branch": { "type": "string", "default": "main", "description": "Branch to fork from" },
+        "create_db_branch": { "type": "boolean", "default": true, "description": "Also create a matching Neon DB branch" },
+        "project_id": { "type": "string", "description": "Neon project ID (required if create_db_branch is true)" }
+      },
+      "required": ["feature_name", "description"]
+    }
+  },
+  {
+    "name": "compound_safe_deploy",
+    "description": "Deploy to Vercel production with automated pre-flight checks: run tests, verify env vars, confirm DB migrations are applied, and roll back automatically on failure",
+    "namespace": "compound",
+    "tags": ["compound","deploy","safe","vercel","production","preflight","rollback","ci","release"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": { "type": "string", "description": "Vercel project ID or name" },
+        "skip_tests": { "type": "boolean", "default": false },
+        "skip_migration_check": { "type": "boolean", "default": false },
+        "notify_slack": { "type": "boolean", "default": true }
+      },
+      "required": ["project_id"]
+    }
+  },
+  {
+    "name": "compound_onboard_saas_customer",
+    "description": "Onboard a new SaaS customer: create Stripe customer + subscription, provision database schema/tenant, send welcome email via Resend, and set up any required Neon branches or Upstash namespaces",
+    "namespace": "compound",
+    "tags": ["compound","onboard","customer","saas","stripe","resend","email","tenant","provision","welcome"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "company_name": { "type": "string" },
+        "email": { "type": "string" },
+        "plan": { "type": "string", "enum": ["starter","pro","enterprise"], "default": "starter" },
+        "stripe_price_id": { "type": "string", "description": "Stripe Price ID for the subscription" },
+        "send_welcome_email": { "type": "boolean", "default": true },
+        "neon_project_id": { "type": "string", "description": "Neon project to provision tenant schema in" }
+      },
+      "required": ["company_name", "email"]
+    }
+  },
+  {
+    "name": "compound_incident_response",
+    "description": "Automated incident response: check Vercel/Fly deployment health, query Neon for recent errors, pull Sentry issues, draft a Slack incident message, and optionally roll back the last deployment",
+    "namespace": "compound",
+    "tags": ["compound","incident","outage","debug","alert","rollback","sentry","vercel","fly","slack","ops"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app": { "type": "string", "description": "App/project name to investigate" },
+        "severity": { "type": "string", "enum": ["low","medium","high","critical"], "default": "high" },
+        "auto_rollback": { "type": "boolean", "default": false, "description": "Automatically roll back if errors exceed threshold" },
+        "notify_slack": { "type": "boolean", "default": true }
+      },
+      "required": ["app"]
+    }
+  },
+  {
+    "name": "compound_neon_safe_migration",
+    "description": "Safe database migration workflow: create a test branch, apply migration SQL, run validation queries, check for breaking changes, then apply to main and delete test branch",
+    "namespace": "compound",
+    "tags": ["compound","neon","migration","safe","schema","database","ddl","test","branch","postgres"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": { "type": "string", "description": "Neon project ID" },
+        "migration_sql": { "type": "string", "description": "SQL to run as the migration" },
+        "validation_sql": { "type": "string", "description": "Optional SQL to verify the migration succeeded" },
+        "apply_to_main": { "type": "boolean", "default": false, "description": "Apply to main branch after successful test" },
+        "database_name": { "type": "string", "default": "neondb" }
+      },
+      "required": ["project_id", "migration_sql"]
+    }
+  },
+  {
+    "name": "compound_git_commit_push",
+    "description": "Stage all changes (or specified files), write a conventional commit message, push the branch, and optionally open a GitHub PR with a generated description",
+    "namespace": "compound",
+    "tags": ["compound","git","commit","push","github","pr","pull-request","conventional-commits","branch"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string", "description": "Commit message (conventional commit format preferred e.g. 'feat: add customer dashboard')" },
+        "files": { "type": "array", "items": { "type": "string" }, "description": "Specific files to stage (defaults to all changed files)" },
+        "branch": { "type": "string", "description": "Branch to push to (defaults to current branch)" },
+        "open_pr": { "type": "boolean", "default": false, "description": "Open a GitHub PR after pushing" },
+        "pr_title": { "type": "string" },
+        "pr_body": { "type": "string" },
+        "pr_base": { "type": "string", "default": "main" }
+      },
+      "required": ["message"]
+    }
+  },
+  {
+    "name": "compound_project_health_check",
+    "description": "Full project health report: check Vercel deployment status, Neon DB connection and query performance, Upstash Redis hit rate, Fly.io app health, and Sentry error counts in one sweep",
+    "namespace": "compound",
+    "tags": ["compound","health","monitor","status","vercel","neon","upstash","fly","sentry","dashboard","ops"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": { "type": "string", "description": "Project/app name used across services" },
+        "vercel_project_id": { "type": "string" },
+        "neon_project_id": { "type": "string" },
+        "fly_app_name": { "type": "string" },
+        "include_cost_summary": { "type": "boolean", "default": true }
+      },
+      "required": ["project_name"]
+    }
+  },
+  {
+    "name": "compound_send_dispatch_notification",
+    "description": "Send a job/dispatch notification across multiple channels: Resend email, Twilio SMS, and update the Neon database record — used for YardSync dispatch alerts",
+    "namespace": "compound",
+    "tags": ["compound","dispatch","notify","sms","email","twilio","resend","yardsync","notification","alert","job"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": { "type": "string", "description": "Job or dispatch ID to notify about" },
+        "recipient_email": { "type": "string" },
+        "recipient_phone": { "type": "string", "description": "E.164 format e.g. +13031234567" },
+        "message": { "type": "string", "description": "Notification message body" },
+        "channels": { "type": "array", "items": { "type": "string", "enum": ["email","sms","db"] }, "default": ["email","sms","db"] },
+        "neon_project_id": { "type": "string" }
+      },
+      "required": ["message"]
+    }
+  },
+  {
+    "name": "compound_generate_and_embed",
+    "description": "Generate OpenAI embeddings for one or more texts and upsert them into Qdrant as vectors — used for semantic search, RAG pipelines, and AI-powered features",
+    "namespace": "compound",
+    "tags": ["compound","embed","qdrant","openai","vector","rag","semantic","search","ai","embeddings","upsert"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "items": { "type": "string" }, "description": "Texts to embed" },
+        "collection_name": { "type": "string", "description": "Qdrant collection to upsert into" },
+        "payloads": { "type": "array", "items": { "type": "object" }, "description": "Metadata payloads to store alongside each vector (parallel array with texts)" },
+        "model": { "type": "string", "default": "text-embedding-3-small" }
+      },
+      "required": ["texts", "collection_name"]
+    }
+  },
+  {
+    "name": "compound_semantic_search",
+    "description": "Embed a query with OpenAI and search Qdrant for the most semantically similar results — one-shot RAG retrieval for AI features",
+    "namespace": "compound",
+    "tags": ["compound","semantic","search","qdrant","openai","rag","retrieval","query","vector","ai","similarity"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Plain-English search query" },
+        "collection_name": { "type": "string", "description": "Qdrant collection to search" },
+        "top_k": { "type": "number", "default": 5, "description": "Number of results to return" },
+        "score_threshold": { "type": "number", "default": 0.7, "description": "Minimum similarity score (0-1)" },
+        "filter": { "type": "object", "description": "Optional Qdrant filter on payload fields" }
+      },
+      "required": ["query", "collection_name"]
+    }
+  },
+  {
+    "name": "compound_analytics_snapshot",
+    "description": "Pull a cross-platform analytics snapshot: Neon query counts, Vercel traffic, Upstash Redis ops, Stripe MRR, and Resend email stats — formatted as a daily briefing",
+    "namespace": "compound",
+    "tags": ["compound","analytics","snapshot","briefing","metrics","mrr","stripe","vercel","neon","upstash","resend","dashboard"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "date_range": { "type": "string", "default": "7d", "description": "e.g. 1d, 7d, 30d" },
+        "include_stripe": { "type": "boolean", "default": true },
+        "include_vercel": { "type": "boolean", "default": true },
+        "include_neon": { "type": "boolean", "default": true },
+        "include_upstash": { "type": "boolean", "default": true },
+        "include_resend": { "type": "boolean", "default": true },
+        "neon_project_id": { "type": "string" },
+        "vercel_project_id": { "type": "string" }
+      }
+    }
+  }
+]

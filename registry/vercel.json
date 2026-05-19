@@ -1,0 +1,4094 @@
+[
+  {
+    "name": "vercel_list_projects",
+    "description": "List all Vercel projects in the account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "projects",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_project",
+    "description": "Get details of a specific Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_project",
+    "description": "Create a new Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "create",
+      "new"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "framework": {
+          "type": "string",
+          "description": "e.g. nextjs, remix, vite"
+        },
+        "gitRepository": {
+          "type": "object",
+          "description": "{type:'github', repo:'owner/repo'}"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_project",
+    "description": "Update a Vercel project's settings",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "framework": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_project",
+    "description": "Delete a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_pause_project",
+    "description": "Pause a Vercel project (stops new deployments)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "pause",
+      "stop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_unpause_project",
+    "description": "Unpause a paused Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "unpause",
+      "resume"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_deployments",
+    "description": "List deployments for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployments",
+      "list",
+      "history",
+      "releases"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "BUILDING",
+            "ERROR",
+            "INITIALIZING",
+            "QUEUED",
+            "READY",
+            "CANCELED"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "preview"
+          ]
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment",
+    "description": "Get details of a specific Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "detail",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_deployment",
+    "description": "Create and trigger a new Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deploy",
+      "create",
+      "trigger",
+      "release"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "gitSource": {
+          "type": "object"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "preview"
+          ],
+          "default": "production"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_cancel_deployment",
+    "description": "Cancel a deployment that is in progress",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "cancel",
+      "stop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_deployment",
+    "description": "Delete a Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_redeploy",
+    "description": "Redeploy an existing deployment (same commit, new build)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "redeploy",
+      "retry",
+      "rebuild",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "preview"
+          ]
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_promote_deployment",
+    "description": "Promote a preview deployment to production",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "promote",
+      "production",
+      "ship",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_rollback_deployment",
+    "description": "Roll back a project to a previous deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "rollback",
+      "revert",
+      "previous",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "deploymentId": {
+          "type": "string",
+          "description": "Target deployment to roll back to"
+        }
+      },
+      "required": [
+        "projectId",
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_logs",
+    "description": "Get runtime logs for a Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "logs",
+      "deployment",
+      "runtime",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 100
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_build_logs",
+    "description": "Get build/compile logs for a Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "build",
+      "logs",
+      "error",
+      "debug",
+      "compile"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_deployment_files",
+    "description": "List files included in a Vercel deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "files",
+      "list",
+      "assets"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_env_vars",
+    "description": "List all environment variables for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "environment",
+      "variables",
+      "list",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_env_var",
+    "description": "Get a specific environment variable by ID",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "environment",
+      "variable",
+      "detail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "envId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_env_var",
+    "description": "Create an environment variable for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "create",
+      "environment",
+      "variable",
+      "secret",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "production",
+              "preview",
+              "development"
+            ]
+          },
+          "default": [
+            "production",
+            "preview",
+            "development"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "plain",
+            "secret",
+            "encrypted"
+          ],
+          "default": "encrypted"
+        }
+      },
+      "required": [
+        "projectId",
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_env_var",
+    "description": "Update an existing environment variable's value or targets",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "update",
+      "environment",
+      "variable",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envId": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "projectId",
+        "envId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_env_var",
+    "description": "Delete an environment variable from a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "delete",
+      "environment",
+      "variable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "envId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_bulk_create_env_vars",
+    "description": "Create multiple environment variables at once for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "bulk",
+      "create",
+      "environment",
+      "variables",
+      "batch"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "{key, value, target, type}"
+          }
+        }
+      },
+      "required": [
+        "projectId",
+        "envs"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_domains",
+    "description": "List domains attached to a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domains",
+      "list",
+      "dns",
+      "custom-domain"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_domain",
+    "description": "Get details and DNS config for a domain",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "detail",
+      "dns",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_add_domain",
+    "description": "Add a custom domain to a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "add",
+      "custom",
+      "dns"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_remove_domain",
+    "description": "Remove a domain from a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "remove",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_verify_domain",
+    "description": "Verify a domain's DNS configuration",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "verify",
+      "dns",
+      "check"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_domain_config",
+    "description": "Get the DNS configuration required for a domain",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "config",
+      "dns",
+      "setup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_check_domain_availability",
+    "description": "Check if a domain name is available to register",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "availability",
+      "check",
+      "register"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_domain_price",
+    "description": "Get the registration price for a domain name",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "price",
+      "cost",
+      "register"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_buy_domain",
+    "description": "Purchase a domain through Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "buy",
+      "purchase",
+      "register"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_domain_nameservers",
+    "description": "Get nameservers for a domain registered through Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "nameservers",
+      "dns"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_transfer_domain",
+    "description": "Initiate a domain transfer to another registrar",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "transfer",
+      "registrar"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_dns_records",
+    "description": "List DNS records for a domain on Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "dns",
+      "records",
+      "list",
+      "domain"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_dns_record",
+    "description": "Create a DNS record for a domain on Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "dns",
+      "record",
+      "create",
+      "A",
+      "CNAME",
+      "MX",
+      "TXT"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "A",
+            "AAAA",
+            "ALIAS",
+            "CAA",
+            "CNAME",
+            "MX",
+            "SRV",
+            "TXT",
+            "NS"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "number",
+          "default": 60
+        }
+      },
+      "required": [
+        "domain",
+        "type",
+        "name",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_dns_record",
+    "description": "Update an existing DNS record",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "dns",
+      "record",
+      "update",
+      "edit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "recordId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_dns_record",
+    "description": "Delete a DNS record from a domain",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "dns",
+      "record",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "recordId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_teams",
+    "description": "List Vercel teams the user belongs to",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "teams",
+      "list",
+      "organizations"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "vercel_get_team",
+    "description": "Get details of a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_team",
+    "description": "Create a new Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "create",
+      "new",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "slug"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_team_members",
+    "description": "List members of a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "members",
+      "list",
+      "people"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_invite_team_member",
+    "description": "Invite a user to a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "invite",
+      "member",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "MEMBER",
+            "OWNER",
+            "VIEWER",
+            "DEVELOPER",
+            "BILLING"
+          ],
+          "default": "MEMBER"
+        }
+      },
+      "required": [
+        "teamId",
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "vercel_remove_team_member",
+    "description": "Remove a member from a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "remove",
+      "member",
+      "kick"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "teamId",
+        "userId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_team_member_role",
+    "description": "Change a team member's role",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "role",
+      "update",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "MEMBER",
+            "OWNER",
+            "VIEWER",
+            "DEVELOPER",
+            "BILLING"
+          ]
+        }
+      },
+      "required": [
+        "teamId",
+        "userId",
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_aliases",
+    "description": "List URL aliases for a Vercel project or deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "aliases",
+      "urls",
+      "list",
+      "domains"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "deploymentId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_alias",
+    "description": "Get details of a specific alias",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "alias",
+      "detail",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alias": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alias"
+      ]
+    }
+  },
+  {
+    "name": "vercel_assign_alias",
+    "description": "Assign an alias (custom URL) to a deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "alias",
+      "assign",
+      "url",
+      "domain",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "alias": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId",
+        "alias"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_alias",
+    "description": "Delete an alias from Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "alias",
+      "delete",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alias": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alias"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_edge_configs",
+    "description": "List Edge Config stores in the account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "list",
+      "config",
+      "edge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_edge_config",
+    "description": "Get details of an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "detail",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_edge_config",
+    "description": "Create a new Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "create",
+      "config",
+      "edge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_edge_config_items",
+    "description": "Read all key-value items from an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "items",
+      "read",
+      "keys",
+      "values"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_edge_config_items",
+    "description": "Write or delete key-value items in an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "update",
+      "write",
+      "items",
+      "feature-flags"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "description": "Array of {operation: 'upsert'|'delete', key, value} objects"
+        }
+      },
+      "required": [
+        "edgeConfigId",
+        "items"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_edge_config",
+    "description": "Delete an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_webhooks",
+    "description": "List webhooks configured in the Vercel account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "webhooks",
+      "list",
+      "events",
+      "notifications"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_create_webhook",
+    "description": "Create a webhook for Vercel deployment events",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "webhook",
+      "create",
+      "events",
+      "notifications",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "projectIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "url",
+        "events"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_webhook",
+    "description": "Delete a Vercel webhook",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "webhook",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhookId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "webhookId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_checks",
+    "description": "List deployment checks (CI integrations) for a deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "checks",
+      "ci",
+      "deployment",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_check",
+    "description": "Create a deployment check (external CI status gate)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "check",
+      "create",
+      "ci",
+      "gate",
+      "deployment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "blocking": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "deploymentId",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_check",
+    "description": "Update the status of a deployment check",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "check",
+      "update",
+      "ci",
+      "status",
+      "pass",
+      "fail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "checkId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "running",
+            "completed"
+          ]
+        },
+        "conclusion": {
+          "type": "string",
+          "enum": [
+            "succeeded",
+            "failed",
+            "canceled",
+            "skipped"
+          ]
+        }
+      },
+      "required": [
+        "deploymentId",
+        "checkId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_project_analytics",
+    "description": "Get web analytics data for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "analytics",
+      "traffic",
+      "views",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_bandwidth_usage",
+    "description": "Get bandwidth consumption for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "bandwidth",
+      "usage",
+      "traffic",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_function_invocations",
+    "description": "Get serverless function invocation count and errors",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "functions",
+      "invocations",
+      "serverless",
+      "usage",
+      "errors"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_web_vitals",
+    "description": "Get Core Web Vitals (LCP, FID, CLS) for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "web-vitals",
+      "performance",
+      "LCP",
+      "CLS",
+      "FID",
+      "lighthouse"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_billing_summary",
+    "description": "Get billing summary and current period usage for the account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "cost",
+      "usage",
+      "plan",
+      "invoice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_usage_metrics",
+    "description": "Get detailed usage metrics across all projects",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "usage",
+      "metrics",
+      "bandwidth",
+      "functions",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_list_invoices",
+    "description": "List billing invoices for the Vercel account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "invoices",
+      "billing",
+      "history",
+      "payments"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_list_secrets",
+    "description": "List secrets in a Vercel team (legacy, prefer env vars)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "secrets",
+      "list",
+      "legacy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_create_secret",
+    "description": "Create a shared secret in a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "secret",
+      "create",
+      "shared"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_secret",
+    "description": "Delete a shared secret from a Vercel team",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "secret",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "secretId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "secretId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_integrations",
+    "description": "List third-party integrations installed in the Vercel account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "integrations",
+      "list",
+      "third-party",
+      "marketplace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_integration",
+    "description": "Get details of a specific Vercel integration",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "integration",
+      "detail",
+      "marketplace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "integrationId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "integrationId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_firewall_config",
+    "description": "Get the firewall/WAF configuration for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "waf",
+      "security",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_blocked_ips",
+    "description": "List IPs blocked by the Vercel firewall for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "blocked",
+      "ips",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_block_ip",
+    "description": "Block an IP address via the Vercel firewall",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "block",
+      "ip",
+      "security",
+      "ban"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "ip"
+      ]
+    }
+  },
+  {
+    "name": "vercel_unblock_ip",
+    "description": "Unblock a previously blocked IP address",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "unblock",
+      "ip",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "ip"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_cron_jobs",
+    "description": "List cron job configurations for a Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "cron",
+      "jobs",
+      "scheduled",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_git_repositories",
+    "description": "List Git repositories connected to Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "git",
+      "repositories",
+      "github",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_git_integration_status",
+    "description": "Check the status of a Git provider integration",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "git",
+      "integration",
+      "status",
+      "github"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_list_project_members",
+    "description": "List members with access to a specific Vercel project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "members",
+      "access",
+      "list",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_add_project_member",
+    "description": "Grant a team member access to a specific project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "member",
+      "add",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "default": "MEMBER"
+        }
+      },
+      "required": [
+        "projectId",
+        "userId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_remove_project_member",
+    "description": "Revoke a member's access to a specific project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "member",
+      "remove",
+      "revoke",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "userId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_project_builds",
+    "description": "List build configurations for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "builds",
+      "list",
+      "config",
+      "project"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_health",
+    "description": "Get health check status for a deployment's serverless functions",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "health",
+      "status",
+      "functions",
+      "monitor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_user",
+    "description": "Get the currently authenticated Vercel user profile",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "user",
+      "profile",
+      "account",
+      "me"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "vercel_list_user_events",
+    "description": "Get recent activity events for the Vercel account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "events",
+      "activity",
+      "history",
+      "audit",
+      "log"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_project_summary",
+    "description": "Get a comprehensive overview of a Vercel project: latest production deployment, env var count, and attached domains in one call",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "summary",
+      "overview",
+      "dashboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_latest_deployment",
+    "description": "Get the most recent READY deployment for a project, optionally filtered by target (production or preview)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "latest",
+      "current",
+      "production"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "preview"
+          ],
+          "default": "production"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_find_deployment_by_url",
+    "description": "Find a deployment by its URL (e.g. my-app-abc123.vercel.app)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "find",
+      "url",
+      "lookup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Deployment URL to search for"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_deployments_for_commit",
+    "description": "Find all deployments triggered by a specific git commit SHA",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "commit",
+      "sha",
+      "git",
+      "find"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sha": {
+          "type": "string",
+          "description": "Git commit SHA"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha"
+      ]
+    }
+  },
+  {
+    "name": "vercel_wait_for_deployment",
+    "description": "Poll a deployment until it reaches READY or ERROR — useful after triggering a deploy to wait for completion",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "wait",
+      "poll",
+      "ready",
+      "ci"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "default": 300
+        },
+        "pollIntervalSeconds": {
+          "type": "number",
+          "default": 5
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_status",
+    "description": "Quick status check for a deployment: ready state, URL, and any error message",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "status",
+      "check",
+      "ready",
+      "health"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_project_activity",
+    "description": "Get recent deployment activity for a project — a timeline of all deployments with state, target, and creator",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "activity",
+      "history",
+      "timeline",
+      "deployments"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_runtime_logs",
+    "description": "Get runtime/serverless function execution logs for a deployment (distinct from build logs)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "logs",
+      "runtime",
+      "serverless",
+      "functions",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "Function name to filter by"
+        },
+        "limit": {
+          "type": "number",
+          "default": 50
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_log_drains",
+    "description": "List all log drains configured for the account — log drains stream deployment logs to external services like Datadog or Papertrail",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drains",
+      "logging",
+      "monitoring",
+      "datadog",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "vercel_create_log_drain",
+    "description": "Create a log drain to stream Vercel logs to an external endpoint (Datadog, Papertrail, custom webhook, etc.)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drain",
+      "create",
+      "logging",
+      "monitoring",
+      "stream"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "description": "HTTPS endpoint that will receive log events"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Log sources: lambda, static, edge, build, deployment"
+        },
+        "projectIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "secret": {
+          "type": "string",
+          "description": "Secret for verifying webhook signature"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_log_drain",
+    "description": "Delete a log drain by ID",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drain",
+      "delete",
+      "remove",
+      "logging"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "logDrainId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "logDrainId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_deployment_hooks",
+    "description": "List all deploy hooks for a project — deploy hooks are webhook URLs that trigger a new deployment when POSTed to",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deploy-hooks",
+      "webhooks",
+      "trigger",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_deployment_hook",
+    "description": "Create a deploy hook — generates a webhook URL that triggers a new Vercel deployment when called, useful for CMS integrations",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deploy-hook",
+      "create",
+      "webhook",
+      "trigger",
+      "cms",
+      "automation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "Label for this hook e.g. trigger-from-contentful"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Git branch to deploy",
+          "default": "main"
+        }
+      },
+      "required": [
+        "projectId",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_deployment_hook",
+    "description": "Delete a deploy hook by ID",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deploy-hook",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "hookId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "hookId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_edge_config_tokens",
+    "description": "List all access tokens for an Edge Config store — tokens are used to read Edge Config from outside Vercel",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "tokens",
+      "list",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_create_edge_config_token",
+    "description": "Create a new access token for an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "token",
+      "create",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string",
+          "description": "Descriptive name for this token"
+        }
+      },
+      "required": [
+        "edgeConfigId",
+        "label"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_edge_config_token",
+    "description": "Revoke an Edge Config access token",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "token",
+      "delete",
+      "revoke"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId",
+        "token"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_edge_config_schema",
+    "description": "Get the JSON Schema used to validate items in an Edge Config store",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "schema",
+      "validation",
+      "json-schema"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edgeConfigId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_edge_config_schema",
+    "description": "Set or update the JSON Schema for validating Edge Config items — prevents invalid values from being saved",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "schema",
+      "update",
+      "validation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeConfigId": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object",
+          "description": "A JSON Schema object"
+        }
+      },
+      "required": [
+        "edgeConfigId",
+        "schema"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_env_var_value",
+    "description": "Decrypt and return the actual plaintext value of an encrypted environment variable",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "decrypt",
+      "value",
+      "secret",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "envId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_copy_env_var",
+    "description": "Copy an existing env var to a different set of deployment targets (e.g. from preview to production)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "copy",
+      "duplicate",
+      "production",
+      "preview"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envId": {
+          "type": "string",
+          "description": "ID of the env var to copy"
+        },
+        "targetEnvironments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Target environments e.g. [production]"
+        }
+      },
+      "required": [
+        "projectId",
+        "envId",
+        "targetEnvironments"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_project_domain",
+    "description": "Get detailed configuration for one specific domain attached to a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "domain",
+      "detail",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_project_domain",
+    "description": "Update a project domain configuration — set redirect target, redirect status code, or bind to a specific git branch",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "update",
+      "redirect",
+      "git-branch",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "redirect": {
+          "type": "string",
+          "description": "URL to redirect this domain to"
+        },
+        "redirectStatusCode": {
+          "type": "number",
+          "description": "HTTP status code for redirect (301, 302, etc.)"
+        },
+        "gitBranch": {
+          "type": "string",
+          "description": "Git branch that triggers preview deployments for this domain"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_team_config",
+    "description": "Get full team configuration including settings, billing, and integration status",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "config",
+      "settings",
+      "account"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_update_team_config",
+    "description": "Update team settings — name, slug, description, email domain restrictions, or SAML configuration",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "update",
+      "settings",
+      "name",
+      "slug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "emailDomain": {
+          "type": "string",
+          "description": "Restrict team invites to this email domain"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_project_protection",
+    "description": "Get deployment protection settings for a project — password protection, trusted IPs, SSO protection",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "protection",
+      "security",
+      "password",
+      "trusted-ips",
+      "sso"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_project_protection",
+    "description": "Enable or disable deployment protection — password protection for previews, trusted IP ranges, or protection mode",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "protection",
+      "update",
+      "password",
+      "security",
+      "preview",
+      "trusted-ips"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "passwordProtection": {
+          "type": "object",
+          "description": "Set to null to disable, or {password} to enable"
+        },
+        "trustedIps": {
+          "type": "object",
+          "description": "Trusted IP configuration"
+        },
+        "deploymentProtection": {
+          "type": "string",
+          "enum": [
+            "none",
+            "preview",
+            "all"
+          ]
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_protection_bypasses",
+    "description": "List automation bypass secrets configured for a project — used to access protected deployments from CI/CD",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "protection",
+      "bypass",
+      "secrets",
+      "ci",
+      "automation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_speed_insights",
+    "description": "Get Speed Insights performance scores for a project — Core Web Vitals and performance metrics by page",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "speed-insights",
+      "performance",
+      "web-vitals",
+      "lcp",
+      "cls",
+      "fid"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "description": "Filter to a specific URL path"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_top_pages",
+    "description": "Get top pages by traffic and web vitals — shows which pages have the most visitors and their performance scores",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "analytics",
+      "top-pages",
+      "traffic",
+      "web-vitals",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_access_groups",
+    "description": "List team access groups (Enterprise) — access groups control which team members can access which projects",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "access-groups",
+      "enterprise",
+      "team",
+      "permissions",
+      "rbac"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_access_group",
+    "description": "Get details and members of a specific access group (Enterprise)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "access-group",
+      "detail",
+      "enterprise",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "accessGroupId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accessGroupId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_oidc_token",
+    "description": "Generate an OIDC token for authenticating Vercel deployments in CI/CD pipelines like GitHub Actions",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "oidc",
+      "token",
+      "ci",
+      "github-actions",
+      "auth",
+      "jwt"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "audience": {
+          "type": "string",
+          "description": "Optional audience claim for the OIDC token"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_list_kv_stores",
+    "description": "List all Vercel KV (serverless Redis-compatible) stores in the account",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "kv",
+      "redis",
+      "storage",
+      "list",
+      "serverless"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_kv_store",
+    "description": "Get details of a specific Vercel KV store including connection info and usage",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "kv",
+      "redis",
+      "storage",
+      "detail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespaceId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespaceId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_attack_challenge_mode",
+    "description": "Get the current WAF attack challenge mode setting for a project",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "waf",
+      "firewall",
+      "attack",
+      "challenge",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_attack_challenge_mode",
+    "description": "Update the WAF attack challenge mode: auto (Vercel decides), forced_challenge (always challenge), redirect, or off",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "waf",
+      "firewall",
+      "attack",
+      "challenge",
+      "update",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "forced_challenge",
+            "redirect",
+            "off"
+          ]
+        }
+      },
+      "required": [
+        "projectId",
+        "action"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_skew_protection",
+    "description": "Get deployment skew protection settings — skew protection prevents users running mismatched JS/HTML versions after a new deploy",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "skew-protection",
+      "deployment",
+      "config",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_skew_protection",
+    "description": "Enable or disable deployment skew protection and set the staleness window (maxAge in seconds)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "skew-protection",
+      "update",
+      "enable",
+      "disable",
+      "deployment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "maxAge": {
+          "type": "number",
+          "description": "Staleness window in seconds (e.g. 86400 for 24 hours)"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_team_access_requests",
+    "description": "List pending requests to join a team — shows users who have requested access but have not yet been approved",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "access-requests",
+      "pending",
+      "members",
+      "join"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_get_notification_settings",
+    "description": "Get the current user notification preferences for deployment events",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "notifications",
+      "settings",
+      "user",
+      "preferences",
+      "email"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "vercel_update_notification_settings",
+    "description": "Update notification preferences for deployment success, failure, and cancellation events",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "notifications",
+      "update",
+      "settings",
+      "email",
+      "deployment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentFailed": {
+          "type": "boolean"
+        },
+        "deploymentReady": {
+          "type": "boolean"
+        },
+        "deploymentCanceled": {
+          "type": "boolean"
+        },
+        "emailDeploymentFailed": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_link_git_repository",
+    "description": "Link a Vercel project to a GitHub, GitLab, or Bitbucket repository to enable automatic deployments on push",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "git",
+      "github",
+      "gitlab",
+      "link",
+      "connect",
+      "repository",
+      "ci"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "github",
+            "gitlab",
+            "bitbucket"
+          ]
+        },
+        "repo": {
+          "type": "string",
+          "description": "Repository in owner/name format"
+        },
+        "repoId": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "projectId",
+        "type",
+        "repo"
+      ]
+    }
+  },
+  {
+    "name": "vercel_unlink_git_repository",
+    "description": "Remove the git repository integration from a project — disables automatic deployments on push",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "git",
+      "unlink",
+      "disconnect",
+      "repository"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_project_env_by_key",
+    "description": "Look up an environment variable by its KEY name instead of its ID — returns all matching entries across all targets",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "key",
+      "lookup",
+      "find",
+      "environment",
+      "variable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "description": "The env var key name e.g. DATABASE_URL"
+        }
+      },
+      "required": [
+        "projectId",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "vercel_bulk_delete_env_vars",
+    "description": "Delete multiple environment variables at once by providing a list of env var IDs",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "bulk",
+      "delete",
+      "cleanup",
+      "environment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "envIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of env var IDs to delete"
+        }
+      },
+      "required": [
+        "projectId",
+        "envIds"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_team_billing_plan",
+    "description": "Get the team billing plan details including plan tier, concurrent build limits, bandwidth caps, and current billing period",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "plan",
+      "limits",
+      "usage",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "teamId": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "vercel_list_page_views",
+    "description": "Get page view analytics for a project showing traffic by page path",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "analytics",
+      "page-views",
+      "traffic",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_project_git_info",
+    "description": "Get the git branch, commit SHA, commit message, and author from the latest production deployment",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "git",
+      "commit",
+      "branch",
+      "author",
+      "deployment",
+      "sha"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_deployment_regions",
+    "description": "Get the edge network regions where a specific deployment is serving traffic",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "regions",
+      "edge",
+      "network",
+      "geography"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_add_protection_bypass",
+    "description": "Add an automation bypass secret for deployment protection — allows CI/CD systems to access password-protected preview deployments",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "protection",
+      "bypass",
+      "secret",
+      "ci",
+      "automation",
+      "preview"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string",
+          "description": "The bypass token value"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "secret"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_protection_bypass",
+    "description": "Remove an automation bypass secret from deployment protection",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "protection",
+      "bypass",
+      "delete",
+      "revoke",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId",
+        "secret"
+      ]
+    }
+  },
+  {
+    "name": "vercel_deploy_and_wait",
+    "description": "SUPER TOOL: Trigger a new deployment and block until it reaches READY or ERROR — returns the final URL and state",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deploy",
+      "wait",
+      "ready",
+      "ci",
+      "super-tool",
+      "compound",
+      "production"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Vercel project name"
+        },
+        "gitSource": {
+          "type": "object"
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "preview"
+          ],
+          "default": "production"
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "default": 300
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "vercel_safe_promote_to_production",
+    "description": "SUPER TOOL: Promote a preview deployment to production and verify it is healthy afterward — includes rollback reference in response",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "promote",
+      "production",
+      "safe",
+      "health",
+      "super-tool",
+      "deploy",
+      "ship"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "deploymentId": {
+          "type": "string",
+          "description": "Preview deployment to promote"
+        }
+      },
+      "required": [
+        "projectId",
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_copy_project_env_vars",
+    "description": "SUPER TOOL: Copy all environment variables from one Vercel project to another, with optional overwrite and target filtering",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "copy",
+      "project",
+      "migrate",
+      "super-tool",
+      "environment",
+      "variables"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sourceProjectId": {
+          "type": "string"
+        },
+        "destinationProjectId": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Limit copy to specific targets e.g. [\"production\"]"
+        },
+        "overwrite": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "sourceProjectId",
+        "destinationProjectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_sync_env_between_targets",
+    "description": "SUPER TOOL: Sync environment variables from one deployment target to another within the same project (e.g. preview → production)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "sync",
+      "targets",
+      "preview",
+      "production",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "fromTarget": {
+          "type": "string",
+          "enum": [
+            "development",
+            "preview",
+            "production"
+          ]
+        },
+        "toTarget": {
+          "type": "string",
+          "enum": [
+            "development",
+            "preview",
+            "production"
+          ]
+        }
+      },
+      "required": [
+        "projectId",
+        "fromTarget",
+        "toTarget"
+      ]
+    }
+  },
+  {
+    "name": "vercel_setup_custom_domain",
+    "description": "SUPER TOOL: Add a custom domain to a project, retrieve the DNS records needed, and attempt verification — returns exact DNS config and next steps",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "setup",
+      "dns",
+      "verify",
+      "super-tool",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Domain name to configure e.g. app.example.com"
+        }
+      },
+      "required": [
+        "projectId",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_full_deployment_report",
+    "description": "SUPER TOOL: Get a complete deployment report in one call — status, git info, build summary, check results, and output file count",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "report",
+      "status",
+      "logs",
+      "checks",
+      "super-tool",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deploymentId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_rotate_env_and_redeploy",
+    "description": "SUPER TOOL: Update an environment variable value and immediately trigger a new production deployment — waits for READY and returns the new URL",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "rotate",
+      "update",
+      "redeploy",
+      "super-tool",
+      "secret-rotation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "description": "The env var key to update"
+        },
+        "newValue": {
+          "type": "string"
+        },
+        "target": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "production"
+          ]
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "default": 300
+        }
+      },
+      "required": [
+        "projectId",
+        "key",
+        "newValue"
+      ]
+    }
+  },
+  {
+    "name": "vercel_emergency_rollback",
+    "description": "SUPER TOOL: Immediately roll back to the previous production deployment — promotes the last READY production deployment and verifies health",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "rollback",
+      "emergency",
+      "production",
+      "revert",
+      "super-tool",
+      "incident"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "type": "number",
+          "default": 180
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_audit_project_config",
+    "description": "SUPER TOOL: Run a comprehensive project health audit — checks domain verification, latest deployment state, env var coverage, and git connection",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "audit",
+      "health",
+      "config",
+      "domains",
+      "env",
+      "super-tool",
+      "diagnose"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_project_domains",
+    "description": "List all domains attached to a specific project — project-scoped, includes redirect config and git branch binding (distinct from account-level vercel_list_domains)",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "domains",
+      "list",
+      "custom",
+      "redirect",
+      "git-branch"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 50
+        }
+      },
+      "required": [
+        "projectId"
+      ]
+    }
+  }
+]
