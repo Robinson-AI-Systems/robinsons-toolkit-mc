@@ -1,151 +1,4732 @@
 [
-  {"name":"upstash_list_redis_databases","description":"List all Upstash Redis databases in the account","namespace":"upstash","tags":["upstash","redis","databases","list"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_get_redis_database","description":"Get details of a specific Upstash Redis database","namespace":"upstash","tags":["upstash","redis","database","detail","info"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_create_redis_database","description":"Create a new Upstash Redis database","namespace":"upstash","tags":["upstash","redis","create","new","database"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"region":{"type":"string","description":"e.g. us-east-1, eu-west-1"},"tls":{"type":"boolean","default":true}},"required":["name","region"]}},
-  {"name":"upstash_delete_redis_database","description":"Delete an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","delete","database"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_rename_redis_database","description":"Rename an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","rename","database"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"name":{"type":"string"}},"required":["database_id","name"]}},
-  {"name":"upstash_reset_redis_password","description":"Reset the password for an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","password","reset","security"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_enable_redis_eviction","description":"Enable eviction policy on an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","eviction","config","memory"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_disable_redis_eviction","description":"Disable eviction policy on an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","eviction","disable","memory"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_enable_redis_tls","description":"Enable TLS encryption on an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","tls","ssl","security","encrypt"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_disable_redis_tls","description":"Disable TLS on an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","tls","disable"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_get_redis_stats","description":"Get usage statistics (commands, hits, misses, memory) for an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","stats","usage","monitor","performance"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_get_redis_usage","description":"Get current memory usage and throughput for an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","usage","memory","throughput","billing"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_backup_redis_database","description":"Trigger a manual backup of an Upstash Redis database","namespace":"upstash","tags":["upstash","redis","backup","snapshot"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_restore_redis_database","description":"Restore an Upstash Redis database from a backup","namespace":"upstash","tags":["upstash","redis","restore","backup","recovery"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"backup_id":{"type":"string"}},"required":["database_id","backup_id"]}},
-  {"name":"upstash_update_redis_database","description":"Update Upstash Redis database settings","namespace":"upstash","tags":["upstash","redis","update","settings","config"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"name":{"type":"string"}},"required":["database_id"]}},
-  {"name":"upstash_list_teams","description":"List Upstash teams the user belongs to","namespace":"upstash","tags":["upstash","teams","list","organizations"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_get_team","description":"Get details of an Upstash team","namespace":"upstash","tags":["upstash","team","detail","info"],"inputSchema":{"type":"object","properties":{"team_id":{"type":"string"}},"required":["team_id"]}},
-  {"name":"upstash_create_team","description":"Create a new Upstash team","namespace":"upstash","tags":["upstash","team","create","new"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}},
-  {"name":"upstash_delete_team","description":"Delete an Upstash team","namespace":"upstash","tags":["upstash","team","delete"],"inputSchema":{"type":"object","properties":{"team_id":{"type":"string"}},"required":["team_id"]}},
-  {"name":"upstash_add_team_member","description":"Add a member to an Upstash team","namespace":"upstash","tags":["upstash","team","member","add","invite"],"inputSchema":{"type":"object","properties":{"team_id":{"type":"string"},"email":{"type":"string"}},"required":["team_id","email"]}},
-  {"name":"upstash_remove_team_member","description":"Remove a member from an Upstash team","namespace":"upstash","tags":["upstash","team","member","remove"],"inputSchema":{"type":"object","properties":{"team_id":{"type":"string"},"email":{"type":"string"}},"required":["team_id","email"]}},
-  {"name":"upstash_redis_get","description":"GET — retrieve the value of a Redis key","namespace":"upstash","tags":["upstash","redis","get","read","key","cache"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_set","description":"SET — set a Redis key to a value, optionally with TTL","namespace":"upstash","tags":["upstash","redis","set","write","key","cache","store"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"},"ex":{"type":"number","description":"Expire in seconds"},"px":{"type":"number","description":"Expire in milliseconds"},"nx":{"type":"boolean","description":"Only set if not exists"},"xx":{"type":"boolean","description":"Only set if exists"}},"required":["key","value"]}},
-  {"name":"upstash_redis_mget","description":"MGET — get values for multiple Redis keys at once","namespace":"upstash","tags":["upstash","redis","mget","bulk","read","keys"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_mset","description":"MSET — set multiple Redis key-value pairs atomically","namespace":"upstash","tags":["upstash","redis","mset","bulk","write","keys"],"inputSchema":{"type":"object","properties":{"pairs":{"type":"object","description":"Key-value object e.g. {key1: 'val1', key2: 'val2'}"}},"required":["pairs"]}},
-  {"name":"upstash_redis_del","description":"DEL — delete one or more Redis keys","namespace":"upstash","tags":["upstash","redis","del","delete","key","remove"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_exists","description":"EXISTS — check if one or more Redis keys exist","namespace":"upstash","tags":["upstash","redis","exists","check","key"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_incr","description":"INCR — increment a numeric Redis key by 1","namespace":"upstash","tags":["upstash","redis","incr","increment","counter"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_decr","description":"DECR — decrement a numeric Redis key by 1","namespace":"upstash","tags":["upstash","redis","decr","decrement","counter"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_incrby","description":"INCRBY — increment a Redis key by a specified amount","namespace":"upstash","tags":["upstash","redis","incrby","increment","counter","math"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"amount":{"type":"number"}},"required":["key","amount"]}},
-  {"name":"upstash_redis_decrby","description":"DECRBY — decrement a Redis key by a specified amount","namespace":"upstash","tags":["upstash","redis","decrby","decrement","counter","math"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"amount":{"type":"number"}},"required":["key","amount"]}},
-  {"name":"upstash_redis_incrbyfloat","description":"INCRBYFLOAT — increment a Redis key by a float value","namespace":"upstash","tags":["upstash","redis","incrbyfloat","float","math"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"amount":{"type":"number"}},"required":["key","amount"]}},
-  {"name":"upstash_redis_append","description":"APPEND — append a string to a Redis key's value","namespace":"upstash","tags":["upstash","redis","append","string"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}},"required":["key","value"]}},
-  {"name":"upstash_redis_getrange","description":"GETRANGE — get a substring of a Redis string value","namespace":"upstash","tags":["upstash","redis","getrange","substring","string"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number"},"end":{"type":"number"}},"required":["key","start","end"]}},
-  {"name":"upstash_redis_setrange","description":"SETRANGE — overwrite part of a Redis string at an offset","namespace":"upstash","tags":["upstash","redis","setrange","string","overwrite"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"offset":{"type":"number"},"value":{"type":"string"}},"required":["key","offset","value"]}},
-  {"name":"upstash_redis_strlen","description":"STRLEN — get the length of a Redis string value","namespace":"upstash","tags":["upstash","redis","strlen","length","string"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_getset","description":"GETSET — atomically set a key and return its old value","namespace":"upstash","tags":["upstash","redis","getset","atomic","swap"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}},"required":["key","value"]}},
-  {"name":"upstash_redis_setnx","description":"SETNX — set a key only if it does not already exist","namespace":"upstash","tags":["upstash","redis","setnx","lock","conditional","mutex"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"}},"required":["key","value"]}},
-  {"name":"upstash_redis_setex","description":"SETEX — set a key with an expiry in seconds","namespace":"upstash","tags":["upstash","redis","setex","expire","ttl","cache","session"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"seconds":{"type":"number"},"value":{"type":"string"}},"required":["key","seconds","value"]}},
-  {"name":"upstash_redis_psetex","description":"PSETEX — set a key with an expiry in milliseconds","namespace":"upstash","tags":["upstash","redis","psetex","expire","ttl","milliseconds"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"milliseconds":{"type":"number"},"value":{"type":"string"}},"required":["key","milliseconds","value"]}},
-  {"name":"upstash_redis_expire","description":"EXPIRE — set a time-to-live (TTL) on a Redis key in seconds","namespace":"upstash","tags":["upstash","redis","expire","ttl","expiry","timeout"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"seconds":{"type":"number"}},"required":["key","seconds"]}},
-  {"name":"upstash_redis_expireat","description":"EXPIREAT — set expiry as a Unix timestamp","namespace":"upstash","tags":["upstash","redis","expireat","ttl","timestamp","expiry"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"timestamp":{"type":"number"}},"required":["key","timestamp"]}},
-  {"name":"upstash_redis_ttl","description":"TTL — get remaining time-to-live of a key in seconds","namespace":"upstash","tags":["upstash","redis","ttl","expiry","remaining","time"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_pttl","description":"PTTL — get remaining TTL of a key in milliseconds","namespace":"upstash","tags":["upstash","redis","pttl","expiry","milliseconds"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_persist","description":"PERSIST — remove the expiry from a key (make it permanent)","namespace":"upstash","tags":["upstash","redis","persist","remove-expiry","permanent"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_keys","description":"KEYS — find all keys matching a pattern (use carefully in production)","namespace":"upstash","tags":["upstash","redis","keys","pattern","search","list"],"inputSchema":{"type":"object","properties":{"pattern":{"type":"string","description":"e.g. 'user:*' or '*session*'"}},"required":["pattern"]}},
-  {"name":"upstash_redis_scan","description":"SCAN — iterate keys with a cursor (safe alternative to KEYS)","namespace":"upstash","tags":["upstash","redis","scan","iterate","keys","cursor"],"inputSchema":{"type":"object","properties":{"cursor":{"type":"number","default":0},"match":{"type":"string"},"count":{"type":"number","default":10}},"required":[]}},
-  {"name":"upstash_redis_type","description":"TYPE — get the data type of a Redis key","namespace":"upstash","tags":["upstash","redis","type","datatype","key","inspect"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_rename","description":"RENAME — rename a Redis key","namespace":"upstash","tags":["upstash","redis","rename","key","move"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"newkey":{"type":"string"}},"required":["key","newkey"]}},
-  {"name":"upstash_redis_dbsize","description":"DBSIZE — get the total number of keys in the database","namespace":"upstash","tags":["upstash","redis","dbsize","count","keys","stats"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_flushdb","description":"FLUSHDB — delete all keys in the current database (DESTRUCTIVE)","namespace":"upstash","tags":["upstash","redis","flushdb","clear","delete-all","reset"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_flushall","description":"FLUSHALL — delete all keys in all databases (DESTRUCTIVE)","namespace":"upstash","tags":["upstash","redis","flushall","clear","delete-all","reset"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_ping","description":"PING — test connectivity to the Redis instance","namespace":"upstash","tags":["upstash","redis","ping","health","test","connection"],"inputSchema":{"type":"object","properties":{"message":{"type":"string"}}}},
-  {"name":"upstash_redis_echo","description":"ECHO — echo a message back from the Redis server","namespace":"upstash","tags":["upstash","redis","echo","test"],"inputSchema":{"type":"object","properties":{"message":{"type":"string"}},"required":["message"]}},
-  {"name":"upstash_redis_info","description":"INFO — get server info and stats from Redis","namespace":"upstash","tags":["upstash","redis","info","stats","server","monitor"],"inputSchema":{"type":"object","properties":{"section":{"type":"string","description":"e.g. server, clients, memory, stats, all"}}}},
-  {"name":"upstash_redis_time","description":"TIME — get the current Redis server time","namespace":"upstash","tags":["upstash","redis","time","server","clock"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_save","description":"SAVE — synchronously save the Redis dataset to disk","namespace":"upstash","tags":["upstash","redis","save","persist","backup","snapshot"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_bgsave","description":"BGSAVE — asynchronously save the Redis dataset to disk","namespace":"upstash","tags":["upstash","redis","bgsave","backup","snapshot","async"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"upstash_redis_hset","description":"HSET — set one or more fields in a Redis hash","namespace":"upstash","tags":["upstash","redis","hset","hash","set","object","store"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"fields":{"type":"object","description":"Field-value pairs e.g. {name: 'Chris', plan: 'pro'}"}},"required":["key","fields"]}},
-  {"name":"upstash_redis_hget","description":"HGET — get the value of a field in a Redis hash","namespace":"upstash","tags":["upstash","redis","hget","hash","field","read"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"}},"required":["key","field"]}},
-  {"name":"upstash_redis_hgetall","description":"HGETALL — get all fields and values in a Redis hash","namespace":"upstash","tags":["upstash","redis","hgetall","hash","read","all","object"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_hdel","description":"HDEL — delete one or more fields from a Redis hash","namespace":"upstash","tags":["upstash","redis","hdel","hash","delete","field"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"fields":{"type":"array","items":{"type":"string"}}},"required":["key","fields"]}},
-  {"name":"upstash_redis_hexists","description":"HEXISTS — check if a field exists in a Redis hash","namespace":"upstash","tags":["upstash","redis","hexists","hash","check","field"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"}},"required":["key","field"]}},
-  {"name":"upstash_redis_hkeys","description":"HKEYS — get all field names in a Redis hash","namespace":"upstash","tags":["upstash","redis","hkeys","hash","fields","list"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_hvals","description":"HVALS — get all values in a Redis hash","namespace":"upstash","tags":["upstash","redis","hvals","hash","values","list"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_hlen","description":"HLEN — get the number of fields in a Redis hash","namespace":"upstash","tags":["upstash","redis","hlen","hash","count","length"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_hincrby","description":"HINCRBY — increment a hash field's integer value","namespace":"upstash","tags":["upstash","redis","hincrby","hash","increment","counter"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"},"amount":{"type":"number"}},"required":["key","field","amount"]}},
-  {"name":"upstash_redis_hincrbyfloat","description":"HINCRBYFLOAT — increment a hash field's float value","namespace":"upstash","tags":["upstash","redis","hincrbyfloat","hash","increment","float"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"},"amount":{"type":"number"}},"required":["key","field","amount"]}},
-  {"name":"upstash_redis_hmget","description":"HMGET — get values for multiple hash fields at once","namespace":"upstash","tags":["upstash","redis","hmget","hash","bulk","fields"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"fields":{"type":"array","items":{"type":"string"}}},"required":["key","fields"]}},
-  {"name":"upstash_redis_hmset","description":"HMSET — set multiple hash fields at once (legacy, prefer HSET)","namespace":"upstash","tags":["upstash","redis","hmset","hash","bulk","set"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"fields":{"type":"object"}},"required":["key","fields"]}},
-  {"name":"upstash_redis_hsetnx","description":"HSETNX — set a hash field only if it doesn't already exist","namespace":"upstash","tags":["upstash","redis","hsetnx","hash","conditional","set"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"},"value":{"type":"string"}},"required":["key","field","value"]}},
-  {"name":"upstash_redis_hstrlen","description":"HSTRLEN — get the string length of a hash field value","namespace":"upstash","tags":["upstash","redis","hstrlen","hash","length","string"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"field":{"type":"string"}},"required":["key","field"]}},
-  {"name":"upstash_redis_hscan","description":"HSCAN — iterate fields in a hash with a cursor","namespace":"upstash","tags":["upstash","redis","hscan","hash","iterate","cursor"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"cursor":{"type":"number","default":0},"match":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_lpush","description":"LPUSH — prepend values to a Redis list","namespace":"upstash","tags":["upstash","redis","lpush","list","queue","prepend","push"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"values":{"type":"array","items":{"type":"string"}}},"required":["key","values"]}},
-  {"name":"upstash_redis_rpush","description":"RPUSH — append values to a Redis list","namespace":"upstash","tags":["upstash","redis","rpush","list","queue","append","push"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"values":{"type":"array","items":{"type":"string"}}},"required":["key","values"]}},
-  {"name":"upstash_redis_lpop","description":"LPOP — remove and return the first element of a list","namespace":"upstash","tags":["upstash","redis","lpop","list","dequeue","pop","queue"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_rpop","description":"RPOP — remove and return the last element of a list","namespace":"upstash","tags":["upstash","redis","rpop","list","pop","stack"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_lrange","description":"LRANGE — get a range of elements from a Redis list","namespace":"upstash","tags":["upstash","redis","lrange","list","range","read","slice"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number","default":0},"stop":{"type":"number","default":-1}},"required":["key"]}},
-  {"name":"upstash_redis_llen","description":"LLEN — get the length of a Redis list","namespace":"upstash","tags":["upstash","redis","llen","list","length","count"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_lindex","description":"LINDEX — get an element from a list by index","namespace":"upstash","tags":["upstash","redis","lindex","list","index","get"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"index":{"type":"number"}},"required":["key","index"]}},
-  {"name":"upstash_redis_lset","description":"LSET — set the value of a list element by index","namespace":"upstash","tags":["upstash","redis","lset","list","set","index"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"index":{"type":"number"},"value":{"type":"string"}},"required":["key","index","value"]}},
-  {"name":"upstash_redis_lrem","description":"LREM — remove elements from a list matching a value","namespace":"upstash","tags":["upstash","redis","lrem","list","remove","delete"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number"},"value":{"type":"string"}},"required":["key","count","value"]}},
-  {"name":"upstash_redis_ltrim","description":"LTRIM — trim a list to a specified range (remove elements outside range)","namespace":"upstash","tags":["upstash","redis","ltrim","list","trim","truncate"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number"},"stop":{"type":"number"}},"required":["key","start","stop"]}},
-  {"name":"upstash_redis_linsert","description":"LINSERT — insert a value before or after an element in a list","namespace":"upstash","tags":["upstash","redis","linsert","list","insert","before","after"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"position":{"type":"string","enum":["BEFORE","AFTER"]},"pivot":{"type":"string"},"value":{"type":"string"}},"required":["key","position","pivot","value"]}},
-  {"name":"upstash_redis_rpoplpush","description":"RPOPLPUSH — atomically pop from one list and push to another","namespace":"upstash","tags":["upstash","redis","rpoplpush","list","atomic","move","queue"],"inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"}},"required":["source","destination"]}},
-  {"name":"upstash_redis_lpos","description":"LPOS — find the position of an element in a list","namespace":"upstash","tags":["upstash","redis","lpos","list","find","position","index"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"type":"string"},"rank":{"type":"number"},"count":{"type":"number"}},"required":["key","value"]}},
-  {"name":"upstash_redis_lmove","description":"LMOVE — atomically move an element between two lists","namespace":"upstash","tags":["upstash","redis","lmove","list","move","atomic","queue"],"inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"},"wherefrom":{"type":"string","enum":["LEFT","RIGHT"]},"whereto":{"type":"string","enum":["LEFT","RIGHT"]}},"required":["source","destination","wherefrom","whereto"]}},
-  {"name":"upstash_redis_sadd","description":"SADD — add members to a Redis set","namespace":"upstash","tags":["upstash","redis","sadd","set","add","members","unique"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_smembers","description":"SMEMBERS — get all members of a Redis set","namespace":"upstash","tags":["upstash","redis","smembers","set","members","list","read"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_srem","description":"SREM — remove members from a Redis set","namespace":"upstash","tags":["upstash","redis","srem","set","remove","delete"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_sismember","description":"SISMEMBER — check if a value is a member of a Redis set","namespace":"upstash","tags":["upstash","redis","sismember","set","check","exists","member"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"member":{"type":"string"}},"required":["key","member"]}},
-  {"name":"upstash_redis_scard","description":"SCARD — get the number of members in a Redis set","namespace":"upstash","tags":["upstash","redis","scard","set","count","size"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_spop","description":"SPOP — remove and return random member(s) from a set","namespace":"upstash","tags":["upstash","redis","spop","set","random","pop"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_srandmember","description":"SRANDMEMBER — get random member(s) from a set without removing","namespace":"upstash","tags":["upstash","redis","srandmember","set","random","sample"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_smove","description":"SMOVE — move a member from one set to another atomically","namespace":"upstash","tags":["upstash","redis","smove","set","move","atomic"],"inputSchema":{"type":"object","properties":{"source":{"type":"string"},"destination":{"type":"string"},"member":{"type":"string"}},"required":["source","destination","member"]}},
-  {"name":"upstash_redis_sunion","description":"SUNION — get the union of multiple sets","namespace":"upstash","tags":["upstash","redis","sunion","set","union","combine"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_sinter","description":"SINTER — get the intersection of multiple sets","namespace":"upstash","tags":["upstash","redis","sinter","set","intersection","common"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_sdiff","description":"SDIFF — get the difference between sets (members in first but not others)","namespace":"upstash","tags":["upstash","redis","sdiff","set","difference","unique"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_sunionstore","description":"SUNIONSTORE — compute set union and store result in a destination key","namespace":"upstash","tags":["upstash","redis","sunionstore","set","union","store"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["destination","keys"]}},
-  {"name":"upstash_redis_sinterstore","description":"SINTERSTORE — compute set intersection and store result","namespace":"upstash","tags":["upstash","redis","sinterstore","set","intersection","store"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["destination","keys"]}},
-  {"name":"upstash_redis_sdiffstore","description":"SDIFFSTORE — compute set difference and store result","namespace":"upstash","tags":["upstash","redis","sdiffstore","set","difference","store"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["destination","keys"]}},
-  {"name":"upstash_redis_sscan","description":"SSCAN — iterate over set members with a cursor","namespace":"upstash","tags":["upstash","redis","sscan","set","iterate","cursor"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"cursor":{"type":"number","default":0},"match":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_zadd","description":"ZADD — add members with scores to a sorted set","namespace":"upstash","tags":["upstash","redis","zadd","sorted-set","score","leaderboard","rank"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","description":"Array of {score, member} objects"}},"required":["key","members"]}},
-  {"name":"upstash_redis_zrange","description":"ZRANGE — get a range of members from a sorted set by rank","namespace":"upstash","tags":["upstash","redis","zrange","sorted-set","range","rank","leaderboard"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number","default":0},"stop":{"type":"number","default":-1},"withscores":{"type":"boolean"}},"required":["key"]}},
-  {"name":"upstash_redis_zrem","description":"ZREM — remove members from a sorted set","namespace":"upstash","tags":["upstash","redis","zrem","sorted-set","remove","delete"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_zscore","description":"ZSCORE — get the score of a member in a sorted set","namespace":"upstash","tags":["upstash","redis","zscore","sorted-set","score","rank","points"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"member":{"type":"string"}},"required":["key","member"]}},
-  {"name":"upstash_redis_zcard","description":"ZCARD — get the number of members in a sorted set","namespace":"upstash","tags":["upstash","redis","zcard","sorted-set","count","size"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_zrank","description":"ZRANK — get the rank (0-based position) of a member in a sorted set (ascending)","namespace":"upstash","tags":["upstash","redis","zrank","sorted-set","rank","position","leaderboard"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"member":{"type":"string"}},"required":["key","member"]}},
-  {"name":"upstash_redis_zrevrank","description":"ZREVRANK — get the rank of a member in descending order","namespace":"upstash","tags":["upstash","redis","zrevrank","sorted-set","rank","descending","leaderboard"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"member":{"type":"string"}},"required":["key","member"]}},
-  {"name":"upstash_redis_zrangebyscore","description":"ZRANGEBYSCORE — get members in a sorted set within a score range","namespace":"upstash","tags":["upstash","redis","zrangebyscore","sorted-set","score","range","filter"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"},"withscores":{"type":"boolean"},"limit":{"type":"object"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zrevrangebyscore","description":"ZREVRANGEBYSCORE — get members in score range, descending order","namespace":"upstash","tags":["upstash","redis","zrevrangebyscore","sorted-set","score","descending"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"max":{"type":"string"},"min":{"type":"string"}},"required":["key","max","min"]}},
-  {"name":"upstash_redis_zremrangebyrank","description":"ZREMRANGEBYRANK — remove members in a rank range from a sorted set","namespace":"upstash","tags":["upstash","redis","zremrangebyrank","sorted-set","remove","rank"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number"},"stop":{"type":"number"}},"required":["key","start","stop"]}},
-  {"name":"upstash_redis_zremrangebyscore","description":"ZREMRANGEBYSCORE — remove members in a score range from a sorted set","namespace":"upstash","tags":["upstash","redis","zremrangebyscore","sorted-set","remove","score"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zpopmin","description":"ZPOPMIN — remove and return members with the lowest scores","namespace":"upstash","tags":["upstash","redis","zpopmin","sorted-set","pop","min","priority-queue"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number","default":1}},"required":["key"]}},
-  {"name":"upstash_redis_zpopmax","description":"ZPOPMAX — remove and return members with the highest scores","namespace":"upstash","tags":["upstash","redis","zpopmax","sorted-set","pop","max","priority-queue"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"count":{"type":"number","default":1}},"required":["key"]}},
-  {"name":"upstash_redis_zincrby","description":"ZINCRBY — increment the score of a member in a sorted set","namespace":"upstash","tags":["upstash","redis","zincrby","sorted-set","score","increment","leaderboard"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"increment":{"type":"number"},"member":{"type":"string"}},"required":["key","increment","member"]}},
-  {"name":"upstash_redis_zcount","description":"ZCOUNT — count members in a sorted set within a score range","namespace":"upstash","tags":["upstash","redis","zcount","sorted-set","count","score","range"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zunionstore","description":"ZUNIONSTORE — compute sorted set union and store with optional weights","namespace":"upstash","tags":["upstash","redis","zunionstore","sorted-set","union","store","aggregate"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}},"weights":{"type":"array","items":{"type":"number"}}},"required":["destination","keys"]}},
-  {"name":"upstash_redis_zinterstore","description":"ZINTERSTORE — compute sorted set intersection and store","namespace":"upstash","tags":["upstash","redis","zinterstore","sorted-set","intersection","store"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["destination","keys"]}},
-  {"name":"upstash_redis_zscan","description":"ZSCAN — iterate over sorted set members with a cursor","namespace":"upstash","tags":["upstash","redis","zscan","sorted-set","iterate","cursor"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"cursor":{"type":"number","default":0},"match":{"type":"string"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_zrangebylex","description":"ZRANGEBYLEX — get sorted set members between lexicographic range","namespace":"upstash","tags":["upstash","redis","zrangebylex","sorted-set","lex","range"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zrevrangebylex","description":"ZREVRANGEBYLEX — get members in reverse lexicographic range","namespace":"upstash","tags":["upstash","redis","zrevrangebylex","sorted-set","lex","reverse"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"max":{"type":"string"},"min":{"type":"string"}},"required":["key","max","min"]}},
-  {"name":"upstash_redis_zremrangebylex","description":"ZREMRANGEBYLEX — remove members in a lexicographic range","namespace":"upstash","tags":["upstash","redis","zremrangebylex","sorted-set","lex","remove"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zlexcount","description":"ZLEXCOUNT — count members in a lexicographic range in a sorted set","namespace":"upstash","tags":["upstash","redis","zlexcount","sorted-set","lex","count"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"min":{"type":"string"},"max":{"type":"string"}},"required":["key","min","max"]}},
-  {"name":"upstash_redis_zmscore","description":"ZMSCORE — get scores for multiple members in a sorted set","namespace":"upstash","tags":["upstash","redis","zmscore","sorted-set","scores","bulk"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_geoadd","description":"GEOADD — add geographic locations (lat/lng) to a geo key","namespace":"upstash","tags":["upstash","redis","geoadd","geo","location","coordinates","maps"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","description":"Array of {longitude, latitude, name}"}},"required":["key","members"]}},
-  {"name":"upstash_redis_geodist","description":"GEODIST — get distance between two geo locations in a Redis key","namespace":"upstash","tags":["upstash","redis","geodist","geo","distance","location","proximity"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"member1":{"type":"string"},"member2":{"type":"string"},"unit":{"type":"string","enum":["m","km","mi","ft"],"default":"km"}},"required":["key","member1","member2"]}},
-  {"name":"upstash_redis_geopos","description":"GEOPOS — get coordinates of geo members","namespace":"upstash","tags":["upstash","redis","geopos","geo","coordinates","location"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_geohash","description":"GEOHASH — get Geohash strings for geo members","namespace":"upstash","tags":["upstash","redis","geohash","geo","hash","location"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"members":{"type":"array","items":{"type":"string"}}},"required":["key","members"]}},
-  {"name":"upstash_redis_geosearch","description":"GEOSEARCH — search for geo members within a radius or bounding box","namespace":"upstash","tags":["upstash","redis","geosearch","geo","nearby","radius","location","search"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"fromlonlat":{"type":"object","description":"{longitude, latitude}"},"byradius":{"type":"object","description":"{radius, unit: km|m|mi|ft}"},"asc":{"type":"boolean","default":true},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_pfadd","description":"PFADD — add elements to a HyperLogLog for approximate cardinality counting","namespace":"upstash","tags":["upstash","redis","pfadd","hyperloglog","cardinality","unique","count"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"elements":{"type":"array","items":{"type":"string"}}},"required":["key","elements"]}},
-  {"name":"upstash_redis_pfcount","description":"PFCOUNT — estimate the cardinality (unique count) of a HyperLogLog","namespace":"upstash","tags":["upstash","redis","pfcount","hyperloglog","cardinality","unique","count","estimate"],"inputSchema":{"type":"object","properties":{"keys":{"type":"array","items":{"type":"string"}}},"required":["keys"]}},
-  {"name":"upstash_redis_pfmerge","description":"PFMERGE — merge multiple HyperLogLogs into one","namespace":"upstash","tags":["upstash","redis","pfmerge","hyperloglog","merge","combine"],"inputSchema":{"type":"object","properties":{"destination":{"type":"string"},"sources":{"type":"array","items":{"type":"string"}}},"required":["destination","sources"]}},
-  {"name":"upstash_redis_setbit","description":"SETBIT — set a bit in a bitmap at a given offset","namespace":"upstash","tags":["upstash","redis","setbit","bitmap","bit","flags"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"offset":{"type":"number"},"value":{"type":"number","enum":[0,1]}},"required":["key","offset","value"]}},
-  {"name":"upstash_redis_getbit","description":"GETBIT — get the value of a bit at a given offset","namespace":"upstash","tags":["upstash","redis","getbit","bitmap","bit","flags"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"offset":{"type":"number"}},"required":["key","offset"]}},
-  {"name":"upstash_redis_bitcount","description":"BITCOUNT — count the number of set bits in a string","namespace":"upstash","tags":["upstash","redis","bitcount","bitmap","bits","count"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"number"},"end":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_bitpos","description":"BITPOS — find the first set or clear bit in a string","namespace":"upstash","tags":["upstash","redis","bitpos","bitmap","bit","position","find"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"bit":{"type":"number","enum":[0,1]},"start":{"type":"number"},"end":{"type":"number"}},"required":["key","bit"]}},
-  {"name":"upstash_redis_bitop","description":"BITOP — perform bitwise AND, OR, XOR, or NOT on strings","namespace":"upstash","tags":["upstash","redis","bitop","bitmap","AND","OR","XOR","NOT","bitwise"],"inputSchema":{"type":"object","properties":{"operation":{"type":"string","enum":["AND","OR","XOR","NOT"]},"destination":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["operation","destination","keys"]}},
-  {"name":"upstash_redis_publish","description":"PUBLISH — publish a message to a Redis pub/sub channel","namespace":"upstash","tags":["upstash","redis","publish","pubsub","channel","message","event"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"message":{"type":"string"}},"required":["channel","message"]}},
-  {"name":"upstash_redis_pubsub_channels","description":"PUBSUB CHANNELS — list active pub/sub channels","namespace":"upstash","tags":["upstash","redis","pubsub","channels","list","subscribe"],"inputSchema":{"type":"object","properties":{"pattern":{"type":"string"}}}},
-  {"name":"upstash_redis_xadd","description":"XADD — append an entry to a Redis stream","namespace":"upstash","tags":["upstash","redis","xadd","streams","append","event","message"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"id":{"type":"string","default":"*"},"fields":{"type":"object"}},"required":["key","fields"]}},
-  {"name":"upstash_redis_xread","description":"XREAD — read entries from one or more Redis streams","namespace":"upstash","tags":["upstash","redis","xread","streams","read","consume","events"],"inputSchema":{"type":"object","properties":{"streams":{"type":"object","description":"Map of stream key to start ID, e.g. {mystream: '0'}"},"count":{"type":"number"},"block":{"type":"number"}},"required":["streams"]}},
-  {"name":"upstash_redis_xrange","description":"XRANGE — get stream entries in an ID range","namespace":"upstash","tags":["upstash","redis","xrange","streams","range","read"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"start":{"type":"string","default":"-"},"end":{"type":"string","default":"+"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_xrevrange","description":"XREVRANGE — get stream entries in reverse order","namespace":"upstash","tags":["upstash","redis","xrevrange","streams","reverse","range"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"end":{"type":"string","default":"+"},"start":{"type":"string","default":"-"},"count":{"type":"number"}},"required":["key"]}},
-  {"name":"upstash_redis_xlen","description":"XLEN — get the number of entries in a Redis stream","namespace":"upstash","tags":["upstash","redis","xlen","streams","length","count"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_xdel","description":"XDEL — delete entries from a Redis stream by ID","namespace":"upstash","tags":["upstash","redis","xdel","streams","delete","remove"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"ids":{"type":"array","items":{"type":"string"}}},"required":["key","ids"]}},
-  {"name":"upstash_redis_xtrim","description":"XTRIM — trim a Redis stream to a maximum length","namespace":"upstash","tags":["upstash","redis","xtrim","streams","trim","maxlen","cleanup"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"maxlen":{"type":"number"},"approximate":{"type":"boolean","default":true}},"required":["key","maxlen"]}},
-  {"name":"upstash_redis_xinfo","description":"XINFO — get info about a Redis stream, its groups, and consumers","namespace":"upstash","tags":["upstash","redis","xinfo","streams","info","groups","consumers"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"}},"required":["key"]}},
-  {"name":"upstash_redis_pipeline","description":"Execute multiple Redis commands in a single round-trip pipeline","namespace":"upstash","tags":["upstash","redis","pipeline","batch","bulk","performance","atomic"],"inputSchema":{"type":"object","properties":{"commands":{"type":"array","description":"Array of [command, ...args] e.g. [['SET','k','v'],['GET','k'],['INCR','counter']]"}},"required":["commands"]}}
+  {
+    "name": "upstash_list_redis_databases",
+    "description": "List all Upstash Redis databases in the account",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "databases",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_get_redis_database",
+    "description": "Get details of a specific Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "database",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_create_redis_database",
+    "description": "Create a new Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "create",
+      "new",
+      "database"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string",
+          "description": "e.g. us-east-1, eu-west-1"
+        },
+        "tls": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "name",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "upstash_delete_redis_database",
+    "description": "Delete an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "delete",
+      "database"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_rename_redis_database",
+    "description": "Rename an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "rename",
+      "database"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_reset_redis_password",
+    "description": "Reset the password for an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "password",
+      "reset",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_enable_redis_eviction",
+    "description": "Enable eviction policy on an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "eviction",
+      "config",
+      "memory"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_disable_redis_eviction",
+    "description": "Disable eviction policy on an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "eviction",
+      "disable",
+      "memory"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_enable_redis_tls",
+    "description": "Enable TLS encryption on an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "tls",
+      "ssl",
+      "security",
+      "encrypt"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_disable_redis_tls",
+    "description": "Disable TLS on an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "tls",
+      "disable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_get_redis_stats",
+    "description": "Get usage statistics (commands, hits, misses, memory) for an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "stats",
+      "usage",
+      "monitor",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_get_redis_usage",
+    "description": "Get current memory usage and throughput for an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "usage",
+      "memory",
+      "throughput",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_backup_redis_database",
+    "description": "Trigger a manual backup of an Upstash Redis database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "backup",
+      "snapshot"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_restore_redis_database",
+    "description": "Restore an Upstash Redis database from a backup",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "restore",
+      "backup",
+      "recovery"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "backup_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id",
+        "backup_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_update_redis_database",
+    "description": "Update Upstash Redis database settings",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "update",
+      "settings",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_list_teams",
+    "description": "List Upstash teams the user belongs to",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "teams",
+      "list",
+      "organizations"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_get_team",
+    "description": "Get details of an Upstash team",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "team",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_create_team",
+    "description": "Create a new Upstash team",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "team",
+      "create",
+      "new"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_delete_team",
+    "description": "Delete an Upstash team",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "team",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_add_team_member",
+    "description": "Add a member to an Upstash team",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "team",
+      "member",
+      "add",
+      "invite"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_id",
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "upstash_remove_team_member",
+    "description": "Remove a member from an Upstash team",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "team",
+      "member",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_id",
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_get",
+    "description": "GET \u2014 retrieve the value of a Redis key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "get",
+      "read",
+      "key",
+      "cache"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_set",
+    "description": "SET \u2014 set a Redis key to a value, optionally with TTL",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "set",
+      "write",
+      "key",
+      "cache",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "ex": {
+          "type": "number",
+          "description": "Expire in seconds"
+        },
+        "px": {
+          "type": "number",
+          "description": "Expire in milliseconds"
+        },
+        "nx": {
+          "type": "boolean",
+          "description": "Only set if not exists"
+        },
+        "xx": {
+          "type": "boolean",
+          "description": "Only set if exists"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_mget",
+    "description": "MGET \u2014 get values for multiple Redis keys at once",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "mget",
+      "bulk",
+      "read",
+      "keys"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_mset",
+    "description": "MSET \u2014 set multiple Redis key-value pairs atomically",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "mset",
+      "bulk",
+      "write",
+      "keys"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pairs": {
+          "type": "object",
+          "description": "Key-value object e.g. {key1: 'val1', key2: 'val2'}"
+        }
+      },
+      "required": [
+        "pairs"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_del",
+    "description": "DEL \u2014 delete one or more Redis keys",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "del",
+      "delete",
+      "key",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_exists",
+    "description": "EXISTS \u2014 check if one or more Redis keys exist",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "exists",
+      "check",
+      "key"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_incr",
+    "description": "INCR \u2014 increment a numeric Redis key by 1",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "incr",
+      "increment",
+      "counter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_decr",
+    "description": "DECR \u2014 decrement a numeric Redis key by 1",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "decr",
+      "decrement",
+      "counter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_incrby",
+    "description": "INCRBY \u2014 increment a Redis key by a specified amount",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "incrby",
+      "increment",
+      "counter",
+      "math"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_decrby",
+    "description": "DECRBY \u2014 decrement a Redis key by a specified amount",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "decrby",
+      "decrement",
+      "counter",
+      "math"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_incrbyfloat",
+    "description": "INCRBYFLOAT \u2014 increment a Redis key by a float value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "incrbyfloat",
+      "float",
+      "math"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_append",
+    "description": "APPEND \u2014 append a string to a Redis key's value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "append",
+      "string"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_getrange",
+    "description": "GETRANGE \u2014 get a substring of a Redis string value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "getrange",
+      "substring",
+      "string"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number"
+        },
+        "end": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "start",
+        "end"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_setrange",
+    "description": "SETRANGE \u2014 overwrite part of a Redis string at an offset",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "setrange",
+      "string",
+      "overwrite"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "offset",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_strlen",
+    "description": "STRLEN \u2014 get the length of a Redis string value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "strlen",
+      "length",
+      "string"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_getset",
+    "description": "GETSET \u2014 atomically set a key and return its old value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "getset",
+      "atomic",
+      "swap"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_setnx",
+    "description": "SETNX \u2014 set a key only if it does not already exist",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "setnx",
+      "lock",
+      "conditional",
+      "mutex"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_setex",
+    "description": "SETEX \u2014 set a key with an expiry in seconds",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "setex",
+      "expire",
+      "ttl",
+      "cache",
+      "session"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "seconds": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "seconds",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_psetex",
+    "description": "PSETEX \u2014 set a key with an expiry in milliseconds",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "psetex",
+      "expire",
+      "ttl",
+      "milliseconds"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "milliseconds": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "milliseconds",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_expire",
+    "description": "EXPIRE \u2014 set a time-to-live (TTL) on a Redis key in seconds",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "expire",
+      "ttl",
+      "expiry",
+      "timeout"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "seconds"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_expireat",
+    "description": "EXPIREAT \u2014 set expiry as a Unix timestamp",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "expireat",
+      "ttl",
+      "timestamp",
+      "expiry"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "timestamp"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_ttl",
+    "description": "TTL \u2014 get remaining time-to-live of a key in seconds",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "ttl",
+      "expiry",
+      "remaining",
+      "time"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pttl",
+    "description": "PTTL \u2014 get remaining TTL of a key in milliseconds",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pttl",
+      "expiry",
+      "milliseconds"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_persist",
+    "description": "PERSIST \u2014 remove the expiry from a key (make it permanent)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "persist",
+      "remove-expiry",
+      "permanent"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_keys",
+    "description": "KEYS \u2014 find all keys matching a pattern (use carefully in production)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "keys",
+      "pattern",
+      "search",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "e.g. 'user:*' or '*session*'"
+        }
+      },
+      "required": [
+        "pattern"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_scan",
+    "description": "SCAN \u2014 iterate keys with a cursor (safe alternative to KEYS)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "scan",
+      "iterate",
+      "keys",
+      "cursor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "number",
+          "default": 0
+        },
+        "match": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number",
+          "default": 10
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_redis_type",
+    "description": "TYPE \u2014 get the data type of a Redis key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "type",
+      "datatype",
+      "key",
+      "inspect"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_rename",
+    "description": "RENAME \u2014 rename a Redis key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "rename",
+      "key",
+      "move"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "newkey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "newkey"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_dbsize",
+    "description": "DBSIZE \u2014 get the total number of keys in the database",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "dbsize",
+      "count",
+      "keys",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_flushdb",
+    "description": "FLUSHDB \u2014 delete all keys in the current database (DESTRUCTIVE)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "flushdb",
+      "clear",
+      "delete-all",
+      "reset"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_flushall",
+    "description": "FLUSHALL \u2014 delete all keys in all databases (DESTRUCTIVE)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "flushall",
+      "clear",
+      "delete-all",
+      "reset"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_ping",
+    "description": "PING \u2014 test connectivity to the Redis instance",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "ping",
+      "health",
+      "test",
+      "connection"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "upstash_redis_echo",
+    "description": "ECHO \u2014 echo a message back from the Redis server",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "echo",
+      "test"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_info",
+    "description": "INFO \u2014 get server info and stats from Redis",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "info",
+      "stats",
+      "server",
+      "monitor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "type": "string",
+          "description": "e.g. server, clients, memory, stats, all"
+        }
+      }
+    }
+  },
+  {
+    "name": "upstash_redis_time",
+    "description": "TIME \u2014 get the current Redis server time",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "time",
+      "server",
+      "clock"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_save",
+    "description": "SAVE \u2014 synchronously save the Redis dataset to disk",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "save",
+      "persist",
+      "backup",
+      "snapshot"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_bgsave",
+    "description": "BGSAVE \u2014 asynchronously save the Redis dataset to disk",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "bgsave",
+      "backup",
+      "snapshot",
+      "async"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "upstash_redis_hset",
+    "description": "HSET \u2014 set one or more fields in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hset",
+      "hash",
+      "set",
+      "object",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "description": "Field-value pairs e.g. {name: 'Chris', plan: 'pro'}"
+        }
+      },
+      "required": [
+        "key",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hget",
+    "description": "HGET \u2014 get the value of a field in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hget",
+      "hash",
+      "field",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "field"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hgetall",
+    "description": "HGETALL \u2014 get all fields and values in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hgetall",
+      "hash",
+      "read",
+      "all",
+      "object"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hdel",
+    "description": "HDEL \u2014 delete one or more fields from a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hdel",
+      "hash",
+      "delete",
+      "field"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hexists",
+    "description": "HEXISTS \u2014 check if a field exists in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hexists",
+      "hash",
+      "check",
+      "field"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "field"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hkeys",
+    "description": "HKEYS \u2014 get all field names in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hkeys",
+      "hash",
+      "fields",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hvals",
+    "description": "HVALS \u2014 get all values in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hvals",
+      "hash",
+      "values",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hlen",
+    "description": "HLEN \u2014 get the number of fields in a Redis hash",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hlen",
+      "hash",
+      "count",
+      "length"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hincrby",
+    "description": "HINCRBY \u2014 increment a hash field's integer value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hincrby",
+      "hash",
+      "increment",
+      "counter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "field",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hincrbyfloat",
+    "description": "HINCRBYFLOAT \u2014 increment a hash field's float value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hincrbyfloat",
+      "hash",
+      "increment",
+      "float"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "field",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hmget",
+    "description": "HMGET \u2014 get values for multiple hash fields at once",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hmget",
+      "hash",
+      "bulk",
+      "fields"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hmset",
+    "description": "HMSET \u2014 set multiple hash fields at once (legacy, prefer HSET)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hmset",
+      "hash",
+      "bulk",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "key",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hsetnx",
+    "description": "HSETNX \u2014 set a hash field only if it doesn't already exist",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hsetnx",
+      "hash",
+      "conditional",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "field",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hstrlen",
+    "description": "HSTRLEN \u2014 get the string length of a hash field value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hstrlen",
+      "hash",
+      "length",
+      "string"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "field"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_hscan",
+    "description": "HSCAN \u2014 iterate fields in a hash with a cursor",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "hscan",
+      "hash",
+      "iterate",
+      "cursor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "number",
+          "default": 0
+        },
+        "match": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lpush",
+    "description": "LPUSH \u2014 prepend values to a Redis list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lpush",
+      "list",
+      "queue",
+      "prepend",
+      "push"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "values"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_rpush",
+    "description": "RPUSH \u2014 append values to a Redis list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "rpush",
+      "list",
+      "queue",
+      "append",
+      "push"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "values"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lpop",
+    "description": "LPOP \u2014 remove and return the first element of a list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lpop",
+      "list",
+      "dequeue",
+      "pop",
+      "queue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_rpop",
+    "description": "RPOP \u2014 remove and return the last element of a list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "rpop",
+      "list",
+      "pop",
+      "stack"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lrange",
+    "description": "LRANGE \u2014 get a range of elements from a Redis list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lrange",
+      "list",
+      "range",
+      "read",
+      "slice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number",
+          "default": 0
+        },
+        "stop": {
+          "type": "number",
+          "default": -1
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_llen",
+    "description": "LLEN \u2014 get the length of a Redis list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "llen",
+      "list",
+      "length",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lindex",
+    "description": "LINDEX \u2014 get an element from a list by index",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lindex",
+      "list",
+      "index",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "index"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lset",
+    "description": "LSET \u2014 set the value of a list element by index",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lset",
+      "list",
+      "set",
+      "index"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "index",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lrem",
+    "description": "LREM \u2014 remove elements from a list matching a value",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lrem",
+      "list",
+      "remove",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "count",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_ltrim",
+    "description": "LTRIM \u2014 trim a list to a specified range (remove elements outside range)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "ltrim",
+      "list",
+      "trim",
+      "truncate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number"
+        },
+        "stop": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "start",
+        "stop"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_linsert",
+    "description": "LINSERT \u2014 insert a value before or after an element in a list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "linsert",
+      "list",
+      "insert",
+      "before",
+      "after"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string",
+          "enum": [
+            "BEFORE",
+            "AFTER"
+          ]
+        },
+        "pivot": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "position",
+        "pivot",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_rpoplpush",
+    "description": "RPOPLPUSH \u2014 atomically pop from one list and push to another",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "rpoplpush",
+      "list",
+      "atomic",
+      "move",
+      "queue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "destination"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lpos",
+    "description": "LPOS \u2014 find the position of an element in a list",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lpos",
+      "list",
+      "find",
+      "position",
+      "index"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "number"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_lmove",
+    "description": "LMOVE \u2014 atomically move an element between two lists",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "lmove",
+      "list",
+      "move",
+      "atomic",
+      "queue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "wherefrom": {
+          "type": "string",
+          "enum": [
+            "LEFT",
+            "RIGHT"
+          ]
+        },
+        "whereto": {
+          "type": "string",
+          "enum": [
+            "LEFT",
+            "RIGHT"
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "destination",
+        "wherefrom",
+        "whereto"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sadd",
+    "description": "SADD \u2014 add members to a Redis set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sadd",
+      "set",
+      "add",
+      "members",
+      "unique"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_smembers",
+    "description": "SMEMBERS \u2014 get all members of a Redis set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "smembers",
+      "set",
+      "members",
+      "list",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_srem",
+    "description": "SREM \u2014 remove members from a Redis set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "srem",
+      "set",
+      "remove",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sismember",
+    "description": "SISMEMBER \u2014 check if a value is a member of a Redis set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sismember",
+      "set",
+      "check",
+      "exists",
+      "member"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_scard",
+    "description": "SCARD \u2014 get the number of members in a Redis set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "scard",
+      "set",
+      "count",
+      "size"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_spop",
+    "description": "SPOP \u2014 remove and return random member(s) from a set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "spop",
+      "set",
+      "random",
+      "pop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_srandmember",
+    "description": "SRANDMEMBER \u2014 get random member(s) from a set without removing",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "srandmember",
+      "set",
+      "random",
+      "sample"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_smove",
+    "description": "SMOVE \u2014 move a member from one set to another atomically",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "smove",
+      "set",
+      "move",
+      "atomic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "destination",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sunion",
+    "description": "SUNION \u2014 get the union of multiple sets",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sunion",
+      "set",
+      "union",
+      "combine"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sinter",
+    "description": "SINTER \u2014 get the intersection of multiple sets",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sinter",
+      "set",
+      "intersection",
+      "common"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sdiff",
+    "description": "SDIFF \u2014 get the difference between sets (members in first but not others)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sdiff",
+      "set",
+      "difference",
+      "unique"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sunionstore",
+    "description": "SUNIONSTORE \u2014 compute set union and store result in a destination key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sunionstore",
+      "set",
+      "union",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sinterstore",
+    "description": "SINTERSTORE \u2014 compute set intersection and store result",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sinterstore",
+      "set",
+      "intersection",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sdiffstore",
+    "description": "SDIFFSTORE \u2014 compute set difference and store result",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sdiffstore",
+      "set",
+      "difference",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_sscan",
+    "description": "SSCAN \u2014 iterate over set members with a cursor",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "sscan",
+      "set",
+      "iterate",
+      "cursor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "number",
+          "default": 0
+        },
+        "match": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zadd",
+    "description": "ZADD \u2014 add members with scores to a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zadd",
+      "sorted-set",
+      "score",
+      "leaderboard",
+      "rank"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "description": "Array of {score, member} objects"
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrange",
+    "description": "ZRANGE \u2014 get a range of members from a sorted set by rank",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrange",
+      "sorted-set",
+      "range",
+      "rank",
+      "leaderboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number",
+          "default": 0
+        },
+        "stop": {
+          "type": "number",
+          "default": -1
+        },
+        "withscores": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrem",
+    "description": "ZREM \u2014 remove members from a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrem",
+      "sorted-set",
+      "remove",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zscore",
+    "description": "ZSCORE \u2014 get the score of a member in a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zscore",
+      "sorted-set",
+      "score",
+      "rank",
+      "points"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zcard",
+    "description": "ZCARD \u2014 get the number of members in a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zcard",
+      "sorted-set",
+      "count",
+      "size"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrank",
+    "description": "ZRANK \u2014 get the rank (0-based position) of a member in a sorted set (ascending)",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrank",
+      "sorted-set",
+      "rank",
+      "position",
+      "leaderboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrevrank",
+    "description": "ZREVRANK \u2014 get the rank of a member in descending order",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrevrank",
+      "sorted-set",
+      "rank",
+      "descending",
+      "leaderboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrangebyscore",
+    "description": "ZRANGEBYSCORE \u2014 get members in a sorted set within a score range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrangebyscore",
+      "sorted-set",
+      "score",
+      "range",
+      "filter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        },
+        "withscores": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrevrangebyscore",
+    "description": "ZREVRANGEBYSCORE \u2014 get members in score range, descending order",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrevrangebyscore",
+      "sorted-set",
+      "score",
+      "descending"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "max",
+        "min"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zremrangebyrank",
+    "description": "ZREMRANGEBYRANK \u2014 remove members in a rank range from a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zremrangebyrank",
+      "sorted-set",
+      "remove",
+      "rank"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number"
+        },
+        "stop": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "start",
+        "stop"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zremrangebyscore",
+    "description": "ZREMRANGEBYSCORE \u2014 remove members in a score range from a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zremrangebyscore",
+      "sorted-set",
+      "remove",
+      "score"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zpopmin",
+    "description": "ZPOPMIN \u2014 remove and return members with the lowest scores",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zpopmin",
+      "sorted-set",
+      "pop",
+      "min",
+      "priority-queue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zpopmax",
+    "description": "ZPOPMAX \u2014 remove and return members with the highest scores",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zpopmax",
+      "sorted-set",
+      "pop",
+      "max",
+      "priority-queue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zincrby",
+    "description": "ZINCRBY \u2014 increment the score of a member in a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zincrby",
+      "sorted-set",
+      "score",
+      "increment",
+      "leaderboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "increment": {
+          "type": "number"
+        },
+        "member": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "increment",
+        "member"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zcount",
+    "description": "ZCOUNT \u2014 count members in a sorted set within a score range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zcount",
+      "sorted-set",
+      "count",
+      "score",
+      "range"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zunionstore",
+    "description": "ZUNIONSTORE \u2014 compute sorted set union and store with optional weights",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zunionstore",
+      "sorted-set",
+      "union",
+      "store",
+      "aggregate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weights": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zinterstore",
+    "description": "ZINTERSTORE \u2014 compute sorted set intersection and store",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zinterstore",
+      "sorted-set",
+      "intersection",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zscan",
+    "description": "ZSCAN \u2014 iterate over sorted set members with a cursor",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zscan",
+      "sorted-set",
+      "iterate",
+      "cursor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "number",
+          "default": 0
+        },
+        "match": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrangebylex",
+    "description": "ZRANGEBYLEX \u2014 get sorted set members between lexicographic range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrangebylex",
+      "sorted-set",
+      "lex",
+      "range"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zrevrangebylex",
+    "description": "ZREVRANGEBYLEX \u2014 get members in reverse lexicographic range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zrevrangebylex",
+      "sorted-set",
+      "lex",
+      "reverse"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "max",
+        "min"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zremrangebylex",
+    "description": "ZREMRANGEBYLEX \u2014 remove members in a lexicographic range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zremrangebylex",
+      "sorted-set",
+      "lex",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zlexcount",
+    "description": "ZLEXCOUNT \u2014 count members in a lexicographic range in a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zlexcount",
+      "sorted-set",
+      "lex",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "min",
+        "max"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_zmscore",
+    "description": "ZMSCORE \u2014 get scores for multiple members in a sorted set",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "zmscore",
+      "sorted-set",
+      "scores",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_geoadd",
+    "description": "GEOADD \u2014 add geographic locations (lat/lng) to a geo key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "geoadd",
+      "geo",
+      "location",
+      "coordinates",
+      "maps"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "description": "Array of {longitude, latitude, name}"
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_geodist",
+    "description": "GEODIST \u2014 get distance between two geo locations in a Redis key",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "geodist",
+      "geo",
+      "distance",
+      "location",
+      "proximity"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "member1": {
+          "type": "string"
+        },
+        "member2": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "m",
+            "km",
+            "mi",
+            "ft"
+          ],
+          "default": "km"
+        }
+      },
+      "required": [
+        "key",
+        "member1",
+        "member2"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_geopos",
+    "description": "GEOPOS \u2014 get coordinates of geo members",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "geopos",
+      "geo",
+      "coordinates",
+      "location"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_geohash",
+    "description": "GEOHASH \u2014 get Geohash strings for geo members",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "geohash",
+      "geo",
+      "hash",
+      "location"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "members"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_geosearch",
+    "description": "GEOSEARCH \u2014 search for geo members within a radius or bounding box",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "geosearch",
+      "geo",
+      "nearby",
+      "radius",
+      "location",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "fromlonlat": {
+          "type": "object",
+          "description": "{longitude, latitude}"
+        },
+        "byradius": {
+          "type": "object",
+          "description": "{radius, unit: km|m|mi|ft}"
+        },
+        "asc": {
+          "type": "boolean",
+          "default": true
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pfadd",
+    "description": "PFADD \u2014 add elements to a HyperLogLog for approximate cardinality counting",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pfadd",
+      "hyperloglog",
+      "cardinality",
+      "unique",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "elements"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pfcount",
+    "description": "PFCOUNT \u2014 estimate the cardinality (unique count) of a HyperLogLog",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pfcount",
+      "hyperloglog",
+      "cardinality",
+      "unique",
+      "count",
+      "estimate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pfmerge",
+    "description": "PFMERGE \u2014 merge multiple HyperLogLogs into one",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pfmerge",
+      "hyperloglog",
+      "merge",
+      "combine"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "sources"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_setbit",
+    "description": "SETBIT \u2014 set a bit in a bitmap at a given offset",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "setbit",
+      "bitmap",
+      "bit",
+      "flags"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "value": {
+          "type": "number",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "offset",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_getbit",
+    "description": "GETBIT \u2014 get the value of a bit at a given offset",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "getbit",
+      "bitmap",
+      "bit",
+      "flags"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "offset"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_bitcount",
+    "description": "BITCOUNT \u2014 count the number of set bits in a string",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "bitcount",
+      "bitmap",
+      "bits",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "number"
+        },
+        "end": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_bitpos",
+    "description": "BITPOS \u2014 find the first set or clear bit in a string",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "bitpos",
+      "bitmap",
+      "bit",
+      "position",
+      "find"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "bit": {
+          "type": "number",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "start": {
+          "type": "number"
+        },
+        "end": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key",
+        "bit"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_bitop",
+    "description": "BITOP \u2014 perform bitwise AND, OR, XOR, or NOT on strings",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "bitop",
+      "bitmap",
+      "AND",
+      "OR",
+      "XOR",
+      "NOT",
+      "bitwise"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "AND",
+            "OR",
+            "XOR",
+            "NOT"
+          ]
+        },
+        "destination": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "operation",
+        "destination",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_publish",
+    "description": "PUBLISH \u2014 publish a message to a Redis pub/sub channel",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "publish",
+      "pubsub",
+      "channel",
+      "message",
+      "event"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pubsub_channels",
+    "description": "PUBSUB CHANNELS \u2014 list active pub/sub channels",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pubsub",
+      "channels",
+      "list",
+      "subscribe"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "upstash_redis_xadd",
+    "description": "XADD \u2014 append an entry to a Redis stream",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xadd",
+      "streams",
+      "append",
+      "event",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "default": "*"
+        },
+        "fields": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "key",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xread",
+    "description": "XREAD \u2014 read entries from one or more Redis streams",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xread",
+      "streams",
+      "read",
+      "consume",
+      "events"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "streams": {
+          "type": "object",
+          "description": "Map of stream key to start ID, e.g. {mystream: '0'}"
+        },
+        "count": {
+          "type": "number"
+        },
+        "block": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "streams"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xrange",
+    "description": "XRANGE \u2014 get stream entries in an ID range",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xrange",
+      "streams",
+      "range",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string",
+          "default": "-"
+        },
+        "end": {
+          "type": "string",
+          "default": "+"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xrevrange",
+    "description": "XREVRANGE \u2014 get stream entries in reverse order",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xrevrange",
+      "streams",
+      "reverse",
+      "range"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string",
+          "default": "+"
+        },
+        "start": {
+          "type": "string",
+          "default": "-"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xlen",
+    "description": "XLEN \u2014 get the number of entries in a Redis stream",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xlen",
+      "streams",
+      "length",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xdel",
+    "description": "XDEL \u2014 delete entries from a Redis stream by ID",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xdel",
+      "streams",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "key",
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xtrim",
+    "description": "XTRIM \u2014 trim a Redis stream to a maximum length",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xtrim",
+      "streams",
+      "trim",
+      "maxlen",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "maxlen": {
+          "type": "number"
+        },
+        "approximate": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "key",
+        "maxlen"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_xinfo",
+    "description": "XINFO \u2014 get info about a Redis stream, its groups, and consumers",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "xinfo",
+      "streams",
+      "info",
+      "groups",
+      "consumers"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "upstash_redis_pipeline",
+    "description": "Execute multiple Redis commands in a single round-trip pipeline",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "redis",
+      "pipeline",
+      "batch",
+      "bulk",
+      "performance",
+      "atomic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "commands": {
+          "type": "array",
+          "description": "Array of [command, ...args] e.g. [['SET','k','v'],['GET','k'],['INCR','counter']]"
+        }
+      },
+      "required": [
+        "commands"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_info",
+    "description": "Get Upstash Vector index info \u2014 dimensions, similarity metric, vector count, and pending vector count.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "info",
+      "index",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_vector_upsert",
+    "description": "Insert or update vectors in the Upstash Vector index. Each vector needs an id, a float array, and optional metadata.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "upsert",
+      "insert",
+      "embeddings",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vectors": {
+          "type": "array",
+          "description": "Array of {id, vector, metadata} objects"
+        }
+      },
+      "required": [
+        "vectors"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_upsert_data",
+    "description": "Upsert text data into Upstash Vector \u2014 the index automatically generates embeddings using its configured embedding model.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "upsert",
+      "text",
+      "auto-embed",
+      "semantic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "description": "Array of {id, data, metadata} objects where data is the text to embed"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_query",
+    "description": "Search for the nearest vectors to a query embedding vector in Upstash Vector.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "query",
+      "search",
+      "similarity",
+      "nearest"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector": {
+          "type": "array",
+          "description": "Query embedding (float array)"
+        },
+        "top_k": {
+          "type": "number",
+          "description": "Number of results (default 5)"
+        },
+        "include_metadata": {
+          "type": "boolean"
+        },
+        "filter": {
+          "type": "string",
+          "description": "Metadata filter expression (e.g. 'category = \"news\"')"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_query_data",
+    "description": "Search Upstash Vector by text query \u2014 the index auto-embeds the query using its configured model. No embedding call needed.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "query",
+      "text",
+      "semantic",
+      "search",
+      "auto-embed"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "Text query to embed and search with"
+        },
+        "top_k": {
+          "type": "number"
+        },
+        "include_metadata": {
+          "type": "boolean"
+        },
+        "filter": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "data"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_fetch",
+    "description": "Fetch specific vectors by their IDs from Upstash Vector.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "fetch",
+      "get",
+      "ids",
+      "retrieve"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Vector IDs to retrieve"
+        },
+        "include_vectors": {
+          "type": "boolean"
+        },
+        "include_metadata": {
+          "type": "boolean"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_delete",
+    "description": "Delete specific vectors by ID from Upstash Vector.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "delete",
+      "remove",
+      "ids"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_range",
+    "description": "Paginate through all vectors in the Upstash Vector index, optionally filtered by ID prefix.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "range",
+      "list",
+      "paginate",
+      "browse"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "include_vectors": {
+          "type": "boolean"
+        },
+        "include_metadata": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_vector_reset",
+    "description": "Delete all vectors from the Upstash Vector index (or a specific namespace).",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "reset",
+      "clear",
+      "delete-all"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Optional namespace to reset (omit to reset the entire index)"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_vector_list_namespaces",
+    "description": "List all namespaces in the Upstash Vector index.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "namespaces",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_vector_delete_namespace",
+    "description": "Delete a namespace and all its vectors from the Upstash Vector index.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "namespace",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace"
+      ]
+    }
+  },
+  {
+    "name": "upstash_vector_namespace_info",
+    "description": "Get info (vector count, pending count) for a specific Upstash Vector namespace.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "vector",
+      "namespace",
+      "info",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_produce",
+    "description": "Produce (publish) a single message to an Upstash Kafka topic.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "produce",
+      "publish",
+      "message",
+      "topic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "value": {
+          "description": "Message value (string or object \u2014 objects are JSON-serialized)"
+        },
+        "key": {
+          "type": "string",
+          "description": "Optional message key for partitioning"
+        },
+        "partition": {
+          "type": "number"
+        },
+        "headers": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "topic",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_produce_batch",
+    "description": "Produce multiple messages to Upstash Kafka topics in a single API call.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "produce",
+      "batch",
+      "bulk",
+      "messages",
+      "topic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "description": "Array of {topic, value, key?, partition?} objects"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_consume",
+    "description": "Consume messages from an Upstash Kafka topic using a consumer group.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "consume",
+      "read",
+      "messages",
+      "consumer-group"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "consumer_group": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string",
+          "description": "Unique consumer instance ID within the group"
+        },
+        "timeout_ms": {
+          "type": "number",
+          "description": "Long-poll timeout (default 3000ms)"
+        },
+        "max_bytes": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "topic",
+        "consumer_group",
+        "instance_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_commit_offsets",
+    "description": "Commit consumer offsets for an Upstash Kafka consumer group.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "commit",
+      "offsets",
+      "consumer-group",
+      "acknowledge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "consumer_group": {
+          "type": "string"
+        },
+        "instance_id": {
+          "type": "string"
+        },
+        "offsets": {
+          "type": "array",
+          "description": "Array of {topic, partition, offset} objects"
+        }
+      },
+      "required": [
+        "consumer_group",
+        "instance_id",
+        "offsets"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_fetch_offsets",
+    "description": "Get the current committed offsets for an Upstash Kafka consumer group.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "offsets",
+      "consumer-group",
+      "position",
+      "lag"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "consumer_group": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string",
+          "description": "Optional: filter to a specific topic"
+        }
+      },
+      "required": [
+        "consumer_group"
+      ]
+    }
+  }
 ]

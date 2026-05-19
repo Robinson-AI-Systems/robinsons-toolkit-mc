@@ -258,6 +258,147 @@ async function execute(tool, args) {
     return await res.json();
   }
 
+  // ══════════════════════════════════════════════════════════════════════════
+  //  UPSTASH VECTOR — vector search and semantic indexing
+  // ══════════════════════════════════════════════════════════════════════════
+
+  function getVectorCreds() {
+    const url = process.env.UPSTASH_VECTOR_REST_URL;
+    const token = process.env.UPSTASH_VECTOR_REST_TOKEN;
+    if (!url || !token) throw new Error('UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN not set in .env');
+    return { url: url.replace(/\/$/, ''), token };
+  }
+
+  async function vec(method, path, body) {
+    const { url, token } = getVectorCreds();
+    const res = await fetch(`${url}${path}`, {
+      method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Upstash Vector ${res.status}: ${data.error || JSON.stringify(data)}`);
+    return data.result !== undefined ? data.result : data;
+  }
+
+  if (tool === 'upstash_vector_info') { return await vec('GET', '/info'); }
+  if (tool === 'upstash_vector_upsert') {
+    const { vectors } = args;
+    if (!vectors?.length) throw new Error('vectors array is required: [{id, vector, metadata}]');
+    return await vec('POST', '/upsert', vectors);
+  }
+  if (tool === 'upstash_vector_upsert_data') {
+    // Upsert text data — Upstash embeds it automatically using the index embedding model
+    const { data: items } = args;
+    if (!items?.length) throw new Error('data array is required: [{id, data, metadata}]');
+    return await vec('POST', '/upsert-data', items);
+  }
+  if (tool === 'upstash_vector_query') {
+    const { vector, top_k = 5, include_vectors = false, include_metadata = true, filter, namespace } = args;
+    if (!vector) throw new Error('vector (embedding array) is required');
+    const body = { vector, topK: top_k, includeVectors: include_vectors, includeMetadata: include_metadata };
+    if (filter) body.filter = filter;
+    const path = namespace ? `/query?ns=${encodeURIComponent(namespace)}` : '/query';
+    return await vec('POST', path, body);
+  }
+  if (tool === 'upstash_vector_query_data') {
+    // Query with text — Upstash embeds the query automatically
+    const { data: queryText, top_k = 5, include_metadata = true, filter, namespace } = args;
+    if (!queryText) throw new Error('data (query text) is required');
+    const body = { data: queryText, topK: top_k, includeMetadata: include_metadata };
+    if (filter) body.filter = filter;
+    const path = namespace ? `/query-data?ns=${encodeURIComponent(namespace)}` : '/query-data';
+    return await vec('POST', path, body);
+  }
+  if (tool === 'upstash_vector_fetch') {
+    const { ids, include_vectors = false, include_metadata = true, namespace } = args;
+    if (!ids?.length) throw new Error('ids array is required');
+    const body = { ids, includeVectors: include_vectors, includeMetadata: include_metadata };
+    const path = namespace ? `/fetch?ns=${encodeURIComponent(namespace)}` : '/fetch';
+    return await vec('POST', path, body);
+  }
+  if (tool === 'upstash_vector_delete') {
+    const { ids, namespace } = args;
+    if (!ids?.length) throw new Error('ids array is required');
+    const path = namespace ? `/delete?ns=${encodeURIComponent(namespace)}` : '/delete';
+    return await vec('DELETE', path, { ids });
+  }
+  if (tool === 'upstash_vector_range') {
+    const { cursor = '', limit = 100, include_vectors = false, include_metadata = true, namespace, prefix } = args;
+    const body = { cursor, limit, includeVectors: include_vectors, includeMetadata: include_metadata };
+    if (prefix) body.prefix = prefix;
+    const path = namespace ? `/range?ns=${encodeURIComponent(namespace)}` : '/range';
+    return await vec('GET', path, body);
+  }
+  if (tool === 'upstash_vector_reset') {
+    const { namespace } = args;
+    const path = namespace ? `/reset?ns=${encodeURIComponent(namespace)}` : '/reset';
+    return await vec('DELETE', path);
+  }
+  if (tool === 'upstash_vector_list_namespaces') { return await vec('GET', '/namespaces'); }
+  if (tool === 'upstash_vector_delete_namespace') {
+    if (!args.namespace) throw new Error('namespace is required');
+    return await vec('DELETE', `/namespace/${encodeURIComponent(args.namespace)}`);
+  }
+  if (tool === 'upstash_vector_namespace_info') {
+    if (!args.namespace) throw new Error('namespace is required');
+    return await vec('GET', `/namespace/${encodeURIComponent(args.namespace)}/info`);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  UPSTASH KAFKA — managed Kafka cluster operations
+  // ══════════════════════════════════════════════════════════════════════════
+
+  function getKafkaCreds() {
+    const url = process.env.UPSTASH_KAFKA_REST_URL;
+    const token = process.env.UPSTASH_KAFKA_REST_TOKEN;
+    if (!url || !token) throw new Error('UPSTASH_KAFKA_REST_URL and UPSTASH_KAFKA_REST_TOKEN not set in .env');
+    return { url: url.replace(/\/$/, ''), token };
+  }
+
+  async function kafka(method, path, body) {
+    const { url, token } = getKafkaCreds();
+    const res = await fetch(`${url}${path}`, {
+      method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Upstash Kafka ${res.status}: ${data.message || JSON.stringify(data)}`);
+    return data;
+  }
+
+  if (tool === 'upstash_kafka_produce') {
+    const { topic, value, key: msgKey, partition, headers } = args;
+    if (!topic || value === undefined) throw new Error('topic and value are required');
+    const messages = [{ topic, value: typeof value === 'object' ? JSON.stringify(value) : String(value) }];
+    if (msgKey) messages[0].key = msgKey;
+    if (partition !== undefined) messages[0].partition = partition;
+    if (headers) messages[0].headers = headers;
+    return await kafka('POST', '/produce', messages);
+  }
+  if (tool === 'upstash_kafka_produce_batch') {
+    const { messages } = args;
+    if (!messages?.length) throw new Error('messages array is required: [{topic, value, key?, partition?}]');
+    const normalized = messages.map(m => ({ ...m, value: typeof m.value === 'object' ? JSON.stringify(m.value) : String(m.value) }));
+    return await kafka('POST', '/produce', normalized);
+  }
+  if (tool === 'upstash_kafka_consume') {
+    const { topic, consumer_group, instance_id, timeout_ms = 3000, max_bytes = 1048576 } = args;
+    if (!topic || !consumer_group || !instance_id) throw new Error('topic, consumer_group, and instance_id are required');
+    return await kafka('GET', `/consume/${encodeURIComponent(consumer_group)}/${encodeURIComponent(instance_id)}/${encodeURIComponent(topic)}?timeout=${timeout_ms}&maxBytes=${max_bytes}`);
+  }
+  if (tool === 'upstash_kafka_commit_offsets') {
+    const { consumer_group, instance_id, offsets } = args;
+    if (!consumer_group || !instance_id || !offsets) throw new Error('consumer_group, instance_id, and offsets are required');
+    return await kafka('POST', `/commit/${encodeURIComponent(consumer_group)}/${encodeURIComponent(instance_id)}`, offsets);
+  }
+  if (tool === 'upstash_kafka_fetch_offsets') {
+    const { consumer_group, topic } = args;
+    if (!consumer_group) throw new Error('consumer_group is required');
+    let path = `/offsets/${encodeURIComponent(consumer_group)}`;
+    if (topic) path += `?topic=${encodeURIComponent(topic)}`;
+    return await kafka('GET', path);
+  }
+
   throw new Error(`Unknown Upstash tool: ${tool}`);
 }
 

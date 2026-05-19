@@ -88,6 +88,8 @@ function getActiveNamespaces() {
     qdrant:     () => !!process.env.QDRANT_URL,
     n8n:        () => !!process.env.N8N_BASE_URL && !!process.env.N8N_API_KEY,
     postgres:   () => !!process.env.POSTGRES_CONNECTION_STRING,
+    context7:   () => !!process.env.CONTEXT7_API_KEY,
+    playwright: () => true, // Always available — local browser automation (no API key needed)
     local:      () => true, // Always available — local machine access
     compound:   () => true, // Always available — compound tools use whatever is configured
     ollama:     () => true, // Always available — local Ollama LLM (no API key needed)
