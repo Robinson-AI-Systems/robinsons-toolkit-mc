@@ -1,7 +1,7 @@
 /**
- * Supabase Handler — 38 tools
- * Database operations, auth management, storage, edge functions,
- * realtime, and project management via the Supabase Management API.
+ * Supabase Handler — 103 tools
+ * Database, auth, storage, edge functions, realtime, webhooks,
+ * RLS policies, roles, schemas, extensions, branches, and Super Tools.
  */
 
 const MGMT_BASE = 'https://api.supabase.com/v1';
@@ -19,7 +19,7 @@ function projectHeaders() {
 
 const projectUrl = (ref) => {
   const url = process.env.SUPABASE_URL;
-  if (!url) throw new Error('SUPABASE_URL not set in .env');
+  if (!url && !ref) throw new Error('SUPABASE_URL not set in .env');
   if (ref) return `https://${ref}.supabase.co`;
   return url;
 };
@@ -47,6 +47,24 @@ async function proj(method, path, body, projectRef) {
   return data;
 }
 
+// REST API data helper — builds PostgREST query
+async function restQuery(method, table, params, body, projectRef) {
+  const base = projectUrl(projectRef);
+  let url = `${base}/rest/v1/${table}`;
+  if (params && Object.keys(params).length) {
+    url += '?' + Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  }
+  const headers = {
+    ...projectHeaders(),
+    'Prefer': method === 'POST' ? 'return=representation' : method === 'PATCH' ? 'return=representation' : 'return=representation'
+  };
+  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (res.status === 204) return { success: true };
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Supabase REST ${res.status}: ${data.message || data.hint || JSON.stringify(data)}`);
+  return data;
+}
+
 async function execute(tool, args) {
   const { project_ref } = args;
 
@@ -56,31 +74,141 @@ async function execute(tool, args) {
   if (tool === 'supabase_pause_project') { return await mgmt('POST', `/projects/${project_ref}/pause`, {}); }
   if (tool === 'supabase_restore_project') { return await mgmt('POST', `/projects/${project_ref}/restore`, {}); }
   if (tool === 'supabase_get_project_health') { return await mgmt('GET', `/projects/${project_ref}/health`); }
+  if (tool === 'supabase_get_project_settings') { return await mgmt('GET', `/projects/${project_ref}/settings`); }
+  if (tool === 'supabase_get_project_usage') { return await mgmt('GET', `/projects/${project_ref}/usage`); }
+  if (tool === 'supabase_get_project_url') {
+    const config = await mgmt('GET', `/projects/${project_ref}/api`);
+    return { url: `https://${project_ref}.supabase.co`, anon_key: config.anon_key, service_role_key: '***hidden***' };
+  }
+  if (tool === 'supabase_get_api_keys') { return await mgmt('GET', `/projects/${project_ref}/api-keys`); }
 
-  // ── SQL / DATABASE ────────────────────────────────────────────────────────
+  // ── ORGANIZATIONS ─────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_organizations') { return await mgmt('GET', '/organizations'); }
+  if (tool === 'supabase_get_organization') { return await mgmt('GET', `/organizations/${args.org_id}`); }
+  if (tool === 'supabase_list_org_members') { return await mgmt('GET', `/organizations/${args.org_id}/members`); }
+
+  // ── DATABASE: SQL ─────────────────────────────────────────────────────────
   if (tool === 'supabase_run_sql') {
     if (!args.sql) throw new Error('sql is required');
     return await proj('POST', '/rest/v1/rpc/query', { query: args.sql }, project_ref);
   }
   if (tool === 'supabase_run_query_via_mgmt') {
-    // More reliable SQL execution via management API
     return await mgmt('POST', `/projects/${project_ref}/database/query`, { query: args.sql });
   }
-  if (tool === 'supabase_list_tables') {
-    return await mgmt('GET', `/projects/${project_ref}/database/tables?included_schemas=public`);
-  }
-  if (tool === 'supabase_describe_table') {
-    const { schema = 'public', table_name } = args;
-    return await mgmt('GET', `/projects/${project_ref}/database/columns?table_id=${table_name}&schema=${schema}`);
-  }
-  if (tool === 'supabase_list_migrations') { return await mgmt('GET', `/projects/${project_ref}/database/migrations`); }
   if (tool === 'supabase_run_migration') {
     return await mgmt('POST', `/projects/${project_ref}/database/migrations`, { name: args.name, statements: [args.sql] });
   }
+  if (tool === 'supabase_list_migrations') { return await mgmt('GET', `/projects/${project_ref}/database/migrations`); }
 
-  // ── REALTIME ──────────────────────────────────────────────────────────────
+  // ── DATABASE: SCHEMA INSPECTION ───────────────────────────────────────────
+  if (tool === 'supabase_list_tables') {
+    return await mgmt('GET', `/projects/${project_ref}/database/tables?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_describe_table') {
+    return await mgmt('GET', `/projects/${project_ref}/database/columns?table_id=${args.table_name}&schema=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_schemas') {
+    return await mgmt('GET', `/projects/${project_ref}/database/schemas`);
+  }
+  if (tool === 'supabase_list_columns') {
+    return await mgmt('GET', `/projects/${project_ref}/database/columns?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_indexes') {
+    return await mgmt('GET', `/projects/${project_ref}/database/indexes?schema=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_functions') {
+    return await mgmt('GET', `/projects/${project_ref}/database/functions?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_triggers') {
+    return await mgmt('GET', `/projects/${project_ref}/database/triggers?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_views') {
+    return await mgmt('GET', `/projects/${project_ref}/database/views?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_list_enums') {
+    return await mgmt('GET', `/projects/${project_ref}/database/types?included_schemas=${args.schema || 'public'}`);
+  }
   if (tool === 'supabase_list_publications') {
     return await mgmt('GET', `/projects/${project_ref}/database/publications`);
+  }
+  if (tool === 'supabase_list_extensions') {
+    return await mgmt('GET', `/projects/${project_ref}/database/extensions`);
+  }
+
+  // ── DATABASE: SCHEMA MODIFICATION ────────────────────────────────────────
+  if (tool === 'supabase_create_column') {
+    const { table_id, name, type, default_value, is_nullable = true, is_unique = false, is_primary_key = false } = args;
+    if (!table_id || !name || !type) throw new Error('table_id, name, and type are required');
+    return await mgmt('POST', `/projects/${project_ref}/database/columns`, {
+      table_id, name, type, default_value, is_nullable, is_unique, is_primary_key
+    });
+  }
+  if (tool === 'supabase_update_column') {
+    const { column_id, ...updates } = args;
+    return await mgmt('PATCH', `/projects/${project_ref}/database/columns/${column_id}`, updates);
+  }
+  if (tool === 'supabase_delete_column') {
+    const { column_id, cascade = false } = args;
+    return await mgmt('DELETE', `/projects/${project_ref}/database/columns/${column_id}?cascade=${cascade}`);
+  }
+  if (tool === 'supabase_create_table') {
+    const { name, schema = 'public', comment, primary_key } = args;
+    if (!name) throw new Error('name is required');
+    return await mgmt('POST', `/projects/${project_ref}/database/tables`, { name, schema, comment, primary_key });
+  }
+  if (tool === 'supabase_update_table') {
+    const { table_id, ...updates } = args;
+    return await mgmt('PATCH', `/projects/${project_ref}/database/tables/${table_id}`, updates);
+  }
+  if (tool === 'supabase_delete_table') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/tables/${args.table_id}?cascade=${args.cascade || false}`);
+  }
+  if (tool === 'supabase_create_index') {
+    const { name, schema = 'public', table_name, definition } = args;
+    return await mgmt('POST', `/projects/${project_ref}/database/indexes`, { name, schema, table, definition });
+  }
+  if (tool === 'supabase_delete_index') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/indexes?name=${args.name}`);
+  }
+  if (tool === 'supabase_enable_extension') {
+    return await mgmt('POST', `/projects/${project_ref}/database/extensions`, { name: args.extension_name, schema: args.schema || 'extensions', version: args.version });
+  }
+  if (tool === 'supabase_disable_extension') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/extensions/${args.extension_name}`);
+  }
+  if (tool === 'supabase_vacuum_table') {
+    return await mgmt('POST', `/projects/${project_ref}/database/query`, { query: `VACUUM ANALYZE ${args.schema || 'public'}.${args.table_name};` });
+  }
+
+  // ── DATABASE: ROLES ───────────────────────────────────────────────────────
+  if (tool === 'supabase_list_roles') {
+    return await mgmt('GET', `/projects/${project_ref}/database/roles`);
+  }
+  if (tool === 'supabase_create_role') {
+    return await mgmt('POST', `/projects/${project_ref}/database/roles`, { name: args.name, is_replication_role: args.is_replication || false, is_superuser: args.is_superuser || false });
+  }
+  if (tool === 'supabase_delete_role') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/roles/${args.role_id}`);
+  }
+
+  // ── RLS POLICIES ──────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_policies') {
+    return await mgmt('GET', `/projects/${project_ref}/database/policies?included_schemas=${args.schema || 'public'}`);
+  }
+  if (tool === 'supabase_get_policy') {
+    return await mgmt('GET', `/projects/${project_ref}/database/policies/${args.policy_id}`);
+  }
+  if (tool === 'supabase_create_policy') {
+    const { name, table_id, action = 'ALL', definition, check, roles = ['public'], command = 'SELECT' } = args;
+    if (!name || !table_id) throw new Error('name and table_id are required');
+    return await mgmt('POST', `/projects/${project_ref}/database/policies`, { name, table_id, action, definition, check, roles, command });
+  }
+  if (tool === 'supabase_update_policy') {
+    const { policy_id, ...updates } = args;
+    return await mgmt('PATCH', `/projects/${project_ref}/database/policies/${policy_id}`, updates);
+  }
+  if (tool === 'supabase_delete_policy') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/policies/${args.policy_id}`);
   }
 
   // ── AUTH / USERS ──────────────────────────────────────────────────────────
@@ -110,11 +238,26 @@ async function execute(tool, args) {
   if (tool === 'supabase_send_password_reset') {
     return await proj('POST', '/auth/v1/recover', { email: args.email }, project_ref);
   }
+  if (tool === 'supabase_ban_user') {
+    return await proj('PUT', `/auth/v1/admin/users/${args.user_id}`, { ban_duration: args.duration || 'none' }, project_ref);
+  }
+  if (tool === 'supabase_unban_user') {
+    return await proj('PUT', `/auth/v1/admin/users/${args.user_id}`, { ban_duration: 'none' }, project_ref);
+  }
+  if (tool === 'supabase_sign_out_user') {
+    return await proj('POST', `/auth/v1/admin/users/${args.user_id}/logout`, { scope: args.scope || 'global' }, project_ref);
+  }
+  if (tool === 'supabase_update_user_email') {
+    return await proj('PUT', `/auth/v1/admin/users/${args.user_id}`, { email: args.new_email }, project_ref);
+  }
+  if (tool === 'supabase_update_user_password') {
+    return await proj('PUT', `/auth/v1/admin/users/${args.user_id}`, { password: args.new_password }, project_ref);
+  }
   if (tool === 'supabase_list_auth_providers') {
     return await mgmt('GET', `/projects/${project_ref}/config/auth`);
   }
   if (tool === 'supabase_update_auth_config') {
-    const { project_ref: ref, ...config } = args;
+    const { project_ref: _, ...config } = args;
     return await mgmt('PATCH', `/projects/${project_ref}/config/auth`, config);
   }
 
@@ -124,6 +267,9 @@ async function execute(tool, args) {
   }
   if (tool === 'supabase_create_bucket') {
     return await proj('POST', '/storage/v1/bucket', { id: args.name, name: args.name, public: args.public || false, fileSizeLimit: args.file_size_limit }, project_ref);
+  }
+  if (tool === 'supabase_update_bucket') {
+    return await proj('PUT', `/storage/v1/bucket/${args.bucket_id}`, { public: args.public, fileSizeLimit: args.file_size_limit, allowedMimeTypes: args.allowed_mime_types }, project_ref);
   }
   if (tool === 'supabase_delete_bucket') {
     return await proj('DELETE', `/storage/v1/bucket/${args.bucket_id}`, null, project_ref);
@@ -135,18 +281,25 @@ async function execute(tool, args) {
     const { bucket_id, prefix = '', limit = 100, offset = 0, search } = args;
     return await proj('POST', `/storage/v1/object/list/${bucket_id}`, { prefix, limit, offset, search: search || '' }, project_ref);
   }
+  if (tool === 'supabase_get_public_url') {
+    const base = projectUrl(project_ref);
+    return { url: `${base}/storage/v1/object/public/${args.bucket_id}/${args.path}` };
+  }
   if (tool === 'supabase_get_signed_url') {
     const { bucket_id, path: filePath, expires_in = 3600 } = args;
     return await proj('POST', `/storage/v1/object/sign/${bucket_id}/${filePath}`, { expiresIn: expires_in }, project_ref);
+  }
+  if (tool === 'supabase_create_signed_upload_url') {
+    return await proj('POST', `/storage/v1/object/upload/sign/${args.bucket_id}/${args.path}`, {}, project_ref);
   }
   if (tool === 'supabase_delete_objects') {
     return await proj('DELETE', `/storage/v1/object/${args.bucket_id}`, { prefixes: args.paths }, project_ref);
   }
   if (tool === 'supabase_move_object') {
-    return await proj('POST', `/storage/v1/object/move`, { bucketId: args.bucket_id, sourceKey: args.source_path, destinationKey: args.destination_path }, project_ref);
+    return await proj('POST', '/storage/v1/object/move', { bucketId: args.bucket_id, sourceKey: args.source_path, destinationKey: args.destination_path }, project_ref);
   }
   if (tool === 'supabase_copy_object') {
-    return await proj('POST', `/storage/v1/object/copy`, { bucketId: args.bucket_id, sourceKey: args.source_path, destinationKey: args.destination_path }, project_ref);
+    return await proj('POST', '/storage/v1/object/copy', { bucketId: args.bucket_id, sourceKey: args.source_path, destinationKey: args.destination_path }, project_ref);
   }
 
   // ── EDGE FUNCTIONS ────────────────────────────────────────────────────────
@@ -156,6 +309,19 @@ async function execute(tool, args) {
   if (tool === 'supabase_get_edge_function') {
     return await mgmt('GET', `/projects/${project_ref}/functions/${args.function_slug}`);
   }
+  if (tool === 'supabase_create_edge_function') {
+    const { name, body: fnBody, import_map, verify_jwt = true } = args;
+    if (!name) throw new Error('name is required');
+    return await mgmt('POST', `/projects/${project_ref}/functions`, { slug: name, name, body: fnBody || '// Deno Edge Function', import_map, verify_jwt });
+  }
+  if (tool === 'supabase_update_edge_function') {
+    const { function_slug, body: fnBody, import_map, verify_jwt } = args;
+    const update = {};
+    if (fnBody !== undefined) update.body = fnBody;
+    if (import_map !== undefined) update.import_map = import_map;
+    if (verify_jwt !== undefined) update.verify_jwt = verify_jwt;
+    return await mgmt('PATCH', `/projects/${project_ref}/functions/${function_slug}`, update);
+  }
   if (tool === 'supabase_delete_edge_function') {
     return await mgmt('DELETE', `/projects/${project_ref}/functions/${args.function_slug}`);
   }
@@ -164,11 +330,152 @@ async function execute(tool, args) {
     return await proj(fnMethod, `/functions/v1/${function_slug}`, fnBody, project_ref);
   }
 
-  // ── API KEYS ──────────────────────────────────────────────────────────────
-  if (tool === 'supabase_get_api_keys') { return await mgmt('GET', `/projects/${project_ref}/api-keys`); }
-  if (tool === 'supabase_get_project_url') {
-    const config = await mgmt('GET', `/projects/${project_ref}/api`);
-    return { url: `https://${project_ref}.supabase.co`, anon_key: config.anon_key, service_role_key: '***hidden***' };
+  // ── WEBHOOKS ──────────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_database_webhooks') {
+    return await mgmt('GET', `/projects/${project_ref}/database/webhooks`);
+  }
+  if (tool === 'supabase_create_database_webhook') {
+    const { name, table_id, http_method = 'POST', http_url, enabled = true, events = ['INSERT', 'UPDATE', 'DELETE'] } = args;
+    if (!name || !table_id || !http_url) throw new Error('name, table_id, and http_url are required');
+    return await mgmt('POST', `/projects/${project_ref}/database/webhooks`, { name, table_id, http_method, http_url, enabled, function_events: events });
+  }
+  if (tool === 'supabase_update_database_webhook') {
+    const { webhook_id, ...updates } = args;
+    return await mgmt('PATCH', `/projects/${project_ref}/database/webhooks/${webhook_id}`, updates);
+  }
+  if (tool === 'supabase_delete_database_webhook') {
+    return await mgmt('DELETE', `/projects/${project_ref}/database/webhooks/${args.webhook_id}`);
+  }
+
+  // ── REST DATA OPERATIONS ──────────────────────────────────────────────────
+  if (tool === 'supabase_select') {
+    const { table, columns = '*', filter, order, limit = 50, offset = 0 } = args;
+    if (!table) throw new Error('table is required');
+    const params = { select: columns };
+    if (filter) params[filter.split('=')[0]] = filter.split('=').slice(1).join('=');
+    if (order) params.order = order;
+    params.limit = limit;
+    params.offset = offset;
+    return await restQuery('GET', table, params, null, project_ref);
+  }
+  if (tool === 'supabase_insert') {
+    const { table, data } = args;
+    if (!table || !data) throw new Error('table and data are required');
+    return await restQuery('POST', table, {}, Array.isArray(data) ? data : [data], project_ref);
+  }
+  if (tool === 'supabase_update') {
+    const { table, filter, data } = args;
+    if (!table || !filter || !data) throw new Error('table, filter, and data are required');
+    const params = {};
+    const [filterKey, ...filterValParts] = filter.split('=');
+    params[filterKey] = filterValParts.join('=');
+    return await restQuery('PATCH', table, params, data, project_ref);
+  }
+  if (tool === 'supabase_upsert') {
+    const { table, data, on_conflict } = args;
+    if (!table || !data) throw new Error('table and data are required');
+    const params = on_conflict ? { on_conflict } : {};
+    const base = projectUrl(project_ref);
+    const res = await fetch(`${base}/rest/v1/${table}${Object.keys(params).length ? '?' + new URLSearchParams(params).toString() : ''}`, {
+      method: 'POST',
+      headers: { ...projectHeaders(), 'Prefer': 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify(Array.isArray(data) ? data : [data])
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(`Supabase REST ${res.status}: ${result.message || JSON.stringify(result)}`);
+    return result;
+  }
+  if (tool === 'supabase_delete') {
+    const { table, filter } = args;
+    if (!table || !filter) throw new Error('table and filter are required');
+    const params = {};
+    const [filterKey, ...filterValParts] = filter.split('=');
+    params[filterKey] = filterValParts.join('=');
+    return await restQuery('DELETE', table, params, null, project_ref);
+  }
+
+  // ── DATABASE BRANCHES ─────────────────────────────────────────────────────
+  if (tool === 'supabase_list_branches') {
+    return await mgmt('GET', `/projects/${project_ref}/branches`);
+  }
+  if (tool === 'supabase_create_branch') {
+    return await mgmt('POST', `/projects/${project_ref}/branches`, { branch_name: args.branch_name, git_branch: args.git_branch });
+  }
+  if (tool === 'supabase_delete_branch') {
+    return await mgmt('DELETE', `/branches/${args.branch_id}`);
+  }
+  if (tool === 'supabase_get_branch') {
+    return await mgmt('GET', `/branches/${args.branch_id}`);
+  }
+
+  // ── NETWORK ───────────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_network_bans') {
+    return await mgmt('GET', `/projects/${project_ref}/network-bans`);
+  }
+  if (tool === 'supabase_remove_network_ban') {
+    return await mgmt('DELETE', `/projects/${project_ref}/network-bans`, { ipv4: args.ip });
+  }
+  if (tool === 'supabase_get_network_restrictions') {
+    return await mgmt('GET', `/projects/${project_ref}/network-restrictions`);
+  }
+  if (tool === 'supabase_update_network_restrictions') {
+    return await mgmt('POST', `/projects/${project_ref}/network-restrictions/apply`, { dbAllowedCidrs: args.allowed_cidrs });
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  //  SUPER TOOLS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // SUPER: Full project overview — schema, auth, storage, edge functions, health
+  if (tool === 'supabase_full_project_overview') {
+    const [health, tables, users, buckets, functions, policies] = await Promise.all([
+      mgmt('GET', `/projects/${project_ref}/health`).catch(() => ({ status: 'unknown' })),
+      mgmt('GET', `/projects/${project_ref}/database/tables?included_schemas=public`).catch(() => []),
+      proj('GET', '/auth/v1/admin/users?page=1&per_page=1', null, project_ref).catch(() => ({ total: 'unknown' })),
+      proj('GET', '/storage/v1/bucket', null, project_ref).catch(() => []),
+      mgmt('GET', `/projects/${project_ref}/functions`).catch(() => []),
+      mgmt('GET', `/projects/${project_ref}/database/policies?included_schemas=public`).catch(() => [])
+    ]);
+    return {
+      project_ref,
+      health: health.status || health,
+      tables: { count: Array.isArray(tables) ? tables.length : 'unknown', names: Array.isArray(tables) ? tables.slice(0, 10).map(t => t.name) : [] },
+      auth: { total_users: users.total || (Array.isArray(users) ? users.length : 'unknown') },
+      storage: { buckets: Array.isArray(buckets) ? buckets.length : 0, bucket_names: Array.isArray(buckets) ? buckets.map(b => b.name) : [] },
+      edge_functions: { count: Array.isArray(functions) ? functions.length : 0, names: Array.isArray(functions) ? functions.map(f => f.slug) : [] },
+      rls_policies: { count: Array.isArray(policies) ? policies.length : 0 },
+      url: `https://${project_ref}.supabase.co`
+    };
+  }
+
+  // SUPER: Provision a user with metadata for multi-tenant onboarding
+  if (tool === 'supabase_provision_user') {
+    const { email, password, role, metadata, send_invite = false } = args;
+    if (!email) throw new Error('email is required');
+    let user;
+    if (send_invite) {
+      user = await proj('POST', '/auth/v1/invite', { email, data: { role, ...metadata } }, project_ref);
+    } else {
+      user = await proj('POST', '/auth/v1/admin/users', { email, password, email_confirm: true, user_metadata: { role, ...metadata } }, project_ref);
+    }
+    return { user_id: user.id, email: user.email, created: true, invited: send_invite };
+  }
+
+  // SUPER: Audit all tables for RLS status
+  if (tool === 'supabase_rls_audit') {
+    const [tables, policies] = await Promise.all([
+      mgmt('GET', `/projects/${project_ref}/database/tables?included_schemas=public`),
+      mgmt('GET', `/projects/${project_ref}/database/policies?included_schemas=public`)
+    ]);
+    const policyTables = new Set((policies || []).map(p => p.table_name || p.table));
+    const audit = (tables || []).map(t => ({
+      table: t.name,
+      rls_enabled: t.rls_enabled,
+      policy_count: (policies || []).filter(p => (p.table_name || p.table) === t.name).length,
+      status: t.rls_enabled ? (policyTables.has(t.name) ? 'PROTECTED' : 'ENABLED_NO_POLICIES') : 'UNPROTECTED'
+    }));
+    const summary = { protected: audit.filter(t => t.status === 'PROTECTED').length, unprotected: audit.filter(t => t.status === 'UNPROTECTED').length, needs_policies: audit.filter(t => t.status === 'ENABLED_NO_POLICIES').length };
+    return { tables: audit, summary, recommendation: summary.unprotected > 0 ? `${summary.unprotected} tables have no RLS — enable RLS and create policies for public-facing tables` : 'All tables have RLS enabled' };
   }
 
   throw new Error(`Unknown Supabase tool: ${tool}`);
