@@ -1,22 +1,20 @@
 # Robinson's Toolkit MCP v2.0
 
-> **A personal AI developer toolkit** — a locally-running MCP server that gives your coding agent real, hands-on developer abilities across your entire stack. Not just API wrappers. The goal is to put a skilled developer's full range of actions within reach of your AI agent, one tool at a time.
+> **A personal AI developer toolkit** — a locally-running MCP server that gives your coding agent real, hands-on developer abilities across your entire stack. Not just API wrappers. The goal is to maximize developer velocity by connecting Claude to the services that power your stack.
 
 ---
 
 ## What It Does
 
-Robinson's Toolkit connects Claude (via Claude Code or any MCP-compatible client) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a Vercel deployment, or send a dispatch SMS — it just does it, without you having to copy-paste API calls or switch context.
+Robinson's Toolkit connects Claude (via Claude Code or any MCP-compatible client) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a deployment, or send an SMS, it just does it. No copying API docs. No trial-and-error. Real operations on real infrastructure.
 
-The toolkit currently houses **2,231 tools** across **25 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always see exactly what your credentials unlock, nothing more.
+The toolkit currently houses **2,231 tools** across **25 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always stay in control.
 
 ---
 
 ## The Core Problem: The "Tools Tax"
 
-Most MCP setups inject every available tool schema directly into the AI's context window on every message. With hundreds of tools, that can silently consume 10,000–60,000 tokens *before you've even asked a question* — destroying the agent's memory, degrading its reasoning, and inflating your API bill.
-
-Robinson's Toolkit solves this with **Smart Discovery**.
+Most MCP setups inject every available tool schema directly into the AI's context window on every message. With hundreds of tools, that can silently consume 10,000–60,000 tokens *before you've even asked a question*. Robinson's Toolkit solves this with **Smart Discovery**.
 
 ### How Smart Discovery Works
 
@@ -33,9 +31,9 @@ Instead of flooding the context with 2,231 tool schemas, the agent only ever see
 ```
 You:    "Deploy the latest commit to production"
 Agent:  search_toolkit("vercel deploy production")
-        → finds vercel_create_deployment, vercel_promote_deployment
-        get_tool_schema("vercel_promote_deployment")
-        execute_tool("vercel_promote_deployment", { projectId: "...", deploymentId: "..." })
+         → finds vercel_create_deployment, vercel_promote_deployment
+         get_tool_schema("vercel_promote_deployment")
+         execute_tool("vercel_promote_deployment", { projectId: "...", deploymentId: "..." })
 ```
 
 The agent discovers and uses tools on-demand. Your context window stays clean.
@@ -123,83 +121,122 @@ Then open `.env` and fill in your API keys.
 
 Open the `.env` file in the project root. You only need to fill in the services you actually use. Any namespace without credentials simply won't appear.
 
-```env
-# ── WORKSPACE ──────────────────────────────────────────────────────────────────
+Use `.env.example` as your template. Here's what it contains:
+
+```.env
+# ═════════════════════════════════════════════════════════════════
+#  Robinson's Toolkit MCP v2.0 — Environment Configuration
+#
+#  Copy this file to .env and fill in the keys for the services you use.
+#  Any blank key means that namespace won't appear in the toolkit.
+#  local and compound tools are always on — no keys needed.
+# ═════════════════════════════════════════════════════════════════
+
+# ── WORKSPACE ───────────────────────────────────────────────────────────
+# The root directory Claude is allowed to read/write files in
 WORKSPACE_ROOT=C:\Users\chris\Git Local
 
-# ── GITHUB ─────────────────────────────────────────────────────────────────────
-GITHUB_TOKEN=ghp_...
+# ── GITHUB ──────────────────────────────────────────────────────────
+# https://github.com/settings/tokens → Personal access token (classic)
+# Scopes needed: repo, workflow, read:org, admin:repo_hook
+GITHUB_TOKEN=
 
-# ── VERCEL ─────────────────────────────────────────────────────────────────────
-VERCEL_TOKEN=...
+# ── VERCEL ──────────────────────────────────────────────────────────
+# https://vercel.com/account/tokens
+VERCEL_TOKEN=
 
-# ── NEON (PostgreSQL) ───────────────────────────────────────────────────────────
-NEON_API_KEY=...
+# ── NEON (PostgreSQL) ───────────────────────────────────────────────────────
+# https://console.neon.tech/app/settings/api-keys
+NEON_API_KEY=
 
-# ── FLY.IO ─────────────────────────────────────────────────────────────────────
-FLY_API_TOKEN=...
+# ── FLY.IO ──────────────────────────────────────────────────────────
+# Run: fly tokens create deploy -x 999999h
+FLY_API_TOKEN=
 
-# ── STRIPE ─────────────────────────────────────────────────────────────────────
-STRIPE_SECRET_KEY=sk_live_...
+# ── STRIPE ──────────────────────────────────────────────────────────
+# https://dashboard.stripe.com/apikeys
+# Use sk_test_... for development, sk_live_... for production
+STRIPE_SECRET_KEY=
 
-# ── TWILIO ─────────────────────────────────────────────────────────────────────
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
+# ── TWILIO ──────────────────────────────────────────────────────────
+# https://console.twilio.com → Account Info
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
 
-# ── RESEND ─────────────────────────────────────────────────────────────────────
-RESEND_API_KEY=re_...
+# ── RESEND ──────────────────────────────────────────────────────────
+# https://resend.com/api-keys
+RESEND_API_KEY=
 
-# ── CLOUDFLARE ─────────────────────────────────────────────────────────────────
-CLOUDFLARE_API_TOKEN=...
-CLOUDFLARE_ACCOUNT_ID=...
+# ── CLOUDFLARE ──────────────────────────────────────────────────────────
+# https://dash.cloudflare.com/profile/api-tokens → Create Token
+# Your account ID is in the right sidebar of any zone dashboard
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
 
-# ── OPENAI ─────────────────────────────────────────────────────────────────────
-OPENAI_API_KEY=sk-...
+# ── OPENAI ──────────────────────────────────────────────────────────
+# https://platform.openai.com/api-keys
+OPENAI_API_KEY=
 
-# ── ANTHROPIC ──────────────────────────────────────────────────────────────────
-ANTHROPIC_API_KEY=sk-ant-...
+# ── ANTHROPIC ────────────────────────────────────────────────────────
+# https://console.anthropic.com/settings/keys
+ANTHROPIC_API_KEY=
 
-# ── SUPABASE ───────────────────────────────────────────────────────────────────
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+# ── SUPABASE ────────────────────────────────────────────────────────
+# https://app.supabase.com → Project Settings → API
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
 
-# ── UPSTASH REDIS ──────────────────────────────────────────────────────────────
-UPSTASH_REDIS_REST_URL=https://...upstash.io
-UPSTASH_REDIS_REST_TOKEN=...
+# ── UPSTASH REDIS ───────────────────────────────────────────────────────────
+# https://console.upstash.com → Select your Redis DB → REST API
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 
-# ── GOOGLE WORKSPACE ───────────────────────────────────────────────────────────
-GOOGLE_ACCESS_TOKEN=ya29...
-# or: GOOGLE_SERVICE_ACCOUNT_KEY_PATH=C:\path\to\service-account.json
+# ── GOOGLE WORKSPACE ────────────────────────────────────────────────────────
+# Option A: Personal OAuth token (for personal Google accounts)
+GOOGLE_ACCESS_TOKEN=
+# Option B: Service account key file path (for workspace/server use)
+GOOGLE_SERVICE_ACCOUNT_KEY_PATH=
 
-# ── MAPBOX ─────────────────────────────────────────────────────────────────────
-MAPBOX_ACCESS_TOKEN=pk.eyJ1...
-MAPBOX_USERNAME=                  # required for datasets/tilesets/styles
+# ── MAPBOX ──────────────────────────────────────────────────────────
+# https://account.mapbox.com/access-tokens
+MAPBOX_ACCESS_TOKEN=
+# required for datasets/tilesets/styles
+MAPBOX_USERNAME=
 
-# ── CLERK ──────────────────────────────────────────────────────────────────────
-CLERK_SECRET_KEY=sk_live_...
+# ── CLERK ───────────────────────────────────────────────────────────
+# https://dashboard.clerk.com → API Keys
+CLERK_SECRET_KEY=
 
-# ── SENTRY ─────────────────────────────────────────────────────────────────────
-SENTRY_AUTH_TOKEN=sntrys_...
-SENTRY_ORG_SLUG=your-org
+# ── SENTRY ──────────────────────────────────────────────────────────
+# https://sentry.io/settings/account/api/auth-tokens
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG_SLUG=
 
-# ── WEB SEARCH (either or both) ────────────────────────────────────────────────
-BRAVE_SEARCH_API_KEY=BSA...
-TAVILY_API_KEY=tvly-...
+# ── WEB SEARCH ──────────────────────────────────────────────────────────
+# Brave Search API: https://api.search.brave.com/app/keys
+BRAVE_SEARCH_API_KEY=
+# Tavily API: https://app.tavily.com
+TAVILY_API_KEY=
 
-# ── QDRANT ─────────────────────────────────────────────────────────────────────
-QDRANT_URL=http://localhost:6333
-QDRANT_API_KEY=                   # optional for cloud instances
+# ── QDRANT (Vector Database) ────────────────────────────────────────────────
+# Local: http://localhost:6333
+# Cloud: https://your-cluster.qdrant.io
+QDRANT_URL=
+# Only needed if your Qdrant instance requires auth
+QDRANT_API_KEY=
 
-# ── N8N ────────────────────────────────────────────────────────────────────────
-N8N_BASE_URL=https://your-n8n-instance.com
-N8N_API_KEY=...
+# ── N8N (Workflow Automation) ───────────────────────────────────────────────
+N8N_BASE_URL=
+N8N_API_KEY=
 
-# ── POSTGRES (Direct Connection) ───────────────────────────────────────────────
-POSTGRES_CONNECTION_STRING=postgresql://user:pass@host:5432/dbname
+# ── POSTGRES (Direct Connection) ────────────────────────────────────────────
+# Direct connection to any Postgres DB (separate from Neon)
+POSTGRES_CONNECTION_STRING=
 
-# ── OLLAMA (Local LLM) ─────────────────────────────────────────────────────────
-OLLAMA_BASE_URL=http://172.19.16.1:11434
-OLLAMA_DEFAULT_MODEL=qwen2.5-coder:7b
+# ── Ollama (local LLM — always active, no API key needed) ───────────────────
+OLLAMA_BASE_URL=http://172.19.16.1:11434   # WSL2 → Windows host gateway (default)
+OLLAMA_DEFAULT_MODEL=qwen2.5-coder:7b      # Default model for all ollama_ tools
+OLLAMA_TIMEOUT_MS=300000                   # Generation timeout ms (default 5 min)
 ```
 
 ### Step 2 — Connect to Claude Code
@@ -230,11 +267,11 @@ Add this block inside `"mcpServers"`:
 Close and reopen Claude Code. The banner in the server log will confirm how many tools loaded:
 
 ```
-╔══════════════════════════════════════════════════════╗
+╔══════════════════════════════════════════════════════════╗
 ║  Robinson's Toolkit MCP v2.0 — Active               ║
 ║  1873 tools across 22 namespaces                    ║
 ║  Active: github, vercel, neon, fly...               ║
-╚══════════════════════════════════════════════════════╝
+╚══════════════════════════════════════════════════════════╝
 ```
 
 The tool count reflects only namespaces where you've provided credentials.
