@@ -1,192 +1,24 @@
 [
-  {
-    "name": "compound_scaffold_feature",
-    "description": "Full-stack feature scaffold: create a GitHub branch, generate Neon DB branch, scaffold API routes and UI components, and open a draft PR — all in one command",
-    "namespace": "compound",
-    "tags": ["compound","scaffold","feature","branch","github","neon","fullstack","boilerplate","new-feature"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "feature_name": { "type": "string", "description": "Feature name in kebab-case e.g. customer-portal" },
-        "description": { "type": "string", "description": "What this feature does" },
-        "base_branch": { "type": "string", "default": "main", "description": "Branch to fork from" },
-        "create_db_branch": { "type": "boolean", "default": true, "description": "Also create a matching Neon DB branch" },
-        "project_id": { "type": "string", "description": "Neon project ID (required if create_db_branch is true)" }
-      },
-      "required": ["feature_name", "description"]
-    }
-  },
-  {
-    "name": "compound_safe_deploy",
-    "description": "Deploy to Vercel production with automated pre-flight checks: run tests, verify env vars, confirm DB migrations are applied, and roll back automatically on failure",
-    "namespace": "compound",
-    "tags": ["compound","deploy","safe","vercel","production","preflight","rollback","ci","release"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "project_id": { "type": "string", "description": "Vercel project ID or name" },
-        "skip_tests": { "type": "boolean", "default": false },
-        "skip_migration_check": { "type": "boolean", "default": false },
-        "notify_slack": { "type": "boolean", "default": true }
-      },
-      "required": ["project_id"]
-    }
-  },
-  {
-    "name": "compound_onboard_saas_customer",
-    "description": "Onboard a new SaaS customer: create Stripe customer + subscription, provision database schema/tenant, send welcome email via Resend, and set up any required Neon branches or Upstash namespaces",
-    "namespace": "compound",
-    "tags": ["compound","onboard","customer","saas","stripe","resend","email","tenant","provision","welcome"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "company_name": { "type": "string" },
-        "email": { "type": "string" },
-        "plan": { "type": "string", "enum": ["starter","pro","enterprise"], "default": "starter" },
-        "stripe_price_id": { "type": "string", "description": "Stripe Price ID for the subscription" },
-        "send_welcome_email": { "type": "boolean", "default": true },
-        "neon_project_id": { "type": "string", "description": "Neon project to provision tenant schema in" }
-      },
-      "required": ["company_name", "email"]
-    }
-  },
-  {
-    "name": "compound_incident_response",
-    "description": "Automated incident response: check Vercel/Fly deployment health, query Neon for recent errors, pull Sentry issues, draft a Slack incident message, and optionally roll back the last deployment",
-    "namespace": "compound",
-    "tags": ["compound","incident","outage","debug","alert","rollback","sentry","vercel","fly","slack","ops"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "app": { "type": "string", "description": "App/project name to investigate" },
-        "severity": { "type": "string", "enum": ["low","medium","high","critical"], "default": "high" },
-        "auto_rollback": { "type": "boolean", "default": false, "description": "Automatically roll back if errors exceed threshold" },
-        "notify_slack": { "type": "boolean", "default": true }
-      },
-      "required": ["app"]
-    }
-  },
-  {
-    "name": "compound_neon_safe_migration",
-    "description": "Safe database migration workflow: create a test branch, apply migration SQL, run validation queries, check for breaking changes, then apply to main and delete test branch",
-    "namespace": "compound",
-    "tags": ["compound","neon","migration","safe","schema","database","ddl","test","branch","postgres"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "project_id": { "type": "string", "description": "Neon project ID" },
-        "migration_sql": { "type": "string", "description": "SQL to run as the migration" },
-        "validation_sql": { "type": "string", "description": "Optional SQL to verify the migration succeeded" },
-        "apply_to_main": { "type": "boolean", "default": false, "description": "Apply to main branch after successful test" },
-        "database_name": { "type": "string", "default": "neondb" }
-      },
-      "required": ["project_id", "migration_sql"]
-    }
-  },
-  {
-    "name": "compound_git_commit_push",
-    "description": "Stage all changes (or specified files), write a conventional commit message, push the branch, and optionally open a GitHub PR with a generated description",
-    "namespace": "compound",
-    "tags": ["compound","git","commit","push","github","pr","pull-request","conventional-commits","branch"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "message": { "type": "string", "description": "Commit message (conventional commit format preferred e.g. 'feat: add customer dashboard')" },
-        "files": { "type": "array", "items": { "type": "string" }, "description": "Specific files to stage (defaults to all changed files)" },
-        "branch": { "type": "string", "description": "Branch to push to (defaults to current branch)" },
-        "open_pr": { "type": "boolean", "default": false, "description": "Open a GitHub PR after pushing" },
-        "pr_title": { "type": "string" },
-        "pr_body": { "type": "string" },
-        "pr_base": { "type": "string", "default": "main" }
-      },
-      "required": ["message"]
-    }
-  },
-  {
-    "name": "compound_project_health_check",
-    "description": "Full project health report: check Vercel deployment status, Neon DB connection and query performance, Upstash Redis hit rate, Fly.io app health, and Sentry error counts in one sweep",
-    "namespace": "compound",
-    "tags": ["compound","health","monitor","status","vercel","neon","upstash","fly","sentry","dashboard","ops"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "project_name": { "type": "string", "description": "Project/app name used across services" },
-        "vercel_project_id": { "type": "string" },
-        "neon_project_id": { "type": "string" },
-        "fly_app_name": { "type": "string" },
-        "include_cost_summary": { "type": "boolean", "default": true }
-      },
-      "required": ["project_name"]
-    }
-  },
-  {
-    "name": "compound_send_dispatch_notification",
-    "description": "Send a job/dispatch notification across multiple channels: Resend email, Twilio SMS, and update the Neon database record — used for YardSync dispatch alerts",
-    "namespace": "compound",
-    "tags": ["compound","dispatch","notify","sms","email","twilio","resend","yardsync","notification","alert","job"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "job_id": { "type": "string", "description": "Job or dispatch ID to notify about" },
-        "recipient_email": { "type": "string" },
-        "recipient_phone": { "type": "string", "description": "E.164 format e.g. +13031234567" },
-        "message": { "type": "string", "description": "Notification message body" },
-        "channels": { "type": "array", "items": { "type": "string", "enum": ["email","sms","db"] }, "default": ["email","sms","db"] },
-        "neon_project_id": { "type": "string" }
-      },
-      "required": ["message"]
-    }
-  },
-  {
-    "name": "compound_generate_and_embed",
-    "description": "Generate OpenAI embeddings for one or more texts and upsert them into Qdrant as vectors — used for semantic search, RAG pipelines, and AI-powered features",
-    "namespace": "compound",
-    "tags": ["compound","embed","qdrant","openai","vector","rag","semantic","search","ai","embeddings","upsert"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "texts": { "type": "array", "items": { "type": "string" }, "description": "Texts to embed" },
-        "collection_name": { "type": "string", "description": "Qdrant collection to upsert into" },
-        "payloads": { "type": "array", "items": { "type": "object" }, "description": "Metadata payloads to store alongside each vector (parallel array with texts)" },
-        "model": { "type": "string", "default": "text-embedding-3-small" }
-      },
-      "required": ["texts", "collection_name"]
-    }
-  },
-  {
-    "name": "compound_semantic_search",
-    "description": "Embed a query with OpenAI and search Qdrant for the most semantically similar results — one-shot RAG retrieval for AI features",
-    "namespace": "compound",
-    "tags": ["compound","semantic","search","qdrant","openai","rag","retrieval","query","vector","ai","similarity"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "query": { "type": "string", "description": "Plain-English search query" },
-        "collection_name": { "type": "string", "description": "Qdrant collection to search" },
-        "top_k": { "type": "number", "default": 5, "description": "Number of results to return" },
-        "score_threshold": { "type": "number", "default": 0.7, "description": "Minimum similarity score (0-1)" },
-        "filter": { "type": "object", "description": "Optional Qdrant filter on payload fields" }
-      },
-      "required": ["query", "collection_name"]
-    }
-  },
-  {
-    "name": "compound_analytics_snapshot",
-    "description": "Pull a cross-platform analytics snapshot: Neon query counts, Vercel traffic, Upstash Redis ops, Stripe MRR, and Resend email stats — formatted as a daily briefing",
-    "namespace": "compound",
-    "tags": ["compound","analytics","snapshot","briefing","metrics","mrr","stripe","vercel","neon","upstash","resend","dashboard"],
-    "inputSchema": {
-      "type": "object",
-      "properties": {
-        "date_range": { "type": "string", "default": "7d", "description": "e.g. 1d, 7d, 30d" },
-        "include_stripe": { "type": "boolean", "default": true },
-        "include_vercel": { "type": "boolean", "default": true },
-        "include_neon": { "type": "boolean", "default": true },
-        "include_upstash": { "type": "boolean", "default": true },
-        "include_resend": { "type": "boolean", "default": true },
-        "neon_project_id": { "type": "string" },
-        "vercel_project_id": { "type": "string" }
-      }
-    }
-  }
+  {"name":"compound_scaffold_feature","description":"SUPER TOOL: Set up a complete feature branch environment — GitHub branch + Neon DB branch + .env.local update + optional migration run — in one call.","namespace":"compound","tags":["compound","scaffold","feature","github","neon","branch","setup","super-tool"],"inputSchema":{"type":"object","properties":{"github_owner":{"type":"string"},"github_repo":{"type":"string"},"feature_name":{"type":"string"},"neon_project_id":{"type":"string"},"run_migrations":{"type":"boolean"},"migration_command":{"type":"string"},"env_file_path":{"type":"string"}},"required":["feature_name"]}},
+  {"name":"compound_safe_deploy","description":"SUPER TOOL: Git push + wait for Vercel deployment + verify status in one call.","namespace":"compound","tags":["compound","deploy","vercel","git","safe","super-tool"],"inputSchema":{"type":"object","properties":{"vercel_project_id":{"type":"string"},"git_push":{"type":"boolean"},"project_path":{"type":"string"}},"required":["vercel_project_id"]}},
+  {"name":"compound_onboard_saas_customer","description":"SUPER TOOL: Full SaaS customer onboarding — Stripe customer + subscription + Clerk org + welcome email in one call.","namespace":"compound","tags":["compound","onboard","customer","stripe","clerk","resend","saas","super-tool"],"inputSchema":{"type":"object","properties":{"customer_email":{"type":"string"},"customer_name":{"type":"string"},"company_name":{"type":"string"},"price_id":{"type":"string"},"send_welcome_email":{"type":"boolean"},"welcome_from":{"type":"string"},"welcome_subject":{"type":"string"},"welcome_html":{"type":"string"}},"required":["customer_email"]}},
+  {"name":"compound_incident_response","description":"SUPER TOOL: Pull together an incident context — Sentry errors + recent Vercel deployments — to guide root cause analysis.","namespace":"compound","tags":["compound","incident","response","sentry","vercel","debug","super-tool"],"inputSchema":{"type":"object","properties":{"sentry_project":{"type":"string"},"vercel_project_id":{"type":"string"},"last_n_deployments":{"type":"number"}},"required":[]}},
+  {"name":"compound_neon_safe_migration","description":"SUPER TOOL: Run a DB migration on a temp Neon branch first, verify it works, then report whether it's safe to apply to main.","namespace":"compound","tags":["compound","neon","migration","safe","database","branch","test","super-tool"],"inputSchema":{"type":"object","properties":{"neon_project_id":{"type":"string"},"migration_sql":{"type":"string"},"database":{"type":"string"},"verify_tables":{"type":"array","items":{"type":"string"}}},"required":["neon_project_id","migration_sql"]}},
+  {"name":"compound_git_commit_push","description":"SUPER TOOL: Stage, commit, and push in one call — git add + commit + push.","namespace":"compound","tags":["compound","git","commit","push","local","super-tool"],"inputSchema":{"type":"object","properties":{"message":{"type":"string"},"project_path":{"type":"string"},"files":{"type":"string"},"branch":{"type":"string"}},"required":["message"]}},
+  {"name":"compound_project_health_check","description":"SUPER TOOL: Cross-service project health — GitHub issues/PRs + Vercel deployments + Neon connection + Sentry errors.","namespace":"compound","tags":["compound","health","github","vercel","neon","sentry","check","super-tool"],"inputSchema":{"type":"object","properties":{"github_owner":{"type":"string"},"github_repo":{"type":"string"},"vercel_project_id":{"type":"string"},"neon_project_id":{"type":"string"},"sentry_project":{"type":"string"}},"required":[]}},
+  {"name":"compound_send_dispatch_notification","description":"SUPER TOOL: Send a driver SMS (Twilio) and customer email (Resend) for a service appointment in one call.","namespace":"compound","tags":["compound","dispatch","sms","email","twilio","resend","notification","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"driver_phone":{"type":"string"},"driver_message":{"type":"string"},"customer_email":{"type":"string"},"customer_subject":{"type":"string"},"customer_html":{"type":"string"},"from_email":{"type":"string"},"job_details":{"type":"object"}},"required":[]}},
+  {"name":"compound_generate_and_embed","description":"SUPER TOOL: Generate an OpenAI embedding for text and immediately store it in Qdrant as a vector point.","namespace":"compound","tags":["compound","embed","openai","qdrant","vector","store","ai","super-tool"],"inputSchema":{"type":"object","properties":{"text_to_embed":{"type":"string"},"collection_name":{"type":"string"},"point_id":{"description":"Qdrant point ID"},"metadata":{"type":"object"}},"required":["text_to_embed","collection_name","point_id"]}},
+  {"name":"compound_semantic_search","description":"SUPER TOOL: Convert a text query to an OpenAI embedding and search Qdrant — semantic search in one call.","namespace":"compound","tags":["compound","semantic","search","openai","qdrant","vector","ai","super-tool"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"collection_name":{"type":"string"},"limit":{"type":"number"},"score_threshold":{"type":"number"},"filter":{"type":"object"}},"required":["query","collection_name"]}},
+  {"name":"compound_analytics_snapshot","description":"SUPER TOOL: Pull key business metrics from Stripe — MRR, ARR, active subscriptions.","namespace":"compound","tags":["compound","analytics","stripe","mrr","arr","metrics","super-tool"],"inputSchema":{"type":"object","properties":{},"required":[]}},
+  {"name":"compound_deploy_and_release","description":"SUPER TOOL: Git push + Vercel deploy + Sentry release creation in one call — the full CI/CD deployment workflow.","namespace":"compound","tags":["compound","deploy","release","git","vercel","sentry","ci-cd","super-tool"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"},"project_path":{"type":"string"},"vercel_project_id":{"type":"string"},"sentry_project":{"type":"string"},"environment":{"type":"string"},"git_push":{"type":"boolean"}},"required":["version"]}},
+  {"name":"compound_customer_offboard","description":"SUPER TOOL: Cancel all Stripe subscriptions + Clerk offboard (revoke sessions + remove orgs + ban) + optional offboard email in one call.","namespace":"compound","tags":["compound","offboard","customer","stripe","clerk","cancel","super-tool","churn"],"inputSchema":{"type":"object","properties":{"stripe_customer_id":{"type":"string"},"clerk_user_id":{"type":"string"},"reason":{"type":"string"},"notify_email":{"type":"string"},"from_email":{"type":"string"},"app_name":{"type":"string"}},"required":[]}},
+  {"name":"compound_payment_failed_flow","description":"SUPER TOOL: Find all past-due Stripe subscriptions and send dunning reminder emails via Resend.","namespace":"compound","tags":["compound","dunning","stripe","resend","email","billing","recovery","super-tool"],"inputSchema":{"type":"object","properties":{"from_email":{"type":"string"},"subject":{"type":"string"},"app_name":{"type":"string"},"update_url":{"type":"string"}},"required":["from_email"]}},
+  {"name":"compound_customer_support_context","description":"SUPER TOOL: Pull together all context for a support ticket — Stripe billing history + Clerk profile + Sentry errors.","namespace":"compound","tags":["compound","support","context","stripe","clerk","sentry","ticket","super-tool"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"stripe_customer_id":{"type":"string"},"clerk_user_id":{"type":"string"},"sentry_project":{"type":"string"}},"required":[]}},
+  {"name":"compound_local_llm_rag","description":"SUPER TOOL: Local RAG pipeline — Ollama embed → Qdrant semantic search → Ollama generate answer with context. Zero API cost.","namespace":"compound","tags":["compound","rag","ollama","qdrant","local","llm","semantic","ai","super-tool"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"collection_name":{"type":"string"},"ollama_model":{"type":"string"},"system_instruction":{"type":"string"},"limit":{"type":"number"},"score_threshold":{"type":"number"}},"required":["query","collection_name"]}},
+  {"name":"compound_sync_users_to_audience","description":"SUPER TOOL: Fetch users from Clerk (or Neon SQL) and sync them to a Resend audience for email marketing.","namespace":"compound","tags":["compound","sync","users","clerk","neon","resend","audience","email","super-tool"],"inputSchema":{"type":"object","properties":{"audience_name":{"type":"string"},"source":{"type":"string","description":"clerk or neon"},"neon_project_id":{"type":"string"},"neon_sql":{"type":"string","description":"SQL returning email, first_name, last_name columns"},"limit":{"type":"number"}},"required":["audience_name"]}},
+  {"name":"compound_geocode_and_store","description":"SUPER TOOL: Mapbox geocode an address and store the coordinates in a Neon database record.","namespace":"compound","tags":["compound","geocode","mapbox","neon","store","coordinates","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"neon_project_id":{"type":"string"},"table_name":{"type":"string"},"record_id":{"description":"Record ID to update"},"schema":{"type":"string"},"lat_col":{"type":"string"},"lng_col":{"type":"string"},"address_col":{"type":"string"}},"required":["address"]}},
+  {"name":"compound_revenue_summary","description":"SUPER TOOL: Combined Stripe revenue dashboard — MRR + ARR + active subs + past-due customers in one call.","namespace":"compound","tags":["compound","revenue","stripe","mrr","dunning","summary","super-tool","billing"],"inputSchema":{"type":"object","properties":{},"required":[]}},
+  {"name":"compound_validate_env_vars","description":"SUPER TOOL: Check that all required environment variables are set for a given list of service namespaces.","namespace":"compound","tags":["compound","env","validate","config","setup","diagnostic","super-tool"],"inputSchema":{"type":"object","properties":{"services":{"type":"array","items":{"type":"string"},"description":"Service names to check: stripe, clerk, neon, vercel, etc. Omit to check all."}},"required":[]}},
+  {"name":"compound_full_health_dashboard","description":"SUPER TOOL: Ping every configured service and return a unified health report — Ollama, Neon, Vercel, GitHub, Stripe, Sentry, Qdrant.","namespace":"compound","tags":["compound","health","dashboard","monitoring","all-services","super-tool","status"],"inputSchema":{"type":"object","properties":{},"required":[]}},
+  {"name":"compound_batch_embed_documents","description":"SUPER TOOL: Embed and store a batch of documents in Qdrant using OpenAI or Ollama embeddings — bulk knowledge base ingestion in one call.","namespace":"compound","tags":["compound","batch","embed","qdrant","openai","ollama","documents","rag","ingest","super-tool"],"inputSchema":{"type":"object","properties":{"documents":{"type":"array","description":"Array of {id, text, ...metadata} objects"},"collection_name":{"type":"string"},"use_ollama":{"type":"boolean","description":"Use Ollama instead of OpenAI for embeddings"},"ollama_model":{"type":"string"}},"required":["documents","collection_name"]}}
 ]
