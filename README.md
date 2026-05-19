@@ -1,12 +1,12 @@
 # Robinson's Toolkit MCP v2.0
 
-> **A personal AI developer toolkit** — a locally-running MCP server that gives your coding agent real, hands-on developer abilities across your entire stack. Not just API wrappers. The goal is to maximize developer velocity by connecting Claude to the services that power your stack.
+> **A universal AI developer toolkit** — a locally-running MCP server that gives your coding agent real, hands-on developer abilities across your entire stack. Not just API wrappers. The goal is to maximize developer velocity by connecting any MCP-compatible agent to the services that power your stack.
 
 ---
 
 ## What It Does
 
-Robinson's Toolkit connects Claude (via Claude Code or any MCP-compatible client) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a deployment, or send an SMS, it just does it. No copying API docs. No trial-and-error. Real operations on real infrastructure.
+Robinson's Toolkit connects any MCP-compatible agent (Claude, Cursor, or other AI tools) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a deployment, or send an SMS, it just does it. No copying API docs. No trial-and-error. Real operations on real infrastructure.
 
 The toolkit currently houses **2,231 tools** across **25 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always stay in control.
 
@@ -78,8 +78,8 @@ The agent discovers and uses tools on-demand. Your context window stays clean.
 ## Prerequisites
 
 - **Node.js v18 or higher** — [Download here](https://nodejs.org)
-- **Windows** (native or WSL2)
-- **Claude Code** (or any MCP-compatible client)
+- **Windows, macOS, or Linux** (including WSL2)
+- **MCP-compatible agent** (Claude Code, Cursor, or any other MCP client)
 - API keys for the services you want to use
 
 To check your Node version:
@@ -108,7 +108,7 @@ cd "Robinson's Toolkit MCP"
 npm install
 
 # 3. Create your .env file
-copy .env.example .env
+cp .env.example .env
 ```
 
 Then open `.env` and fill in your API keys.
@@ -239,12 +239,21 @@ OLLAMA_DEFAULT_MODEL=qwen2.5-coder:7b      # Default model for all ollama_ tools
 OLLAMA_TIMEOUT_MS=300000                   # Generation timeout ms (default 5 min)
 ```
 
-### Step 2 — Connect to Claude Code
+### Step 2 — Connect to Your MCP Client
 
-Open your Claude Code MCP config file. On Windows it's typically at:
+Open your MCP client's configuration file. The location varies by client:
+
+**Claude Code** (Windows):
 ```
-C:\Users\chris\AppData\Roaming\Claude\claude_desktop_config.json
+C:\Users\<username>\AppData\Roaming\Claude\claude_desktop_config.json
 ```
+
+**Cursor** (Windows):
+```
+C:\Users\<username>\.cursor\
+```
+
+**Other MCP Clients**: Refer to your client's documentation for the config location.
 
 Add this block inside `"mcpServers"`:
 
@@ -253,18 +262,23 @@ Add this block inside `"mcpServers"`:
   "mcpServers": {
     "robinsons-toolkit": {
       "command": "node",
-      "args": ["C:\\Users\\chris\\Google Drive\\Robinson's Toolkit MCP\\index.js"],
+      "args": ["C:\\Users\\<username>\\path\\to\\Robinson's Toolkit MCP\\index.js"],
       "env": {
-        "WORKSPACE_ROOT": "C:\\Users\\chris\\Git Local"
+        "WORKSPACE_ROOT": "C:\\Users\\<username>\\your\\workspace\\path"
       }
     }
   }
 }
 ```
 
-### Step 3 — Restart Claude Code
+Replace:
+- `<username>` with your actual Windows username
+- `/path/to/Robinson's Toolkit MCP` with where you cloned this repository
+- `C:\\Users\\<username>\\your\\workspace\\path` with your actual workspace directory
 
-Close and reopen Claude Code. The banner in the server log will confirm how many tools loaded:
+### Step 3 — Restart Your MCP Client
+
+Close and reopen your MCP client. The server log will confirm how many tools loaded:
 
 ```
 ╔══════════════════════════════════════════════════════════╗
@@ -474,7 +488,7 @@ Every tool is built with one question: **"What would a skilled developer do here
 
 **Server won't start** — Run `node --version` (needs 18+), then `npm install`
 
-**Tools aren't in Claude Code** — Restart after any config change; run `node index.js` to verify the banner shows
+**Tools aren't in your MCP client** — Restart after any config change; run `node index.js` to verify the banner shows
 
 **A tool is failing** — Use `get_tool_schema("tool_name")` to check required params; verify your API key has the right permissions
 
