@@ -40,32 +40,35 @@ Every namespace build follows this exact sequence:
 
 ## Priority Order
 
-Ordered by: **impact on Chris's active stack** → **size of gap** → **dependency on other services**
+Ordered by: **Chris's explicit Session 5 directive** → **impact on active stack** → **size of gap**
+
+**Completed namespaces (perfect sync, target hit):**
+- ✅ `vercel` — 150/150 (Session 2)
+- ✅ `neon` — 187/187 (Session 3)
+- ✅ `local` — 62/62 (Session 4)
 
 | Priority | Namespace | Current | Target | Why |
 |---|---|---|---|---|
-| 🔴 1 | `local` | 14/13 ⚠️ | 30+ | Sync fix + foundation for everything else |
-| 🔴 2 | `neon` | 89/87 ⚠️ | 150+ | Core database layer, YardSync/Cortiware |
-| 🔴 3 | `github` | 201 | 250+ | Audit depth — Actions, code scanning, Dependabot |
-| 🟠 4 | `stripe` | 71 | 130+ | Revenue critical, YardSync billing |
-| 🟠 5 | `google` | 60 | 130+ | Gmail/Drive/Calendar deeper coverage |
-| 🟠 6 | `twilio` | 22 | 90+ | YardSync dispatch SMS/voice, critical gap |
-| 🟠 7 | `fly` | 37 | 100+ | Production hosting for backend services |
-| 🟠 8 | `cloudflare` | 54 | 120+ | D1, Workers AI, Queues, Durable Objects |
-| 🟡 9 | `openai` | 41 | 100+ | RAG pipelines, AI features |
-| 🟡 10 | `supabase` | 36 | 100+ | Auth, realtime, edge functions deeper |
-| 🟡 11 | `clerk` | 30 | 80+ | Multi-tenant auth for Cortiware |
-| 🟡 12 | `resend` | 23 | 70+ | Transactional email, React Email |
-| 🟡 13 | `anthropic` | 15 | 60+ | Claude API direct, message batches |
-| 🟡 14 | `sentry` | 17 | 60+ | Error tracking, performance monitoring |
-| 🟡 15 | `qdrant` | 17 | 60+ | Vector search, RAG infrastructure |
-| 🟢 16 | `upstash` | 149 | 180+ | Add Vector + Kafka namespaces |
-| 🟢 17 | `mapbox` | 15 | 60+ | Routing, geocoding, YardSync maps |
-| 🟢 18 | `n8n` | 13 | 50+ | Workflow automation deeper |
-| 🟢 19 | `postgres` | 12 | 50+ | Direct DB ops, query analysis |
-| 🟢 20 | `compound` | 11 | 50+ | Cross-service Super Tools |
-| 🟢 21 | `search` | 10 | 30+ | Brave + Tavily deeper |
-| ⬜ 22 | `playwright` | 0 | 60+ | NEW namespace — browser automation |
+| 🔴 1 | `github` | 201 | 250+ | Audit depth — Actions, code scanning, Dependabot, environments, traffic |
+| 🔴 2 | `anthropic` | 15 | 60+ | Claude API direct — batches, files, deeper messages, streaming |
+| 🔴 3 | `openai` | 41 | 100+ | RAG pipelines, Realtime API, Batch, Evals, Vector Stores deeper |
+| 🔴 4 | `cloudflare` | 54 | 120+ | D1, Workers AI, Queues, Durable Objects, Zero Trust |
+| 🔴 5 | `google` | 60 | 130+ | Gmail/Drive/Calendar/Sheets/Docs deeper coverage |
+| 🟠 6 | `stripe` | 71 | 130+ | Revenue critical, YardSync billing — Connect, Checkout, lifecycle |
+| 🟠 7 | `twilio` | 22 | 90+ | YardSync dispatch SMS/voice, critical gap |
+| 🟠 8 | `fly` | 37 | 100+ | Production hosting for backend services |
+| 🟡 9 | `supabase` | 36 | 100+ | Auth, realtime, edge functions deeper |
+| 🟡 10 | `clerk` | 30 | 80+ | Multi-tenant auth for Cortiware |
+| 🟡 11 | `resend` | 23 | 70+ | Transactional email, React Email |
+| 🟡 12 | `sentry` | 17 | 60+ | Error tracking, performance monitoring |
+| 🟡 13 | `qdrant` | 17 | 60+ | Vector search, RAG infrastructure |
+| 🟢 14 | `upstash` | 149 | 180+ | Add Vector + Kafka namespaces |
+| 🟢 15 | `mapbox` | 15 | 60+ | Routing, geocoding, YardSync maps |
+| 🟢 16 | `n8n` | 13 | 50+ | Workflow automation deeper |
+| 🟢 17 | `postgres` | 12 | 50+ | Direct DB ops, query analysis |
+| 🟢 18 | `compound` | 11 | 50+ | Cross-service Super Tools |
+| 🟢 19 | `search` | 10 | 30+ | Brave + Tavily deeper |
+| ⬜ 20 | `playwright` | 0 | 60+ | NEW namespace — browser automation |
 
 ---
 
@@ -73,28 +76,10 @@ Ordered by: **impact on Chris's active stack** → **size of gap** → **depende
 
 ---
 
-### `local` — Local Machine Bridge
-**Current: 14 handler / 13 registry (SYNC ISSUE)**  
-**Target: 30+ tools**
+### `local` — Local Machine Bridge ✅ COMPLETE (Session 4)
+**Final: 62 handler / 62 registry — perfect sync, target exceeded**
 
-Fix sync first, then add:
-- `local_search_in_files` — grep/search text across files in workspace
-- `local_watch_file` — monitor a file for changes
-- `local_get_file_hash` — md5/sha256 a file
-- `local_zip_directory` — zip a folder for deployment/backup
-- `local_diff_files` — compare two files line by line
-- `local_get_process_list` — list running processes
-- `local_kill_process` — kill a process by name or PID
-- `local_check_port` — check if a port is in use
-- `local_npm_run` — smart npm runner with output capture
-- `local_git_diff` — get current unstaged diff
-- `local_git_push` — push current branch to origin
-- `local_open_url` — open a URL in the default browser
-
-**Super Tools:**
-- `local_scaffold_nextjs_component` — create component file + types + test file
-- `local_setup_env_from_vercel` — pull env vars from Vercel and write to .env.local
-- `local_git_smart_commit` — stage changed files + write conventional commit + push
+Rebuilt in commit `df7dfd9` with full filesystem, processes, ports, env files, hashing, zipping, diff, git, npm, and Super Tools.
 
 ---
 
@@ -678,4 +663,4 @@ console.log('\nTotal registered tools:', total);
 
 ---
 
-*ClaudeBuildPlan.md — created Session 2. Update targets/status as namespaces are completed.*
+*ClaudeBuildPlan.md — created Session 2. Last updated Session 5 with Chris's directive: github → anthropic → openai → cloudflare → google priority order.*

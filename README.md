@@ -8,7 +8,7 @@
 
 Robinson's Toolkit connects Claude (via Claude Code or any MCP-compatible client) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a Vercel deployment, or send a dispatch SMS — it just does it, without you having to copy-paste API calls or switch context.
 
-The toolkit currently houses **674 tools** across **22 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always see exactly what your credentials unlock, nothing more.
+The toolkit currently houses **1,233 tools** across **22 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always see exactly what your credentials unlock, nothing more.
 
 ---
 
@@ -20,7 +20,7 @@ Robinson's Toolkit solves this with **Smart Discovery**.
 
 ### How Smart Discovery Works
 
-Instead of flooding the context with 674 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
+Instead of flooding the context with 1,233 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
 
 | Meta-Tool | What It Does |
 |---|---|
@@ -48,21 +48,28 @@ This toolkit is a **living, growing project**. The current priorities are the th
 
 | Priority | Namespace | Tools | Status |
 |---|---|---|---|
-| 🔴 Core | `github` | 201 | ✅ Complete — deep coverage |
-| 🔴 Core | `vercel` | 87 | ✅ Complete — full DevOps coverage |
-| 🔴 Core | `neon` | 87 | ✅ Complete — full DB + branching coverage |
-| 🟡 Active | `stripe` | varies | ✅ In registry |
-| 🟡 Active | `twilio` | varies | ✅ In registry |
-| 🟡 Active | `resend` | varies | ✅ In registry |
-| 🟡 Active | `upstash` | 150 | ✅ Full Redis command set |
-| 🟡 Active | `openai` | 41 | ✅ In registry |
-| 🟡 Active | `google` | 66 | ✅ Gmail, Drive, Calendar, Sheets, Docs |
-| 🟡 Active | `cloudflare` | 55 | ✅ Workers, KV, R2, Pages, DNS |
-| 🟡 Active | `supabase` | 36 | ✅ In registry |
-| 🟡 Active | `fly` | 37 | ✅ In registry |
-| 🟢 Available | `anthropic`, `clerk`, `mapbox`, `sentry`, `qdrant`, `n8n`, `postgres`, `search` | varies | ✅ In registry |
-| 🔵 Always On | `local` | 5 | ✅ No credentials needed |
-| 🔵 Always On | `compound` | 11 | ✅ No credentials needed |
+| 🔴 Core | `github` | 201 | ✅ Deep coverage — expanding to 250+ |
+| 🔴 Core | `vercel` | 150 | ✅ Complete — full DevOps coverage |
+| 🔴 Core | `neon` | 187 | ✅ Complete — full DB + branching + pgvector coverage |
+| 🟡 Active | `upstash` | 149 | ✅ Full Redis command set |
+| 🟡 Active | `stripe` | 71 | ✅ Customers, subscriptions, products, invoices, refunds |
+| 🟡 Active | `google` | 60 | ✅ Gmail, Drive, Calendar, Sheets, Docs |
+| 🟡 Active | `cloudflare` | 54 | ✅ Workers, KV, R2, Pages, DNS, firewall |
+| 🟡 Active | `openai` | 41 | ✅ Chat, embeddings, images, TTS, Whisper, Assistants |
+| 🟡 Active | `fly` | 37 | ✅ Machines, apps, volumes, scaling, secrets |
+| 🟡 Active | `supabase` | 36 | ✅ SQL, auth, storage, Edge Functions |
+| 🟡 Active | `clerk` | 30 | ✅ Users, organizations, sessions, JWT templates |
+| 🟡 Active | `resend` | 23 | ✅ Transactional email, domains, audiences |
+| 🟡 Active | `twilio` | 22 | ✅ SMS, voice, phone numbers |
+| 🟢 Available | `qdrant` | 17 | ✅ Vector search, collections |
+| 🟢 Available | `sentry` | 17 | ✅ Issues, releases, alerts |
+| 🟢 Available | `anthropic` | 15 | ✅ Claude completions, model management |
+| 🟢 Available | `mapbox` | 15 | ✅ Geocoding, routing, isochrones |
+| 🟢 Available | `n8n` | 13 | ✅ Workflows, executions |
+| 🟢 Available | `postgres` | 12 | ✅ Direct SQL execution |
+| 🟢 Available | `search` | 10 | ✅ Brave Search + Tavily |
+| 🔵 Always On | `local` | 62 | ✅ Complete local machine bridge |
+| 🔵 Always On | `compound` | 11 | ✅ Cross-service Super Tools |
 
 ---
 
@@ -219,7 +226,7 @@ Close and reopen Claude Code. You should see Robinson's Toolkit appear in the to
 ```
 ╔══════════════════════════════════════════════════════╗
 ║  Robinson's Toolkit MCP v2.0 — Active               ║
-║  674  tools across 14 namespaces                    ║
+║  1233 tools across 22 namespaces                    ║
 ║  Active: github, vercel, neon, fly...               ║
 ╚══════════════════════════════════════════════════════╝
 ```
@@ -369,14 +376,16 @@ More Super Tools will be added as real workflow patterns emerge from active use.
 
 ## Local Machine Tools
 
-The `local` namespace is always active and gives your agent direct access to your filesystem and terminal — scoped to `WORKSPACE_ROOT`.
+The `local` namespace is always active and gives your agent direct access to your filesystem, terminal, processes, ports, git, and npm — all scoped to `WORKSPACE_ROOT`. The namespace now houses **62 tools** covering everything a developer would do in a terminal.
 
-| Tool | What It Does |
+| Category | Examples |
 |---|---|
-| `local_read_file` | Read any file in your workspace |
-| `local_write_file` | Create or overwrite any file in your workspace |
-| `local_run_command` | Run any terminal command (git, npm, node, etc.) |
-| `local_list_directory` | List files and folders at any path |
+| Filesystem | `local_read_file`, `local_write_file`, `local_read_multiple_files`, `local_copy_file`, `local_move_file`, `local_delete_file`, `local_list_directory`, `local_make_directory`, `local_find_files`, `local_search_in_files`, `local_get_file_hash`, `local_diff_files`, `local_zip_directory`, `local_watch_file` |
+| Processes & Ports | `local_run_command`, `local_get_process_list`, `local_kill_process`, `local_check_port`, `local_get_system_info` |
+| Environment | `local_read_env_file`, `local_update_env_var` |
+| Git | `local_git_status`, `local_git_diff`, `local_git_log`, `local_git_branch`, `local_git_commit`, `local_git_push`, `local_git_smart_commit` |
+| npm/Node | `local_npm_install`, `local_npm_run`, `local_npm_outdated`, `local_npm_audit` |
+| Super Tools | `local_scaffold_nextjs_component`, `local_setup_env_from_vercel` |
 
 > **Security note:** All file operations are restricted to the `WORKSPACE_ROOT` path defined in your `.env`. Terminal commands run with standard user permissions. Do not point `WORKSPACE_ROOT` at a system directory.
 
@@ -404,10 +413,11 @@ Robinson's Toolkit MCP/
 │
 ├── registry/                 ← 22 JSON files — tool definitions for Smart Discovery
 │   ├── github.json           ← 201 GitHub tool definitions
-│   ├── vercel.json           ← 87 Vercel tool definitions
-│   ├── neon.json             ← 87 Neon tool definitions
-│   ├── upstash.json          ← 150 Redis tool definitions
-│   └── ... (18 more)
+│   ├── vercel.json           ← 150 Vercel tool definitions
+│   ├── neon.json             ← 187 Neon tool definitions
+│   ├── upstash.json          ← 149 Redis tool definitions
+│   ├── local.json            ← 62 local machine tool definitions
+│   └── ... (17 more)
 │
 └── Creation Docs/            ← Reference documents used during architecture planning
 ```
@@ -474,6 +484,6 @@ Planned additions (not yet implemented):
 
 ## Version
 
-**v2.0.0** — Smart Discovery architecture, 674 tools across 22 namespaces.
+**v2.0.0** — Smart Discovery architecture, 1,233 tools across 22 namespaces.
 
 Built by Chris Robinson, Robinson AI Systems LLC.

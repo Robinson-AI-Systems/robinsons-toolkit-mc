@@ -47,20 +47,21 @@
 
 ---
 
-## Current State — As of Session 3
+## Current State — As of Session 4
 
-**Total registered tools: 1,184** across 22 namespaces
-**Active at boot (WSL2 dev env): ~836** (depends on which .env keys are set)
+**Total registered tools: 1,233** across 22 namespaces
+**Active at boot (WSL2 dev env): ~885** (depends on which .env keys are set)
 
 ### Tool Count by Namespace
 
 | Namespace | Registry | Handler | Sync | Target | Gap |
 |---|---|---|---|---|---|
 | `github` | 201 | 201 | ✅ | 250+ | ~50 |
-| `vercel` | 150 | 150 | ✅ | 150 | **COMPLETE** |
 | `neon` | 187 | 187 | ✅ | 187 | **COMPLETE** |
+| `vercel` | 150 | 150 | ✅ | 150 | **COMPLETE** |
 | `upstash` | 149 | 149 | ✅ | 180+ | ~31 |
 | `stripe` | 71 | 71 | ✅ | 130+ | ~59 |
+| `local` | 62 | 62 | ✅ | 30+ | **COMPLETE** |
 | `google` | 60 | 60 | ✅ | 130+ | ~70 |
 | `cloudflare` | 54 | 54 | ✅ | 120+ | ~66 |
 | `openai` | 41 | 41 | ✅ | 100+ | ~59 |
@@ -73,31 +74,18 @@
 | `sentry` | 17 | 17 | ✅ | 60+ | ~43 |
 | `anthropic` | 15 | 15 | ✅ | 60+ | ~45 |
 | `mapbox` | 15 | 15 | ✅ | 60+ | ~45 |
-| `local` | 13 | 14 | ⚠️ | 30+ | sync + ~16 |
 | `n8n` | 13 | 13 | ✅ | 50+ | ~37 |
 | `postgres` | 12 | 12 | ✅ | 50+ | ~38 |
 | `compound` | 11 | 11 | ✅ | 50+ | ~39 |
 | `search` | 10 | 10 | ✅ | 30+ | ~20 |
 
+> **Audit script note:** The sync audit in Quick Commands below uses a regex `tool === '{namespace}_...'`. For namespaces with aliased prefixes (`google`→`gmail_*`/`drive_*`/`calendar_*`/`sheets_*`/`docs_*`, `cloudflare`→`cf_*`, `search`→`brave_*`/`tavily_*`), the script under-reports handler tool counts. These are NOT real sync issues — the actual routing in `index.js` handles the aliases correctly. The counts above reflect the true state.
+
 ---
 
 ## Known Sync Issues
 
-### ⚠️ `local` — Handler/Registry Mismatch (1 outstanding)
-**Handler has 14 tools, registry has 13.**
-
-In handler, missing from registry:
-```
-local_read_multiple_files, local_copy_file, local_make_directory,
-local_read_env_file, local_update_env_var, local_get_system_info,
-local_find_files
-```
-In registry, missing from handler:
-```
-local_create_directory, local_run_script, local_git_log,
-local_get_env, local_set_env, local_search_files
-```
-**Fix:** Reconcile — keep handler as truth, rewrite local.json, then expand both to 30+ tools.
+**None outstanding.** All 22 namespaces in perfect sync.
 
 ---
 
@@ -118,24 +106,20 @@ local_get_env, local_set_env, local_search_files
 | GitHub repo named `robinsons-toolkit-mc` | Renamed to `robinsons-toolkit-mcp` via API | `4ca8bc3` |
 | Git push not working (no PAT) | `GITHUB_PERSONAL_ACCESS_TOKEN` embedded in remote URL | `4ca8bc3` |
 | `neon.js` at 89 tools (87 registry, 2 gaps) | Expanded to 187 tools, 187 registry, perfect sync | `786943b` |
-
-### 🔴 Open — High Priority
-
-| # | Issue | File | Notes |
-|---|---|---|---|
-| 1 | `local.js` handler/registry out of sync | `handlers/local.js`, `registry/local.json` | 7 in handler not in registry, 6 in registry not in handler — reconcile, then expand to 30+ |
+| `local.js` handler/registry out of sync (14/13) | Rebuilt to 62/62, complete local machine bridge | `df7dfd9` |
 
 ### 🟠 Open — Medium Priority
 
 | # | Issue | Notes |
 |---|---|---|
-| 2 | `github.js` needs depth audit | 201 tools but need to verify Actions, Dependabot, code scanning, traffic coverage |
-| 3 | `stripe.js` under-built (71/130 target) | Connect platform, Checkout, billing lifecycle |
-| 4 | `google.js` under-built (60/130 target) | Deeper Gmail, Drive, Sheets, Calendar, Docs |
-| 5 | `twilio.js` under-built (22/90 target) | Voice, WhatsApp, Verify, Studio missing |
-| 6 | `fly.js` under-built (37/100 target) | Postgres clusters, volumes, certificates |
-| 7 | `cloudflare.js` under-built (54/120 target) | D1, Workers AI, Queues, Durable Objects |
-| 8 | `openai.js` under-built (41/100 target) | Realtime API, Batch, Evals, Vector Stores |
+| 1 | `github.js` under-built (201/250 target) | Actions, Dependabot, code scanning, environments, traffic, secrets |
+| 2 | `anthropic.js` under-built (15/60 target) | Batches, files, deeper messages, models, streaming utilities |
+| 3 | `cloudflare.js` under-built (54/120 target) | D1, Workers AI, Queues, Durable Objects, Zero Trust |
+| 4 | `openai.js` under-built (41/100 target) | Realtime API, Batch, Evals, Vector Stores |
+| 5 | `google.js` under-built (60/130 target) | Deeper Gmail, Drive, Sheets, Calendar, Docs |
+| 6 | `stripe.js` under-built (71/130 target) | Connect platform, Checkout, billing lifecycle |
+| 7 | `twilio.js` under-built (22/90 target) | Voice, WhatsApp, Verify, Studio missing |
+| 8 | `fly.js` under-built (37/100 target) | Postgres clusters, volumes, certificates |
 
 ### 🟢 Open — Low Priority
 
@@ -175,6 +159,12 @@ local_get_env, local_set_env, local_search_files
     data operations, pgvector/AI, full-text search, permissions/RLS,
     advanced monitoring, branching, billing, 8 Super Tools
 - Total: 1,084 → 1,184 registered / 836 active
+
+### Session 4 — Local Bridge Rebuild (commit `df7dfd9`)
+- Rebuilt `local.js`: 14 → 62 tools, registry 13 → 62, perfect sync
+- Resolved the longstanding handler/registry mismatch
+- Complete local machine bridge: filesystem, processes, ports, git, npm, env files, hashing, zipping, diff
+- Total: 1,184 → 1,233 registered / ~885 active
 
 ---
 
@@ -303,5 +293,5 @@ POSTGRES_CONNECTION_STRING= # postgres namespace
 
 ---
 
-*Last updated: Session 3 — neon.js expanded to 187 tools (complete), repo renamed, git push fixed.*
-*Next session: Fix local.js sync, then tackle github.js audit or stripe.js expansion per ClaudeBuildPlan.md.*
+*Last updated: Session 4 — local.js rebuilt to 62 tools (complete), all sync issues resolved.*
+*Session 5 priority order (per Chris): github → anthropic → openai → cloudflare → google.*
