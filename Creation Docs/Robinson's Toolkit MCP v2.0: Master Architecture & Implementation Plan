@@ -1,0 +1,130 @@
+Robinson's Toolkit MCP v2.0: Master
+Architecture & Implementation Plan
+CRITICAL DIRECTIVE FOR AI IMPLEMENTATION: The code snippets provided in this
+document are strictly illustrative EXAMPLES. Do not blindly copy-paste them into the repository.
+They demonstrate the intended architectural patterns and logic flow. Adapt these concepts to fit
+the exact repository structure, error handling, and environment constraints of Robinson's Toolkit.
+1. Executive Summary & Architectural Philosophy
+Robinson's Toolkit MCP v2.0 is designed as a "Fat Server, Lean Client" orchestration gateway.
+It strictly adheres to the Model Context Protocol (MCP). It is a universally project-agnostic
+developer utility—a highly advanced "mechanic's garage" used by an AI agent (the "Brain") to
+build target projects like YardSync and Cortiware. It is NOT an Agentic OS, nor is it a runtime
+dependency for the final built applications.
+1.1 The "Anti-OS" Boundaries
+To ensure the toolkit remains a compliant, fast, and predictable MCP server, the following
+boundaries are absolute:
+● No Multi-Agent Orchestration: The toolkit will NOT spawn sub-agents or worker LLMs.
+All workflows are managed by deterministic Node.js handler functions.
+● No Persisted Memory Layer: The toolkit will not store conversational history or vector
+databases of past chats. The LLM client (e.g., Claude Desktop, Cursor) is solely
+responsible for conversation memory.
+● Strict Gateway Principles: All API limits, credential management (via .env), and
+rate-limiting are handled synchronously by the Node.js process.
+
+2. Phase 1: Eradicating the "Tools Tax"
+The core innovation of v2.0 is the complete elimination of prompt bloat ("Agent Amnesia") by
+preventing the mass injection of 1,400+ tool schemas into the LLM's context window.
+2.1 Semantic Routing & Graceful Degradation
+The bridge (index.js) will initialize an in-memory semantic vector matrix using the
+Xenova/all-MiniLM-L6-v2 ONNX model. Furthermore, the bridge must enforce Graceful
+Degradation: during bootstrap, the server will probe process.env and silently drop entire
+namespaces from the semantic matrix if their respective credentials are missing. The server
+must never crash due to missing keys.
+// EXAMPLE ONLY - DO NOT COPY DIRECTLY
+const activeNamespaces = {
+
+stripe: !!process.env.STRIPE_SECRET_KEY,
+vercel: !!process.env.VERCEL_TOKEN,
+neon: !!process.env.NEON_API_KEY
+};
+async function initializeSemanticRouter(registry) {
+extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+for (const tool of registry) {
+const namespace = tool.name.split('_')[0];
+// Graceful Degradation: Silently skip tool if .env key is missing
+if (!activeNamespaces[namespace] && namespace !== 'local' && namespace !==
+'compound') continue;
+const text = `${tool.name}: ${tool.description}`.toLowerCase();
+const output = await extractor(text, { pooling: 'mean', normalize: true });
+registryMatrix.push({ ...tool, vector: output.data });
+}
+}
+
+2.2 Two-Phase Lazy Schema Loading
+When the LLM calls search_toolkit, it will receive only the tool names and brief descriptions. The
+LLM must explicitly call a subsequent retrieval tool (e.g., get_tool_schema) to inject the heavy
+JSON schema and enums into its context window just-in-time before execution.
+
+3. Phase 2: Hardware-Level Sandboxing
+Executing untrusted LLM shell commands directly via child_process.exec in local.js is a severe
+security risk. The architecture will replace application-layer path gating with ephemeral hardware
+isolation.
+3.1 MicroVM Execution Lifecycle
+Wrap local_run_command in a Firecracker microVM or gVisor sandbox. The execution lifecycle
+must follow an atomic process:
+1. Provision: Clone only the required WORKSPACE_ROOT directory into the VM.
+2. Run: Execute the command in an isolated kernel network namespace.
+3. Teardown & Sync: Capture output, validate artifacts against egress rules, sync approved
+
+files back to the host, and instantly destroy the VM.
+
+4. Phase 3: Reversible State & Local-Cloud Bridging
+4.1 The Observability Ledger (Deterministic Rollback)
+Every state-mutating tool must become an atomic transaction with a deterministic rollback path.
+The router will maintain an observability ledger. When a mutation tool is called (e.g.,
+github_create_branch), its inverse receipt (e.g., github_delete_branch) is pushed to the ledger.
+The toolkit will expose a compound_rollback_transaction tool, allowing the agent to flush the
+ledger and revert changes if a hallucination or error occurs.
+4.2 Local-Cloud Bridging ("God Mode")
+The AI agent is explicitly instructed to act as a bridge between cloud infrastructure and the local
+filesystem. When the agent uses a cloud tool to generate resources (e.g., provisioning a Neon
+database), it must autonomously use the local_write_file tool to inject the resulting credentials
+(e.g., connection strings) directly into the local project's .env.local file without requiring manual
+developer intervention.
+
+5. Phase 4: The "Dev-Plugin" Architecture
+(Project-Agnostic Super Tools)
+To ensure the MCP server remains universally applicable, domain-specific logic (e.g., YardSync
+routing) must never be hardcoded into the core MCP handlers. Instead, project-specific "Super
+Tools" will be implemented as toggleable Dev-Plugins.
+5.1 Environment-Gated Plugin Namespaces
+Create a handlers/dev-plugins/ directory. Plugins are activated via .env flags (e.g.,
+ENABLE_YARDSYNC_DEV_TOOLS=true). These tools are strictly for scaffolding, mocking,
+and simulating during development, NOT for runtime production logic.
+Plugin Tool Name Target Project Dev-Time Purpose
+
+yardsync_mock_telemetry_s
+tream
+
+YardSync Blasts synthetic truck GPS
+coordinates into the local DB
+to test map UI rendering.
+yardsync_simulate_twilio_in YardSync Fires a synthetic SMS
+webhook to localhost to test
+
+Plugin Tool Name Target Project Dev-Time Purpose
+
+bound dispatch logic without
+consuming API credits.
+
+cortiware_scaffold_test_tena
+nt
+
+Cortiware Instantly provisions a mock
+B2B tenant (DB schema,
+Stripe customer, Clerk auth)
+for local testing.
+
+6. Phase 5: Legacy Migration (Stripe & Google
+Workspace)
+Retire the old standalone native connectors. Port Stripe and Google Workspace operations
+directly into the centralized toolkit by creating handlers/stripe.js and handlers/google.js. Ensure
+these modules rigorously follow the Graceful Degradation rules outlined in Phase 1.
+
+7. Phase 6: SEO for LLMs (Schema Descriptions)
+Because the Semantic Router relies on intent mapping, JSON registry schema descriptions are
+mission-critical. They must guide the AI directly on when and why to use a tool.
+● Bad Description: "Deploys a project to Vercel."
+● Optimized Description: "PREFERRED DEPLOYMENT METHOD. Use this compound
+tool instead of standard Vercel deployment. Automatically handles local builds, syncs env
+vars, and deploys securely without requiring individual shell commands."

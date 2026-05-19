@@ -1,0 +1,108 @@
+Robinson's Toolkit MCP Improvements:
+Architecture Implementation Plan
+CRITICAL DIRECTIVE FOR CLAUDE: The code snippets provided in this document are strictly
+illustrative EXAMPLES. Do not blindly copy-paste them into the repository. They demonstrate
+the intended architectural patterns and logic flow for Robinson's Toolkit MCP v2.0. You must
+adapt these concepts to fit the exact repository structure, error handling, and environment
+constraints.
+Executive Summary
+This document outlines the master architectural plan to upgrade Robinson's Toolkit MCP v2.0.
+The goal is to maintain the toolkit strictly as a high-performance orchestration gateway tailored
+for the autonomous lifecycle management of YardSync, without bloating it into an "Agentic OS"
+(no persistent memory, no multi-agent orchestration).
+Phase 1: Eradicating the "Tools Tax" (Semantic
+Routing & Two-Phase Gating)
+The current synchronous, keyword-based search tool is fragile and consumes excess tokens.
+The upgrade requires migrating to in-memory semantic vector embeddings to allow intent-based
+searching, while strictly controlling context injection.
+1.1 Vector Initialization & Semantic Routing
+Implement Xenova/all-MiniLM-L6-v2 to compute 384-dimensional embeddings of all 1,400+ tool
+descriptions on server bootstrap.
+// EXAMPLE ONLY - DO NOT COPY DIRECTLY
+----import { pipeline, cos_sim } from '@huggingface/transformers';
+let extractor;
+let registryMatrix = [];
+// Run during server bootstrap
+async function initializeSemanticRouter(registry) {
+extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+for (const tool of registry) {
+const text = `${tool.name}: ${tool.description}`.toLowerCase();
+const output = await extractor(text, { pooling: 'mean', normalize: true });
+
+registryMatrix.push({ ...tool, vector: output.data }---
+
+1.2 Two-Phase Lazy Schema Loading
+Update the search toolkit to return only the tool name and a brief description. The LLM must
+explicitly call a retrieval tool to inject the heavy JSON schema and enums into the context
+window just-in-time before execution. This will drastically cut token consumption.
+
+Phase 2: Hardware-Level Sandboxing (Deprecating
+Host Shell Access)
+Executing untrusted LLM shell commands directly via the host shell is a severe security risk.
+Replace application-layer path gating with ephemeral hardware isolation.
+2.1 MicroVM Execution Lifecycle
+Wrap local command executions in a Firecracker microVM or gVisor sandbox API. The workflow
+should follow: Propose -> Provision (clone required directory only) -> Run (isolated kernel
+network namespace) -> Teardown (capture output, destroy VM).
+// EXAMPLE ONLY - DO NOT COPY DIRECTLY
+-----async function sandboxedExecute(command, cwd) {
+// 1. Provision Ephemeral VM API Call
+const vmId = await firecracker.provision({ root: cwd, memory: 512 });
+try {
+// 2. Execute via isolated socket
+const result = await firecracker.exec(vmId, command, { timeout: 30000 });
+// 3. Sync approved artifacts back to host
+await firecracker.syncArtifacts(vmId, cwd);
+return { success: true, stdout: result.stdout, stderr: result.stderr };
+} catch (err) {
+return { success: false, error: err.message, isError: true };
+} finally {
+// 4. Absolute destruction
+await firecracker.destroy(vmId);----
+
+Phase 3: The Reversible Capability Lifecycle
+To prevent catastrophic hallucinations, every state-mutating tool must become an atomic
+transaction with a deterministic rollback path.
+3.1 Deterministic Rollback Mapping
+Implement an observability ledger in the router. When a mutation tool is called, log its inverse
+receipt. Expose a compound_rollback_transaction tool allowing the agent to flush the ledger and
+revert changes. Examples include:
+● Vercel: vercel_create_deployment -> vercel_cancel_deployment
+● GitHub: github_create_branch -> github_delete_branch
+● Neon: neon_run_sql -> neon_restore_branch_to_timestamp
+
+Phase 4: YardSync Domain-Specific "Super Tools"
+Build compound "Super Tools" that handle heavy B2B orchestration internally, saving tokens
+and standardizing execution.
+Domain Super Tool Example Purpose
+
+Fleet Routing mapbox_optimize_route Takes an array of geospatial
+coordinates (dumpster
+pickups) and returns an
+optimized driver sequence.
+IoT / Logistics routeware_simulate_pickup Mocks driver service
+verification for agent test
+suites.
+
+B2B Telecom (Twilio) twilio_simulate_dispatch_flo
+
+w
+
+Scaffolds a webhook,
+triggers a DB update, and
+verifies SMS transmission
+atomically.
+
+Domain Super Tool Example Purpose
+
+Billing & Comms stripe_mock_webhook Simulates multi-tenant SaaS
+subscription events.
+
+Summary of "Anti-OS" Boundaries
+These boundaries must be strictly respected by the toolkit implementation:
+● No Memory Layer: The toolkit will not store conversational history or vector databases of
+past chats.
+● No Multi-Agent Orchestration: The toolkit will not spawn sub-agents. It responds to a
+single client deterministically.
+● Strict Gateway Principles: All API limits, credential management (.env), and rate-limiting
+are handled synchronously by the Node.js process.
