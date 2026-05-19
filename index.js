@@ -90,6 +90,7 @@ function getActiveNamespaces() {
     postgres:   () => !!process.env.POSTGRES_CONNECTION_STRING,
     local:      () => true, // Always available — local machine access
     compound:   () => true, // Always available — compound tools use whatever is configured
+    ollama:     () => true, // Always available — local Ollama LLM (no API key needed)
   };
   for (const [name, check] of Object.entries(checks)) {
     namespaces[name] = check();
