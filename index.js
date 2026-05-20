@@ -527,11 +527,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     };
 
   } catch (error) {
+    // For known API-class errors (429 quota, 4xx auth/billing, 5xx upstream)
+    // the stack trace is noise — the message is already self-explanatory.
+    // Anything else is treated as a programming error and gets the stack.
+    const apiPrefix = /^(Gemini|Anthropic|OpenAI|Stripe|GitHub|Vercel|Neon|Fly|Cloudflare|Supabase|Twilio|Resend|Sentry|Clerk|Mapbox|Linear|Slack|Qdrant|Upstash|Context7|n8n|Postgres)\s+\d{3}\b/i;
+    const isApiError = apiPrefix.test(error.message || '');
     return {
       content: [{
         type: 'text',
-        text: `Error executing ${name}: ${error.message}\n\n` +
-          (error.stack ? `Stack: ${error.stack}` : '')
+        text: `Error executing ${name}: ${error.message}` +
+          (isApiError || !error.stack ? '' : `\n\nStack: ${error.stack}`)
       }],
       isError: true
     };

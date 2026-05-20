@@ -259,7 +259,7 @@ async function execute(tool, args) {
 
   // ── 9. EMBEDDINGS ─────────────────────────────────────────────────────────
   if (tool === 'gemini_generate_embeddings') {
-    const { text, model = 'text-embedding-004', task_type } = args;
+    const { text, model = 'gemini-embedding-001', task_type } = args;
     if (text === undefined || text === null) throw new Error('text is required (string or array of strings)');
     if (Array.isArray(text)) {
       const requests = text.map(t => ({
