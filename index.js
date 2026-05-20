@@ -91,6 +91,8 @@ function getActiveNamespaces() {
     n8n:        () => !!process.env.N8N_BASE_URL && !!process.env.N8N_API_KEY,
     postgres:   () => !!process.env.POSTGRES_CONNECTION_STRING,
     context7:   () => !!process.env.CONTEXT7_API_KEY,
+    linear:     () => !!process.env.LINEAR_API_KEY,
+    slack:      () => !!process.env.SLACK_BOT_TOKEN,
     playwright: () => true, // Always available — local browser automation (no API key needed)
     local:      () => true, // Always available — local machine access
     compound:   () => true, // Always available — compound tools use whatever is configured

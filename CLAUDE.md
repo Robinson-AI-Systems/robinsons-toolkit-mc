@@ -34,10 +34,10 @@
 
 ---
 
-## Current State — Session 10
+## Current State — Session 11
 
-**Total registered tools: 2,238** across 25 namespaces
-**Validation: ✅ 25/25 namespaces perfectly synced** (run `node audit.js` to verify)
+**Total registered tools: 2,313** across 25 namespaces
+**Validation: ✅ 27/27 namespaces perfectly synced** (run `node audit.js` to verify)
 **Observability Ledger:** every state-mutating tool call records a reversal receipt to `.toolkit-ledger.jsonl`; `compound_rollback_transaction` undoes recent agent actions.
 
 ### Namespace Status — Sorted by tool count
@@ -68,6 +68,8 @@
 | `playwright` | 34 | ✅ | ✅ COMPLETE (NEW) |
 | `search` | 23 | ✅ | ✅ COMPLETE |
 | `compound` | 23 | ✅ | ✅ COMPLETE (+ rollback) |
+| `linear` | 38 | ✅ | ✅ COMPLETE (NEW) |
+| `slack` | 37 | ✅ | ✅ COMPLETE (NEW) |
 | `ollama` | 16 | ✅ | ✅ COMPLETE |
 
 ---
@@ -77,8 +79,8 @@
 The backlog is empty. All planned namespaces are built and synced.
 
 ### What's been built:
-- **25 namespaces**, **2,238 registered tools**
-- Every namespace tested with `node audit.js` (25/25 ✅)
+- **27 namespaces**, **2,313 registered tools**
+- Every namespace tested with `node audit.js` (27/27 ✅)
 - Boot test: clean (exit 124)
 - Observability Ledger + `compound_rollback_transaction` (Phase 3.1)
 - Phase 6 description polish on all pinned tools
@@ -128,7 +130,7 @@ Validated all namespaces; compound 11→22, search 10→23. Total: 2,141.
 - Audit now reports 25/25 synced (was 24/25 with 5 H-not-R gaps in context7)
 - Total: 2,237 across 25 namespaces
 
-### Session 10 (current) — Observability Ledger + Phase 6 polish
+### Session 10 (`ee21b28`) — Observability Ledger + Phase 6 polish
 - **Phase 3.1 — Observability Ledger:** `ledger.js` (append/read/markRolledBack of `.toolkit-ledger.jsonl`), `inverses.js` (reversal map for ~20 mutation tools across GitHub/Neon/Vercel/Fly), `routeToolCall` records receipts after successful mutations.
 - **`compound_rollback_transaction`** (NEW pinned tool): replays inverses in reverse order. Filters by `last_n` / `since` / `transaction_id`; supports `dry_run` to preview the plan.
 - **Phase 6 — Description polish:** rewrote all 13 pinned tool descriptions with intent-leading "PREFERRED / POWER TOOL / USE THIS WHEN" language. Fixed factual drift (local_* tools now correctly say WSL2/Linux, not Windows).
@@ -159,6 +161,10 @@ git add -A && git commit -m "..." && git push origin main
 
 ```
 WORKSPACE_ROOT=
+LINEAR_API_KEY=                  # linear.app → Settings → API → Personal API keys
+SLACK_BOT_TOKEN=                 # xoxb-... from Slack app → OAuth & Permissions
+SLACK_DEFAULT_CHANNEL=           # optional default channel ID for quick sends
+
 GITHUB_TOKEN=
 VERCEL_TOKEN=
 NEON_API_KEY=
@@ -201,4 +207,13 @@ OLLAMA_TIMEOUT_MS=               # default: 300000
 
 ---
 
-*Last updated: Session 10 — 2,238 tools · 25/25 synced · BUILD COMPLETE · Observability Ledger live*
+### Session 11 (current) — Linear + Slack namespaces
+- linear: 0→38 (NEW — issues, projects, cycles, teams, sprints, Super Tools)
+- slack: 0→37 (NEW — messages, channels, users, reactions, files, Super Tools)
+- Removed incorrectly added posthog handler (PostHog is a Claude Desktop connector)
+- index.js: added linear + slack to namespace credential checks
+- Total: 2,313 across 27 namespaces
+
+---
+
+*Last updated: Session 11 — 2,238 tools · 25/25 synced · BUILD COMPLETE · Observability Ledger live*
