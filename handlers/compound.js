@@ -425,7 +425,7 @@ async function execute(tool, args) {
       const neon = await loadHandler('neon');
       await neon.execute('neon_run_sql', {
         project_id: neon_project_id,
-        sql: `UPDATE ${schema}.${table_name} SET ${lat_col} = ${geo.latitude}, ${lng_col} = ${geo.longitude}, ${address_col} = '${geo.place_name.replace(/'/g, "''")}' WHERE id = ${record_id}`
+        sql: `UPDATE ${schema}.${table_name} SET ${lat_col} = ${geo.latitude}, ${lng_col} = ${geo.longitude}, ${address_col} = '${geo.place_name.replace(/'/g, "''")}'WHERE id = ${record_id}`
       });
       return { success: true, record_id, latitude: geo.latitude, longitude: geo.longitude, normalized_address: geo.place_name };
     }
@@ -693,8 +693,7 @@ ${additional_context || ''}`;
 **Level:** ${issue.level} | **Count:** ${issue.count}
 **First seen:** ${issue.firstSeen}
 **Last seen:** ${issue.lastSeen}`;
-      if (latestEvent?.culprit) issueDesc += `
-**Culprit:** ${latestEvent.culprit}`;
+      if (latestEvent?.culprit) issueDesc += `\n**Culprit:** ${latestEvent.culprit}`;
       results.steps.push({ step: 'sentry_fetch', success: true });
     } catch (e) { results.steps.push({ step: 'sentry_fetch', success: false, error: e.message }); }
     const linear = await loadHandler('linear');
@@ -704,8 +703,7 @@ ${additional_context || ''}`;
     if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
       try {
         const slack = await loadHandler('slack');
-        await slack.execute('slack_send_alert', { channel: slack_channel, title: issueTitle, message: `Linear issue created: ${created.issue?.identifier}
-${issueDesc.slice(0, 200)}`, severity: 'warning', action_url: created.issue?.url, action_text: 'View in Linear' });
+        await slack.execute('slack_send_alert', { channel: slack_channel, title: issueTitle, message: `Linear issue created: ${created.issue?.identifier}\n${issueDesc.slice(0, 200)}`, severity: 'warning', action_url: created.issue?.url, action_text: 'View in Linear' });
         results.steps.push({ step: 'slack_notify', success: true });
       } catch (e) { results.steps.push({ step: 'slack_notify', success: false, error: e.message }); }
     }
@@ -748,8 +746,7 @@ ${issueDesc.slice(0, 200)}`, severity: 'warning', action_url: created.issue?.url
       `*Dates:* ${new Date(cycle.startsAt).toLocaleDateString()} → ${new Date(cycle.endsAt).toLocaleDateString()}`,
       `*Issues in sprint:* ${inCycle.length}`,
       inCycle.filter(i => i.priority === 1).length ? `*🚨 Urgent:* ${inCycle.filter(i => i.priority === 1).map(i => i.identifier).join(', ')}` : ''
-    ].filter(Boolean).join('
-');
+    ].filter(Boolean).join('\n');
     if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
       const slack = await loadHandler('slack');
       const msg = await slack.execute('slack_send_message', { channel: slack_channel, text });

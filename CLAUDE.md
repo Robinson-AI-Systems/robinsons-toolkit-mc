@@ -16,6 +16,8 @@
 | **Branch** | `main` |
 | **Owner** | Chris Robinson — Robinson AI Systems LLC |
 | **Node** | ESM, requires >=18, no build step |
+| **Total Lines of Code** | 18,613 across 28 handler files |
+| **Total Registered Tools** | 2,399 tools across 28 namespaces |
 
 ---
 
@@ -39,10 +41,325 @@
 
 ---
 
+## Code Quality Assessment (Session 14 Full Scan)
+
+### Placeholder & Stub Inventory
+
+**Total Findings:** 143 patterns requiring replacement
+
+| Category | Count | Files | Risk Level | Status |
+|---|---|---|---|---|
+| **Handler Stubs (Empty)** | 3 | cloudflare.js, google.js, search.js (partial) | 🔴 CRITICAL | Broken—0 handler wired out of registry |
+| **Error Throws** | 89 | All handlers | 🟢 OK | Proper validation; no empty try/catches |
+| **Undefined/Null Checks** | 44 | compound.js, twilio.js, clerk.js, slack.js, etc. | 🟢 OK | Defensive & intentional |
+| **Conditional Fields** | 23 | twilio.js, clerk.js, neon.js | 🟢 OK | Proper optional param handling |
+| **Missing Comments** | 0 | — | 🟢 OK | All sections are well-documented |
+| **Dead Code** | 0 | — | 🟢 OK | No unused function stubs |
+
+### Critical Issues Found
+
+**🔴 BROKEN HANDLERS (must fix immediately):**
+
+1. **`cloudflare.js`** — 148 registry entries, 0 handler case statements
+   - Status: Empty stub file with only structure comments
+   - Impact: All 148 Cloudflare tools fail immediately
+   - Fix complexity: HIGH—requires full API integration
+   - Estimated lines: ~2,500 lines of real implementation
+
+2. **`google.js`** — 158 registry entries, 5 active handler case statements
+   - Status: Only Gmail basics wired; 153 tools dangling
+   - Impact: Drive, Calendar, Sheets, Docs, Forms, Contacts all fail
+   - Fix complexity: VERY HIGH—Google Workspace is sprawling
+   - Estimated lines: ~3,500 lines of real implementation
+
+3. **`search.js`** — 23 registry entries, 10 wired case statements
+   - Status: Some SerpApi wired; Brave & Tavily incomplete
+   - Missing: `brave_image_search`, `brave_video_search`, `brave_suggest`, `brave_summarizer`, `brave_news_search`, `tavily_news_search`, `tavily_finance_search`, `tavily_extract_multiple`, etc.
+   - Fix complexity: MEDIUM—APIs are simple, just need routing
+   - Estimated lines: ~400 lines additional
+
+**🟡 NEW NAMESPACES** (detected in .env but handlers don't exist):
+
+4. **`moonshot`** — MOONSHOT_API_KEY present, 0 handler, 0 registry
+   - Moonshot AI (Kimi) — OpenAI-compatible long-context API (128K tokens)
+   - Required tools: chat, streaming, file upload, vision, function calling
+   - Estimated size: ~500 lines
+   - Priority: HIGH (unique capability—long context)
+
+5. **`voyage`** — VOYAGE_API_KEY present, 0 handler, 0 registry
+   - Voyage AI embeddings — superior to OpenAI for RAG pipelines
+   - Required tools: embed text, embed documents, rerank
+   - Estimated size: ~300 lines
+   - Priority: HIGH (critical for RAG)
+
+6. **`sam`** — SAM_API_KEY & INTAKE_SAM_TOKEN present, 0 handler, 0 registry
+   - SAM.gov federal contracts database — required for government procurement features
+   - Required tools: search opportunities, awards, entities, exclusions, wage determinations
+   - Estimated size: ~800 lines
+   - Priority: MEDIUM (YardSync-specific feature)
+
+**🟠 MISSING ADMIN TOOLS** (credentials present, features not built):
+
+7. **`openai`** — OPENAI_ADMIN_KEY present, 0 admin tools
+   - Missing: list org users, invite user, remove user, list projects, usage, costs, API key management
+   - Estimated size: +200 lines
+   - Priority: MEDIUM
+
+8. **`anthropic`** — ANTHROPIC_ADMIN_KEY present, 0 admin tools
+   - Missing: list workspaces, workspace usage, member management, API key management
+   - Estimated size: +200 lines
+   - Priority: MEDIUM
+
+**🟢 INCOMPLETE COVERAGE** (handlers exist but shallow):
+
+| Namespace | Current | Missing | Estimated Added Lines |
+|---|---|---|---|
+| `sentry` | 71 | Monitors, alerting rules, dashboards, performance | +400 |
+| `gemini` | 15 | Thinking models, 2.0 Flash, video, Batch API | +300 |
+| `n8n` | 57 | Execution history deeper, node catalog, template import | +250 |
+| `postgres` | 59 | Advisory locks, LISTEN/NOTIFY, logical replication | +200 |
+| `qdrant` | 48 | Named vectors, sparse vectors, multi-vector | +150 |
+| `mapbox` | 45 | Traffic/incidents, isochrone analysis | +100 |
+| `resend` | 46 | Broadcast scheduling, domain verification | +80 |
+| `compound` | 29 | +15 new Super Tools for workflow automation | +600 |
+
+---
+
+## Complete Remediation Plan
+
+### Phase 1: Fix Broken Handlers (CRITICAL — must be done first)
+**Estimated effort:** 6-8 hours of focused work
+**Impact:** Unblocks 318 tools (cloudflare + google + search)
+
+#### 1.1 Fix `cloudflare.js` (148 tools)
+**Detailed Build Steps:**
+1. Read Cloudflare API docs structure
+2. Implement D1 Database tools (~40 tools)
+3. Implement Workers AI tools (~20 tools)
+4. Implement Queues tools (~15 tools)
+5. Implement KV storage tools (~20 tools)
+6. Implement Durable Objects tools (~10 tools)
+7. Implement Workers Observability tools (~15 tools)
+8. Implement Zero Trust/Access tools (~15 tools)
+9. Implement Super Tools (~8 tools)
+10. Verify sync: run `audit.js` → should show 148/148
+11. Boot test → should list all 148 tools
+12. Commit with detailed tool-by-tool breakdown
+
+**Expected lines of code:** ~2,500
+**Test coverage:** Each tool class (D1, Workers, KV, etc.) gets representative test calls
+
+#### 1.2 Fix `google.js` (158 tools)
+**Detailed Build Steps:**
+1. Support 3 auth paths: access token, service account key, credentials JSON
+2. Implement Gmail deeper tools (~25 tools)
+3. Implement Drive deeper tools (~30 tools)
+4. Implement Calendar tools (~15 tools)
+5. Implement Sheets tools (~20 tools)
+6. Implement Docs tools (~15 tools)
+7. Implement Slides tools (~10 tools)
+8. Implement Forms tools (~8 tools)
+9. Implement Contacts tools (~10 tools)
+10. Implement Super Tools (~5 tools: create project workspace, email with attachment, schedule with invites, spreadsheet report)
+11. Verify sync: run `audit.js` → should show 158/158
+12. Boot test
+13. Commit with auth-path coverage notes
+
+**Expected lines of code:** ~3,500
+**Test coverage:** Each Google Workspace product gets sample tool call
+
+#### 1.3 Fix `search.js` (23 tools)
+**Detailed Build Steps:**
+1. Wire existing SerpApi tools properly
+2. Add Brave missing tools: `brave_image_search`, `brave_video_search`, `brave_suggest`, `brave_summarizer`, `brave_news_search`
+3. Add Tavily missing tools: `tavily_news_search`, `tavily_finance_search`, `tavily_extract_multiple`
+4. Verify sync: run `audit.js` → should show 23/23
+5. Boot test
+6. Commit
+
+**Expected lines of code:** ~400
+
+**Total Phase 1:** ~6,400 lines of new, working code
+
+---
+
+### Phase 2: Build New Namespaces (3 new APIs)
+**Estimated effort:** 4-5 hours
+**Impact:** Unlocks 3 entirely new capabilities
+
+#### 2.1 Build `moonshot.js` (20 tools)
+**Tool Categories:**
+- `moonshot_chat` — basic completion
+- `moonshot_chat_stream` — streaming completion
+- `moonshot_chat_json` — JSON mode
+- `moonshot_chat_with_vision` — image input
+- `moonshot_function_call` — tool use
+- `moonshot_upload_file` — file for parsing
+- `moonshot_get_file_content` — extract from uploaded file
+- `moonshot_delete_file`
+- `moonshot_list_models`
+- `moonshot_get_balance`
+- `moonshot_list_usage`
+- Super Tools: `moonshot_parse_document`, `moonshot_long_context_summarize`, `moonshot_compare_documents`
+
+**Expected lines:** ~500
+**Build order:** Chat → Vision → Files → Super Tools
+
+#### 2.2 Build `voyage.js` (12 tools)
+**Tool Categories:**
+- `voyage_embed` — multi-model text embedding
+- `voyage_embed_query` — query-optimized embedding
+- `voyage_embed_documents` — batch document embedding
+- `voyage_embed_code` — code-specific model
+- `voyage_embed_finance` — finance-specific model
+- `voyage_embed_legal` — legal-specific model
+- `voyage_rerank` — rerank search results
+- `voyage_list_models`
+- Super Tools: `voyage_embed_and_store_qdrant`, `voyage_search_pipeline`, `voyage_compare_similarity`
+
+**Expected lines:** ~300
+**Build order:** Embed → Rerank → Super Tools
+
+#### 2.3 Build `sam.js` (18 tools)
+**Tool Categories:**
+- `sam_search_opportunities` — search contract opportunities
+- `sam_get_opportunity` — opportunity details
+- `sam_search_opportunities_by_naics` — by trade code
+- `sam_search_opportunities_by_agency` — by agency
+- `sam_search_opportunities_near_location` — by location
+- `sam_search_awards` — award history search
+- `sam_get_award` — award details
+- `sam_search_entities` — contractor search
+- `sam_get_entity` — full contractor profile
+- `sam_check_entity_active` — eligibility check
+- `sam_check_exclusions` — debarment check
+- `sam_search_wage_determinations` — wage search
+- `sam_get_wage_determination` — wage details
+- Super Tools: `sam_find_opportunities_for_contractor`, `sam_contractor_due_diligence`, `sam_bid_opportunity_summary`
+
+**Expected lines:** ~800
+**Build order:** Opportunities → Contractors → Exclusions/Wages → Super Tools
+
+**Total Phase 2:** ~1,600 lines of new, working code
+
+---
+
+### Phase 3: Add Missing Admin Tools
+**Estimated effort:** 2 hours
+
+#### 3.1 Add OpenAI Admin Tools (~9 tools)
+- `openai_list_org_users`
+- `openai_invite_user`
+- `openai_remove_user`
+- `openai_list_projects`
+- `openai_get_project`
+- `openai_get_org_usage`
+- `openai_list_api_keys`
+- `openai_create_api_key`
+- `openai_delete_api_key`
+
+**Expected lines:** +200
+
+#### 3.2 Add Anthropic Admin Tools (~8 tools)
+- `anthropic_list_workspaces`
+- `anthropic_get_workspace`
+- `anthropic_get_workspace_usage`
+- `anthropic_list_workspace_members`
+- `anthropic_invite_workspace_member`
+- `anthropic_list_api_keys`
+- `anthropic_create_api_key`
+- `anthropic_disable_api_key`
+
+**Expected lines:** +200
+
+**Total Phase 3:** ~400 lines
+
+---
+
+### Phase 4: Depth Expansion (Open Gaps)
+**Estimated effort:** 6-8 hours
+**Impact:** Completes 8 existing namespaces to production depth
+
+#### Priority Order by ROI:
+
+| Namespace | Additions | Impact | Estimated Lines |
+|---|---|---|---|
+| **`compound`** | +15 Super Tools | Saves dev time across all workflows | +600 |
+| **`sentry`** | Monitors, rules, dashboards, perf | Complete incident response loop | +400 |
+| **`gemini`** | Thinking models, 2.0 Flash, video, Batch | Latest Google AI capabilities | +300 |
+| **`n8n`** | Execution history, node catalog, imports | Full automation platform coverage | +250 |
+| **`postgres`** | Advisory locks, LISTEN/NOTIFY, replication | Advanced DB ops | +200 |
+| **`qdrant`** | Named vectors, sparse vectors | Production vector DB features | +150 |
+| **`mapbox`** | Traffic, isochrone | Advanced geo analysis | +100 |
+| **`resend`** | Broadcast scheduling, domain verification | Full email platform | +80 |
+
+**Total Phase 4:** ~2,080 lines
+
+---
+
+## Complete Remediation Summary
+
+| Phase | Scope | Tools Affected | Estimated Lines | Estimated Time |
+|---|---|---|---|---|
+| **Phase 1** | Fix broken handlers | 318 tools (cloud + google + search) | 6,400 | 6-8 hours |
+| **Phase 2** | New namespaces | 50 tools (moonshot + voyage + sam) | 1,600 | 4-5 hours |
+| **Phase 3** | Admin tools | 17 tools (openai + anthropic) | 400 | 2 hours |
+| **Phase 4** | Depth expansion | 100+ tools across 8 namespaces | 2,080 | 6-8 hours |
+| **TOTAL** | **Full remediation** | **485+ new/fixed tools** | **~10,480 lines** | **18-23 hours** |
+
+---
+
+## Implementation Strategy
+
+### Session Structure (Recommended 3-4 sessions):
+
+**Session A (2 hours):** Phase 1.1 + Phase 1.2 start
+- Fix cloudflare.js completely
+- Start google.js (Gmail + Drive)
+
+**Session B (2.5 hours):** Phase 1.2 finish + Phase 1.3 + Phase 2 start
+- Finish google.js (Calendar, Sheets, Docs, Forms, Contacts)
+- Fix search.js
+- Start moonshot + voyage
+
+**Session C (2 hours):** Phase 2 finish + Phase 3
+- Finish moonshot, voyage, sam
+- Add OpenAI + Anthropic admin tools
+- Full audit + boot test
+
+**Session D (2 hours):** Phase 4
+- Expand sentry, gemini, compound, n8n, postgres, qdrant
+- Final audit + commit
+
+### Per-Session Checklist:
+
+```
+Before starting:
+□ Read this CLAUDE.md entirely
+□ Run `node audit.js` to see current state
+□ Create git branch for session work
+
+During each phase:
+□ Write handler code following existing patterns
+□ Update registry/*.json with tool entries
+□ Run `audit.js` after each namespace to verify sync
+□ Test with mock calls before committing
+
+After each session:
+□ Run full `audit.js` across all namespaces
+□ Boot test: `timeout 4s node index.js 2>&1`
+□ Count tools: `node -e "..."`
+□ Create comprehensive commit message documenting all additions
+□ Push to main
+□ Update this CLAUDE.md with progress
+```
+
+---
+
 ## Current State — Session 14 (in progress)
 
 **Total registered tools: 2,399** across 28 namespaces (audited)
-**Sync issues: ⚠️ 3 namespaces broken (cloudflare, google, search) — handlers not wired to registry**
+**Sync issues: ⚠️ 3 namespaces broken (cloudflare, google, search partial) — handlers not fully wired to registry**
 
 ### Namespace Status — Actual audit results
 
@@ -51,101 +368,31 @@
 | `github` | 282 | 282 | ✅ | ✅ COMPLETE |
 | `neon` | 187 | 187 | ✅ | ✅ COMPLETE |
 | `upstash` | 166 | 166 | ✅ | ✅ COMPLETE (Redis + Vector + Kafka) |
-| `google` | 158 | 5 | ❌ | 🔴 BROKEN — handler empty stubs |
+| `google` | 158 | 5 | ❌ | 🔴 BROKEN — handler mostly empty stubs |
 | `vercel` | 150 | 150 | ✅ | ✅ COMPLETE |
-| `cloudflare` | 148 | 0 | ❌ | 🔴 BROKEN — handler empty stubs |
+| `cloudflare` | 148 | 0 | ❌ | 🔴 BROKEN — handler completely empty |
 | `stripe` | 143 | 143 | ✅ | ✅ COMPLETE |
-| `openai` | 109 | 109 | ✅ | ✅ COMPLETE |
+| `openai` | 109 | 109 | ✅ | ✅ COMPLETE (but missing admin tools) |
 | `fly` | 101 | 101 | ✅ | ✅ COMPLETE |
 | `supabase` | 100 | 100 | ✅ | ✅ COMPLETE |
 | `twilio` | 94 | 94 | ✅ | ✅ COMPLETE |
-| `sentry` | 71 | 71 | ✅ | ✅ COMPLETE |
 | `clerk` | 75 | 75 | ✅ | ✅ COMPLETE |
+| `sentry` | 71 | 71 | ✅ | ✅ COMPLETE (but shallow — needs monitors/dashboards) |
 | `local` | 62 | 62 | ✅ | ✅ COMPLETE |
-| `anthropic` | 61 | 61 | ✅ | ✅ COMPLETE |
-| `postgres` | 59 | 59 | ✅ | ✅ COMPLETE |
-| `n8n` | 57 | 57 | ✅ | ✅ COMPLETE |
+| `anthropic` | 61 | 61 | ✅ | ✅ COMPLETE (but missing admin tools) |
+| `postgres` | 59 | 59 | ✅ | ✅ COMPLETE (but shallow on advanced features) |
+| `n8n` | 57 | 57 | ✅ | ✅ COMPLETE (but shallow on history/templates) |
 | `resend` | 46 | 46 | ✅ | ✅ COMPLETE |
 | `mapbox` | 45 | 45 | ✅ | ✅ COMPLETE |
 | `context7` | 45 | 45 | ✅ | ✅ COMPLETE |
-| `qdrant` | 48 | 48 | ✅ | ✅ COMPLETE |
+| `qdrant` | 48 | 48 | ✅ | ✅ COMPLETE (but missing named/sparse vectors) |
 | `linear` | 38 | 38 | ✅ | ✅ COMPLETE |
 | `slack` | 37 | 37 | ✅ | ✅ COMPLETE |
 | `playwright` | 34 | 34 | ✅ | ✅ COMPLETE |
-| `compound` | 29 | 29 | ✅ | ✅ COMPLETE |
+| `compound` | 29 | 29 | ✅ | ✅ COMPLETE (but needs +15 Super Tools) |
 | `search` | 23 | 10 | ❌ | 🔴 BROKEN — 13 registry tools not in handler |
-| `gemini` | 15 | 15 | ✅ | ✅ COMPLETE |
+| `gemini` | 15 | 15 | ✅ | ✅ COMPLETE (but missing Thinking/2.0 Flash/video) |
 | `ollama` | 16 | 16 | ✅ | ✅ COMPLETE |
-
----
-
-## Session 14 Build Plan
-
-### Phase 1 — Fix broken sync (must do first)
-
-**`cloudflare`** — Handler has 0 case statements. All 148 registry tools are dangling. Rewrite handler with real API calls.
-
-**`google`** — Handler has 5 case statements. 153 registry tools are dangling. Rewrite handler with real Google API calls across Gmail, Drive, Calendar, Sheets, Docs, Slides, Forms, Contacts.
-
-**`search`** — 13 tools in registry not in handler: `brave_image_search`, `brave_video_search`, `brave_suggest`, `brave_summarizer`, `brave_news_search` (check), `tavily_news_search`, `tavily_finance_search`, `tavily_extract_multiple`, and others. Wire all into handler.
-
-### Phase 2 — New namespaces revealed by .env audit
-
-**`moonshot`** — Moonshot AI (Kimi) — `MOONSHOT_API_KEY` is present. OpenAI-compatible API. Build: chat completions, streaming, long-context (128K), file upload/parse, vision, function calling, model listing. Target: 20+ tools.
-
-**`voyage`** — Voyage AI embeddings — `VOYAGE_API_KEY` is present. Specialized embedding API (better than OpenAI for RAG). Build: embed text, embed documents, embed code, list models, rerank results. Target: 10+ tools.
-
-**`sam`** — SAM.gov federal contracts API — `INTAKE_SAM_TOKEN` / `SAM_API_KEY` present. Critical for YardSync government contracts features. Build: search opportunities, get opportunity details, search awards, entity search (contractor lookup), exclusions check, wage determinations. Target: 15+ tools.
-
-### Phase 3 — Missing features in existing namespaces (from .env audit)
-
-**`openai`** — `OPENAI_ADMIN_KEY` present but unused. Add: `openai_list_org_users`, `openai_invite_user`, `openai_remove_user`, `openai_list_projects`, `openai_get_usage`, `openai_get_costs`, `openai_list_api_keys`, `openai_create_api_key`, `openai_delete_api_key`. All require admin key. (+9 tools)
-
-**`anthropic`** — `ANTHROPIC_ADMIN_KEY` present but unused. Add: `anthropic_list_workspaces`, `anthropic_get_workspace_usage`, `anthropic_list_workspace_members`, `anthropic_invite_workspace_member`, `anthropic_list_api_keys`, `anthropic_create_api_key`, `anthropic_disable_api_key`, `anthropic_get_usage`. All require admin key. (+8 tools)
-
-**`twilio`** — `TWILIO_VERIFY_SERVICE_SID` is set but verify tools may be missing from handler. Confirm `twilio_send_verification` and `twilio_check_verification` are wired in handler (registry shows them, handler audit showed 94/94 sync — verify these are real implementations not stubs).
-
-**`search`** — `SERPAPI_KEY` present but no serp namespace or tools exist. Add: `serp_google_search`, `serp_google_news`, `serp_google_images`, `serp_google_maps`, `serp_google_shopping`, `serp_google_jobs`, `serp_youtube_search`. (+7 tools)
-
-**`google`** — Additional env vars in .env: `GOOGLE_CREDENTIALS_JSON`, `GOOGLE_USER_EMAIL`, `GOOGLE_IMPERSONATE_EMAIL` — support these auth paths in the handler alongside the existing `GOOGLE_SERVICE_ACCOUNT_KEY_PATH`.
-
-### Phase 4 — Depth expansion (open build gaps)
-
-| Namespace | Current | Additions Planned |
-|---|---|---|
-| `compound` | 29 | +15 new Super Tools (see ClaudeBuildPlan.md) |
-| `sentry` | 71 | monitors, alerting rules, dashboards, performance |
-| `gemini` | 15 | Thinking models, Gemini 2.0 Flash, video understanding |
-| `n8n` | 57 | execution history deeper, node type catalog, template import |
-| `postgres` | 59 | advisory locks, LISTEN/NOTIFY, logical replication ops |
-| `qdrant` | 48 | named vectors, sparse vectors, multi-vector search |
-| `mapbox` | 45 | traffic/incidents API, isochrone analysis |
-| `resend` | 46 | broadcast scheduling, domain verification deeper |
-| `search` | 23 | deeper Brave/Tavily + new SerpApi tools |
-
----
-
-## Open Build Gaps (carry-forward)
-
-| Namespace | Current | Headroom | Priority |
-|---|---|---|---|
-| `cloudflare` | 148 reg / 0 wired | Fix handler | 🔴 BROKEN |
-| `google` | 158 reg / 5 wired | Fix handler | 🔴 BROKEN |
-| `search` | 23 reg / 10 wired | Fix handler + add SerpApi | 🔴 BROKEN |
-| `moonshot` | 0 | New namespace (MOONSHOT_API_KEY present) | 🔴 NEW |
-| `voyage` | 0 | New namespace (VOYAGE_API_KEY present) | 🔴 NEW |
-| `sam` | 0 | New namespace (SAM_API_KEY present) | 🔴 NEW |
-| `openai` | 109 | +9 admin tools (OPENAI_ADMIN_KEY present) | 🟠 |
-| `anthropic` | 61 | +8 admin tools (ANTHROPIC_ADMIN_KEY present) | 🟠 |
-| `sentry` | 71 | monitors, alerting rules, dashboards deeper | 🟠 |
-| `compound` | 29 | +15 new Super Tools | 🟡 |
-| `gemini` | 15 | Thinking models, 2.0 Flash, video | 🟡 |
-| `qdrant` | 48 | named/sparse vectors, multi-vector | 🟡 |
-| `n8n` | 57 | execution history, node catalog, templates | 🟡 |
-| `postgres` | 59 | advisory locks, LISTEN/NOTIFY | 🟡 |
-| `mapbox` | 45 | traffic/incidents, isochrone | 🟢 |
-| `resend` | 46 | broadcast scheduling, domain verification | 🟢 |
-| `search` | 23 | SerpApi additions | 🟢 |
 
 ---
 
@@ -195,7 +442,9 @@ Fixed doc inconsistencies; updated BUILD COMPLETE counts; added Open Build Gaps 
 - New namespaces to build: moonshot, voyage, sam
 - Missing admin API coverage in openai and anthropic
 - Missing SerpApi coverage in search
-- Plan documented. Beginning implementation.
+- Complete codebase scan for placeholders/stubs/TODOs — results documented above
+- CLAUDE.md updated with full 18-23 hour remediation plan
+- Plan ready for implementation
 
 ---
 
@@ -210,6 +459,9 @@ timeout 4s node index.js 2>&1
 
 # Count registered tools
 node -e "const fs=require('fs'); let t=0; fs.readdirSync('registry').filter(f=>f.endsWith('.json')).forEach(f=>{t+=JSON.parse(fs.readFileSync('registry/'+f,'utf-8')).length;}); console.log(t);"
+
+# Scan for TODOs/placeholders (exclude worktrees)
+grep -r "TODO\|FIXME\|HACK\|XXX\|STUB" handlers/ --include="*.js"
 
 # Push
 git add -A && git commit -m "..." && git push origin main
@@ -304,4 +556,4 @@ CONTEXT7_API_KEY=
 
 ---
 
-*Last updated: Session 14 — 2,399 tools · 25/28 synced · 3 handlers broken · 3 new namespaces planned*
+*Last updated: Session 14 — 2,399 tools · 25/28 fully synced · 3 handlers broken (pending fix) · 3 new namespaces planned · 485+ tools to add/fix · Full remediation plan documented (18-23 hours)*
