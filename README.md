@@ -8,7 +8,7 @@
 
 Robinson's Toolkit connects any MCP-compatible agent (Claude, Cursor, or other AI tools) to the services that run your stack. When your agent needs to create a GitHub branch, check a Neon database, roll back a deployment, or send an SMS, it just does it. No copying API docs. No trial-and-error. Real operations on real infrastructure.
 
-The toolkit currently houses **2,231 tools** across **25 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always stay in control.
+The toolkit currently houses **2,237 tools** across **25 service namespaces**, and is actively growing. Tools only activate when the matching API key is present in your `.env` file — so you always stay in control.
 
 ---
 
@@ -18,7 +18,7 @@ Most MCP setups inject every available tool schema directly into the AI's contex
 
 ### How Smart Discovery Works
 
-Instead of flooding the context with 2,231 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
+Instead of flooding the context with 2,237 tool schemas, the agent only ever sees **4 meta-tools + ~15 pinned high-value tools** at any given time. Everything else stays hidden until asked for.
 
 | Meta-Tool | What It Does |
 |---|---|
@@ -42,7 +42,7 @@ The agent discovers and uses tools on-demand. Your context window stays clean.
 
 ## Current Status
 
-**2,231 tools · 25 namespaces · 25/25 synced**
+**2,237 tools · 25 namespaces · 25/25 synced**
 
 | Namespace | Tools | Status |
 |---|---|---|
@@ -67,7 +67,7 @@ The agent discovers and uses tools on-demand. Your context window stays clean.
 | `mapbox` | 45 | ✅ Complete |
 | `postgres` | 44 | ✅ Complete |
 | `search` | 23 | ✅ Complete |
-| `context7` | 39 | ✅ Complete (NEW) |
+| `context7` | 45 | ✅ Complete |
 | `playwright` | 34 | ✅ Complete (NEW) |
 | `search` | 23 | ✅ Complete |
 | `compound` | 22 | ✅ Complete |
@@ -498,6 +498,6 @@ Every tool is built with one question: **"What would a skilled developer do here
 
 ## Version
 
-**v2.0.0** — Smart Discovery architecture, 2,231 tools across 25 namespaces.
+**v2.0.0** — Smart Discovery architecture, 2,237 tools across 25 namespaces.
 
 Built by Chris Robinson, Robinson AI Systems LLC.

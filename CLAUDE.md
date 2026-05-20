@@ -34,9 +34,9 @@
 
 ---
 
-## Current State — Session 8
+## Current State — Session 9
 
-**Total registered tools: 2,231** across 25 namespaces  
+**Total registered tools: 2,237** across 25 namespaces
 **Validation: ✅ 25/25 namespaces perfectly synced** (run `node audit.js` to verify)
 
 ### Namespace Status — Sorted by tool count
@@ -63,7 +63,7 @@
 | `resend` | 46 | ✅ | ✅ COMPLETE |
 | `mapbox` | 45 | ✅ | ✅ COMPLETE |
 | `postgres` | 43 | ✅ | ✅ COMPLETE |
-| `context7` | 39 | ✅ | ✅ COMPLETE (NEW) |
+| `context7` | 45 | ✅ | ✅ COMPLETE |
 | `playwright` | 34 | ✅ | ✅ COMPLETE (NEW) |
 | `search` | 23 | ✅ | ✅ COMPLETE |
 | `compound` | 22 | ✅ | ✅ COMPLETE |
@@ -76,7 +76,7 @@
 The backlog is empty. All planned namespaces are built and synced.
 
 ### What's been built:
-- **25 namespaces**, **2,231 registered tools**
+- **25 namespaces**, **2,237 registered tools**
 - Every namespace tested with `node audit.js` (25/25 ✅)
 - Boot test: clean (exit 124)
 - All code committed and pushed to GitHub
@@ -111,13 +111,19 @@ fly 37→76, supabase 36→98, clerk 30→75, resend 22→46, sentry 17→59, qd
 ### Session 7 — Validation + Compound + Search
 Validated all namespaces; compound 11→22, search 10→23. Total: 2,141.
 
-### Session 8 (current) — BUILD COMPLETE
+### Session 8 — BUILD COMPLETE
 - context7: 0→39 (NEW — profoundly robust docs namespace)
 - playwright: 0→34 (NEW — browser automation namespace)
 - upstash: 149→166 (+17 — Vector + Kafka sections)
 - index.js: added context7 + playwright to namespace registry
 - CLAUDE.md + README.md updated with final counts
 - Total: 2,231 across 25 namespaces
+
+### Session 9 (current) — context7 sync + verified examples (`c86cea9`)
+- context7: 39→45 (+6 — added `context7_verified_examples` and registry entries for 5 previously orphaned handler tools: `smart_query`, `upgrade_impact`, `secure_fetch`, `fallback_index`, `cache_status`)
+- Added runtime arg validator + layer docs
+- Audit now reports 25/25 synced (was 24/25 with 5 H-not-R gaps in context7)
+- Total: 2,237 across 25 namespaces
 
 ---
 
@@ -185,4 +191,4 @@ OLLAMA_TIMEOUT_MS=               # default: 300000
 
 ---
 
-*Last updated: Session 8 — 2,231 tools · 25/25 synced · BUILD COMPLETE*
+*Last updated: Session 9 — 2,237 tools · 25/25 synced · BUILD COMPLETE*
