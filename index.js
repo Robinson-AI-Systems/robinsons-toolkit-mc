@@ -93,6 +93,7 @@ function getActiveNamespaces() {
     context7:   () => !!process.env.CONTEXT7_API_KEY,
     linear:     () => !!process.env.LINEAR_API_KEY,
     slack:      () => !!process.env.SLACK_BOT_TOKEN,
+    gemini:     () => !!process.env.GEMINI_API_KEY,
     playwright: () => true, // Always available — local browser automation (no API key needed)
     local:      () => true, // Always available — local machine access
     compound:   () => true, // Always available — compound tools use whatever is configured

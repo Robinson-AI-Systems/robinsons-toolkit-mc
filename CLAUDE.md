@@ -34,10 +34,10 @@
 
 ---
 
-## Current State — Session 11
+## Current State — Session 12
 
-**Total registered tools: 2,313** across 25 namespaces
-**Validation: ✅ 27/27 namespaces perfectly synced** (run `node audit.js` to verify)
+**Total registered tools: 2,328** across 28 namespaces
+**Validation: ✅ 28/28 namespaces perfectly synced** (run `node audit.js` to verify)
 **Observability Ledger:** every state-mutating tool call records a reversal receipt to `.toolkit-ledger.jsonl`; `compound_rollback_transaction` undoes recent agent actions.
 
 ### Namespace Status — Sorted by tool count
@@ -68,9 +68,10 @@
 | `playwright` | 34 | ✅ | ✅ COMPLETE (NEW) |
 | `search` | 23 | ✅ | ✅ COMPLETE |
 | `compound` | 23 | ✅ | ✅ COMPLETE (+ rollback) |
-| `linear` | 38 | ✅ | ✅ COMPLETE (NEW) |
-| `slack` | 37 | ✅ | ✅ COMPLETE (NEW) |
+| `linear` | 38 | ✅ | ✅ COMPLETE |
+| `slack` | 37 | ✅ | ✅ COMPLETE |
 | `ollama` | 16 | ✅ | ✅ COMPLETE |
+| `gemini` | 15 | ✅ | ✅ COMPLETE (NEW) |
 
 ---
 
@@ -193,6 +194,7 @@ CLERK_SECRET_KEY=
 SENTRY_AUTH_TOKEN=
 SENTRY_ORG_SLUG=
 CONTEXT7_API_KEY=                # Free at https://context7.com/dashboard
+GEMINI_API_KEY=                  # https://aistudio.google.com/app/apikey
 BRAVE_SEARCH_API_KEY=            # either/or
 TAVILY_API_KEY=
 QDRANT_URL=
@@ -207,13 +209,23 @@ OLLAMA_TIMEOUT_MS=               # default: 300000
 
 ---
 
-### Session 11 (current) — Linear + Slack namespaces
+### Session 11 — Linear + Slack namespaces
 - linear: 0→38 (NEW — issues, projects, cycles, teams, sprints, Super Tools)
 - slack: 0→37 (NEW — messages, channels, users, reactions, files, Super Tools)
 - Removed incorrectly added posthog handler (PostHog is a Claude Desktop connector)
 - index.js: added linear + slack to namespace credential checks
 - Total: 2,313 across 27 namespaces
 
+### Session 12 (current) — Gemini orchestration handler
+- gemini: 0→15 (NEW — native Google Gemini API client, no SDK dependency)
+- Tools: `gemini_standard_query`, `gemini_structured_extractor`, `gemini_code_execution_engine`, `gemini_grounded_query`, `gemini_analyze_media`, `gemini_generate_image`, `gemini_spatial_analysis`, `gemini_text_to_speech`, `gemini_generate_embeddings`, `gemini_cache_document`, `gemini_batch_processor`, `gemini_deep_research_start`, `gemini_deep_research_status`, `gemini_cancel_batch_job`, `gemini_list_models`
+- Built on native `fetch` against `generativelanguage.googleapis.com/v1beta` — covers text, JSON schema, code execution, Google Search grounding, multimodal (image/audio/video/PDF via Files API), Imagen image generation, spatial bounding boxes (0-1000 grid), native TTS, embeddings (single + batchEmbedContents), context caching, parallel client-side batching, long-running batchGenerateContent operations, and model discovery
+- Graceful error explainer for 401/403/404/429/5xx (auth, billing, quota, model-not-found)
+- 403 on `cachedContents` is caught and returned as `{ok:false, error:'cached_contents_requires_billing'}` so the agent sees a structured signal instead of a thrown error
+- index.js: added `gemini: () => !!process.env.GEMINI_API_KEY` to `getActiveNamespaces`
+- .env.example + CLAUDE.md env table: added `GEMINI_API_KEY`
+- Total: 2,328 across 28 namespaces
+
 ---
 
-*Last updated: Session 11 — 2,238 tools · 25/25 synced · BUILD COMPLETE · Observability Ledger live*
+*Last updated: Session 12 — 2,328 tools · 28/28 synced · BUILD COMPLETE · Observability Ledger live*
