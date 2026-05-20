@@ -226,6 +226,23 @@ OLLAMA_TIMEOUT_MS=               # default: 300000
 - .env.example + CLAUDE.md env table: added `GEMINI_API_KEY`
 - Total: 2,328 across 28 namespaces
 
+### Session 13 (current) — Gap Closure Initiative
+- **Scope:** Systematic expansion from current tools → planned targets per ClaudeBuildPlan
+- **Methodology:** Highest priority namespaces first (github, anthropic, openai, cloudflare, google → stripe, twilio, fly → remaining medium/low)
+- **Goal:** Eliminate all gaps; achieve 500+ tools per high-priority namespace; ensure zero stubs, real API paths, full error handling
+- **.env.example refresh:** Added all missing optional/advanced env vars (OPENAI_ADMIN_KEY, ANTHROPIC_ADMIN_KEY, UPSTASH_API_KEY/EMAIL, GOOGLE_SERVICE_ACCOUNT_SUBJECT, SENTRY_PROJECT_SLUG, TWILIO_PHONE_NUMBER/VERIFY_SERVICE_SID, VERCEL_TEAM_ID, ALLOWED_WRITE_PATHS)
+- **Priority build order:**
+  - 🔴 `github`: 201→250+ (Actions, code scanning, Dependabot, environments, traffic)
+  - 🔴 `anthropic`: 15→60+ (batches, files, deeper messages)
+  - 🔴 `openai`: 41→100+ (RAG, Realtime API, Batch, Evals, Vector Stores)
+  - 🔴 `cloudflare`: 54→120+ (D1, Workers AI, Queues, Durable Objects, Zero Trust)
+  - 🔴 `google`: 60→130+ (deeper Gmail, Drive, Sheets, Docs, Calendar coverage)
+  - 🟠 `stripe`: 71→130+ (Connect, Checkout, lifecycle, reporting)
+  - 🟠 `twilio`: 22→90+ (voice, numbers, messaging services, Verify, studio, conversations)
+  - 🟠 `fly`: 37→100+ (apps, machines, volumes, networks, organizations)
+  - 🟡 Middle tier: `supabase`, `clerk`, `resend`, `sentry`, `qdrant`
+  - 🟢 Lower tier: `upstash`, `mapbox`, `n8n`, `postgres`, `compound`, `search`
+
 ---
 
-*Last updated: Session 12 — 2,328 tools · 28/28 synced · BUILD COMPLETE · Observability Ledger live*
+*Last updated: Session 13 — 2,328 tools → gap closure in progress · 28/28 namespaces synced · BUILD COMPLETE as baseline*
