@@ -126,8 +126,57 @@ function searchTools(registry, query, activeNamespaces, limit = 10) {
     .map(({ _score, ...tool }) => tool);
 }
 
+// ── Lightweight runtime arg validator (no deps) ────────────────────────────────
+// Reads the tool's JSON-Schema-shaped inputSchema from the registry and checks:
+//   1. all `required` keys are present
+//   2. provided values match the declared type (when type is a primitive)
+// Returns null if valid, or a single descriptive error message string.
+function validateArgs(toolName, args, registryArr) {
+  const tool = registryArr.find(t => t.name === toolName);
+  if (!tool || !tool.inputSchema) return null;
+  const schema = tool.inputSchema;
+  args = args || {};
+
+  // Check required
+  if (Array.isArray(schema.required)) {
+    for (const key of schema.required) {
+      if (args[key] === undefined || args[key] === null) {
+        return `Missing required argument "${key}" for ${toolName}. Use get_tool_schema for the full signature.`;
+      }
+    }
+  }
+
+  // Check primitive types
+  const props = schema.properties || {};
+  for (const [key, val] of Object.entries(args)) {
+    const spec = props[key];
+    if (!spec || !spec.type) continue;
+    const t = spec.type;
+    const actual = Array.isArray(val) ? 'array' : (val === null ? 'null' : typeof val);
+    let ok;
+    switch (t) {
+      case 'string':  ok = actual === 'string'; break;
+      case 'number':  ok = actual === 'number'; break;
+      case 'boolean': ok = actual === 'boolean'; break;
+      case 'array':   ok = actual === 'array'; break;
+      case 'object':  ok = actual === 'object' && !Array.isArray(val) && val !== null; break;
+      default:        ok = true; // unknown / open type
+    }
+    if (!ok) return `Argument "${key}" for ${toolName} expected ${t}, got ${actual}.`;
+    // Enum check
+    if (Array.isArray(spec.enum) && !spec.enum.includes(val)) {
+      return `Argument "${key}" for ${toolName} must be one of: ${spec.enum.join(', ')}. Got: ${val}`;
+    }
+  }
+  return null;
+}
+
 // ── Route a tool call to the right handler ─────────────────────────────────────
 async function routeToolCall(toolName, args, handlers) {
+  // Validate args against the registry schema BEFORE hitting the network
+  const validationError = validateArgs(toolName, args, registry);
+  if (validationError) throw new Error(validationError);
+
   // Determine namespace from tool name prefix
   const parts = toolName.split('_');
   let namespace = parts[0];
