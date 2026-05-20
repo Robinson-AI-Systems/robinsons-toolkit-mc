@@ -1,7 +1,8 @@
 /**
  * Fly.io Handler — 100 tools
  * Machines API + GraphQL API for apps, machines, volumes, secrets,
- * certificates, Postgres clusters, networking, scaling, and Super Tools.
+ * certificates, Postgres clusters, networking, scaling, builds, health checks,
+ * app config, billing, and Super Tools.
  */
 
 const MACHINES_BASE = 'https://api.machines.dev/v1';
@@ -502,6 +503,259 @@ async function execute(tool, args) {
       recent_releases: releases,
       healthy: machines.filter(m => m.state === 'started').length === machines.length && machines.length > 0
     };
+  }
+
+  // ── APP ENVIRONMENT VARIABLES ─────────────────────────────────────────────
+  if (tool === 'fly_set_env_variables') {
+    const { variables } = args;
+    if (!variables || typeof variables !== 'object') throw new Error('variables must be an object (key-value pairs)');
+    const result = await flyGraphQL(
+      `mutation($input: SetSecretsInput!) { setSecrets(input: $input) { release { version status } } }`,
+      { input: { appId: app_name, secrets: variables } }
+    );
+    return { success: true, release: result.setSecrets?.release, variables_set: Object.keys(variables).length };
+  }
+
+  if (tool === 'fly_get_env_variables') {
+    const data = await flyGraphQL(`query($name: String!) { app(name: $name) { config { env } } }`, { name: app_name });
+    return data.app?.config?.env || {};
+  }
+
+  // ── APP METADATA & SETTINGS ────────────────────────────────────────────────
+  if (tool === 'fly_list_app_info') {
+    const data = await flyGraphQL(
+      `query($name: String!) { app(name: $name) { id name organization { slug } status hostname primaryRegion createdAt } }`,
+      { name: app_name }
+    );
+    return data.app || {};
+  }
+
+  if (tool === 'fly_set_app_description') {
+    const { description } = args;
+    const data = await flyGraphQL(
+      `mutation($input: UpdateAppInput!) { updateApp(input: $input) { app { id description } } }`,
+      { input: { appId: app_name, description } }
+    );
+    return { app_name, description: data.updateApp?.app?.description };
+  }
+
+  if (tool === 'fly_list_app_regions') {
+    const data = await flyGraphQL(
+      `query($name: String!) { app(name: $name) { machines { nodes { region } } } }`,
+      { name: app_name }
+    );
+    const machines = data.app?.machines?.nodes || [];
+    const regions = [...new Set(machines.map(m => m.region))];
+    return { app_name, regions, machine_count: machines.length };
+  }
+
+  if (tool === 'fly_set_app_regions') {
+    const { regions, count_per_region = 1 } = args;
+    if (!Array.isArray(regions) || regions.length === 0) throw new Error('regions must be a non-empty array');
+    const machines = await fly('GET', `/apps/${app_name}/machines`);
+    const current_regions = [...new Set(machines.map(m => m.region))];
+    const to_create = regions.filter(r => !current_regions.includes(r));
+    const created = [];
+    const template = machines.find(m => m.state === 'started') || machines[0];
+    for (const region of to_create) {
+      for (let i = 0; i < count_per_region; i++) {
+        const m = await fly('POST', `/apps/${app_name}/machines`, {
+          region,
+          config: template?.config || { image: 'nginx:latest', guest: { cpus: 1, memory_mb: 256 }, services: [] }
+        });
+        created.push({ region, machine_id: m.id });
+      }
+    }
+    return { app_name, target_regions: regions, created, current_regions };
+  }
+
+  // ── BUILDS (GH Deploy Integration) ─────────────────────────────────────────
+  if (tool === 'fly_list_builds') {
+    const data = await flyGraphQL(
+      `query($appId: ID!) { app(id: $appId) { builds(first: 25) { nodes { id status createdAt updatedAt commitSha } } } }`,
+      { appId: app_name }
+    );
+    return data.app?.builds?.nodes || [];
+  }
+
+  if (tool === 'fly_get_build') {
+    const { build_id } = args;
+    if (!build_id) throw new Error('build_id is required');
+    const data = await flyGraphQL(`query($buildId: ID!) { build(id: $buildId) { id status startedAt completedAt commitSha commitMessage } }`, { buildId: build_id });
+    return data.build || {};
+  }
+
+  if (tool === 'fly_deploy_from_image') {
+    const { image, skip_health_checks = false } = args;
+    if (!image) throw new Error('image is required (e.g., "my-app:v1.0" or registry URL)');
+    const result = await flyGraphQL(
+      `mutation($input: DeployImageInput!) { deployImage(input: $input) { release { version status createdAt } } }`,
+      { input: { appId: app_name, image, skipHealthChecks: skip_health_checks } }
+    );
+    return result.deployImage?.release || {};
+  }
+
+  if (tool === 'fly_deploy_with_volumes') {
+    const { image, volume_mounts = {}, skip_health_checks = false } = args;
+    if (!image) throw new Error('image is required');
+    const mounts = Object.entries(volume_mounts).map(([dest, vol_id]) => ({ destination: dest, volumeId: vol_id }));
+    const result = await flyGraphQL(
+      `mutation($input: DeployImageInput!) { deployImage(input: $input) { release { version status } } }`,
+      { input: { appId: app_name, image, mounts, skipHealthChecks: skip_health_checks } }
+    );
+    return { release: result.deployImage?.release, mounts };
+  }
+
+  // ── HEALTH & MONITORING ────────────────────────────────────────────────────
+  if (tool === 'fly_list_health_checks') {
+    const data = await flyGraphQL(
+      `query($name: String!) { app(name: $name) { healthChecks { nodes { id protocol port path } } } }`,
+      { name: app_name }
+    );
+    return data.app?.healthChecks?.nodes || [];
+  }
+
+  if (tool === 'fly_get_health_check') {
+    const { check_id } = args;
+    if (!check_id) throw new Error('check_id is required');
+    const data = await flyGraphQL(
+      `query($checkId: ID!) { healthCheck(id: $checkId) { id protocol port path interval timeout successThreshold failureThreshold } }`,
+      { checkId: check_id }
+    );
+    return data.healthCheck || {};
+  }
+
+  if (tool === 'fly_update_health_check') {
+    const { check_id, protocol, port, path, interval = 30, timeout = 5, success_threshold = 1, failure_threshold = 3 } = args;
+    if (!check_id) throw new Error('check_id is required');
+    const result = await flyGraphQL(
+      `mutation($input: UpdateHealthCheckInput!) { updateHealthCheck(input: $input) { healthCheck { id } } }`,
+      { input: { id: check_id, protocol, port, path, interval, timeout, successThreshold: success_threshold, failureThreshold: failure_threshold } }
+    );
+    return { health_check_id: result.updateHealthCheck?.healthCheck?.id, updated: true };
+  }
+
+  if (tool === 'fly_get_app_metrics') {
+    const data = await flyGraphQL(
+      `query($name: String!) { app(name: $name) { machines { nodes { state config { guest { cpus memory_mb } } } } } }`,
+      { name: app_name }
+    );
+    const machines = data.app?.machines?.nodes || [];
+    const total_cpus = machines.reduce((acc, m) => acc + (m.config?.guest?.cpus || 0), 0);
+    const total_memory_mb = machines.reduce((acc, m) => acc + (m.config?.guest?.memory_mb || 0), 0);
+    const running = machines.filter(m => m.state === 'started').length;
+    return { app_name, total_machines: machines.length, running_machines: running, total_cpus, total_memory_mb, average_cpu_per_machine: (total_cpus / Math.max(machines.length, 1)).toFixed(2) };
+  }
+
+  if (tool === 'fly_get_machine_stats') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const data = await fly('GET', `/apps/${app_name}/machines/${machine_id}`);
+    const checks = data.checks || [];
+    return {
+      machine_id,
+      state: data.state,
+      region: data.region,
+      config: { cpus: data.config?.guest?.cpus, memory_mb: data.config?.guest?.memory_mb },
+      health_checks: checks.length,
+      processes: data.processes?.length || 0
+    };
+  }
+
+  // ── MACHINE LIFECYCLE ──────────────────────────────────────────────────────
+  if (tool === 'fly_machine_rebuild_from_image') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const { image, skip_health_checks = false } = args;
+    if (!image) throw new Error('image is required');
+    const result = await flyGraphQL(
+      `mutation($input: RebuildMachineInput!) { rebuildMachine(input: $input) { machine { id state } } }`,
+      { input: { id: machine_id, image, skipHealthChecks: skip_health_checks } }
+    );
+    return result.rebuildMachine?.machine || {};
+  }
+
+  if (tool === 'fly_machine_update_restart_policy') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const { policy = 'always', max_retries = 0 } = args;
+    const restartPolicy = { policy, maxRetries: max_retries };
+    const result = await fly('PATCH', `/apps/${app_name}/machines/${machine_id}`, { config: { restart: restartPolicy } });
+    return { machine_id, restart_policy: result.config?.restart };
+  }
+
+  if (tool === 'fly_list_machine_releases') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const data = await flyGraphQL(
+      `query($machineId: ID!) { machine(id: $machineId) { releases { nodes { version status createdAt } } } }`,
+      { machineId: machine_id }
+    );
+    return data.machine?.releases?.nodes || [];
+  }
+
+  if (tool === 'fly_wait_machine_healthy') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const { max_wait_seconds = 60, check_interval_ms = 2000 } = args;
+    const start = Date.now();
+    while (Date.now() - start < max_wait_seconds * 1000) {
+      const m = await fly('GET', `/apps/${app_name}/machines/${machine_id}`);
+      const checks = m.checks || [];
+      const all_passed = checks.length > 0 && checks.every(c => c.status === 'passing');
+      if (m.state === 'started' && all_passed) return { machine_id, healthy: true, state: m.state, checks_passed: checks.filter(c => c.status === 'passing').length };
+      await new Promise(r => setTimeout(r, check_interval_ms));
+    }
+    throw new Error(`Machine ${machine_id} did not become healthy within ${max_wait_seconds}s`);
+  }
+
+  // ── IP & NETWORKING ────────────────────────────────────────────────────────
+  if (tool === 'fly_get_ip_details') {
+    const { ip_address } = args;
+    if (!ip_address) throw new Error('ip_address is required');
+    const data = await flyGraphQL(
+      `query($address: String!) { platform { ips(where: { address: $address }) { nodes { address type region createdAt } } } }`,
+      { address: ip_address }
+    );
+    return data.platform?.ips?.nodes?.[0] || { address: ip_address, note: 'IP not found' };
+  }
+
+  if (tool === 'fly_list_private_networks') {
+    const data = await flyGraphQL(
+      `query { platform { networks { nodes { id name description createdAt } } } }`
+    );
+    return data.platform?.networks?.nodes || [];
+  }
+
+  // ── BILLING & USAGE ────────────────────────────────────────────────────────
+  if (tool === 'fly_get_app_bill') {
+    const data = await flyGraphQL(
+      `query($name: String!) { app(name: $name) { billingStatus { month charges { item amount } } } }`,
+      { name: app_name }
+    );
+    const billing = data.app?.billingStatus || {};
+    return { app_name, month: billing.month, charges: billing.charges, total: billing.charges?.reduce((s, c) => s + c.amount, 0) };
+  }
+
+  if (tool === 'fly_get_organization_bill') {
+    const { org_slug } = args;
+    if (!org_slug) throw new Error('org_slug is required');
+    const data = await flyGraphQL(
+      `query($slug: String!) { organization(slug: $slug) { billingStatus { month charges { item amount } } } }`,
+      { slug: org_slug }
+    );
+    const billing = data.organization?.billingStatus || {};
+    return { organization: org_slug, month: billing.month, charges: billing.charges, total: billing.charges?.reduce((s, c) => s + c.amount, 0) };
+  }
+
+  // ── MACHINE FEATURES ───────────────────────────────────────────────────────
+  if (tool === 'fly_machine_get_process_stats') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const data = await fly('GET', `/apps/${app_name}/machines/${machine_id}/processes`);
+    return data || [];
+  }
+
+  if (tool === 'fly_machine_set_metadata') {
+    if (!machine_id) throw new Error('machine_id is required');
+    const { key, value } = args;
+    if (!key || !value) throw new Error('key and value are required');
+    const result = await fly('PATCH', `/apps/${app_name}/machines/${machine_id}`, { metadata: { [key]: value } });
+    return { machine_id, metadata_updated: result.metadata };
   }
 
   // SUPER: Provision a Postgres cluster and attach it to an app
