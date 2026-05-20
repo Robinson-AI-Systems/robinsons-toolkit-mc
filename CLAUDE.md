@@ -34,10 +34,11 @@
 
 ---
 
-## Current State — Session 9
+## Current State — Session 10
 
-**Total registered tools: 2,237** across 25 namespaces
+**Total registered tools: 2,238** across 25 namespaces
 **Validation: ✅ 25/25 namespaces perfectly synced** (run `node audit.js` to verify)
+**Observability Ledger:** every state-mutating tool call records a reversal receipt to `.toolkit-ledger.jsonl`; `compound_rollback_transaction` undoes recent agent actions.
 
 ### Namespace Status — Sorted by tool count
 
@@ -66,7 +67,7 @@
 | `context7` | 45 | ✅ | ✅ COMPLETE |
 | `playwright` | 34 | ✅ | ✅ COMPLETE (NEW) |
 | `search` | 23 | ✅ | ✅ COMPLETE |
-| `compound` | 22 | ✅ | ✅ COMPLETE |
+| `compound` | 23 | ✅ | ✅ COMPLETE (+ rollback) |
 | `ollama` | 16 | ✅ | ✅ COMPLETE |
 
 ---
@@ -76,9 +77,11 @@
 The backlog is empty. All planned namespaces are built and synced.
 
 ### What's been built:
-- **25 namespaces**, **2,237 registered tools**
+- **25 namespaces**, **2,238 registered tools**
 - Every namespace tested with `node audit.js` (25/25 ✅)
 - Boot test: clean (exit 124)
+- Observability Ledger + `compound_rollback_transaction` (Phase 3.1)
+- Phase 6 description polish on all pinned tools
 - All code committed and pushed to GitHub
 
 ### If continuing development, potential next additions:
@@ -119,11 +122,18 @@ Validated all namespaces; compound 11→22, search 10→23. Total: 2,141.
 - CLAUDE.md + README.md updated with final counts
 - Total: 2,231 across 25 namespaces
 
-### Session 9 (current) — context7 sync + verified examples (`c86cea9`)
+### Session 9 (`c86cea9`) — context7 sync + verified examples
 - context7: 39→45 (+6 — added `context7_verified_examples` and registry entries for 5 previously orphaned handler tools: `smart_query`, `upgrade_impact`, `secure_fetch`, `fallback_index`, `cache_status`)
 - Added runtime arg validator + layer docs
 - Audit now reports 25/25 synced (was 24/25 with 5 H-not-R gaps in context7)
 - Total: 2,237 across 25 namespaces
+
+### Session 10 (current) — Observability Ledger + Phase 6 polish
+- **Phase 3.1 — Observability Ledger:** `ledger.js` (append/read/markRolledBack of `.toolkit-ledger.jsonl`), `inverses.js` (reversal map for ~20 mutation tools across GitHub/Neon/Vercel/Fly), `routeToolCall` records receipts after successful mutations.
+- **`compound_rollback_transaction`** (NEW pinned tool): replays inverses in reverse order. Filters by `last_n` / `since` / `transaction_id`; supports `dry_run` to preview the plan.
+- **Phase 6 — Description polish:** rewrote all 13 pinned tool descriptions with intent-leading "PREFERRED / POWER TOOL / USE THIS WHEN" language. Fixed factual drift (local_* tools now correctly say WSL2/Linux, not Windows).
+- `.gitignore`: added `.toolkit-ledger.jsonl` (runtime state).
+- compound: 22→23 (+1). Total: 2,238 across 25 namespaces.
 
 ---
 
@@ -191,4 +201,4 @@ OLLAMA_TIMEOUT_MS=               # default: 300000
 
 ---
 
-*Last updated: Session 9 — 2,237 tools · 25/25 synced · BUILD COMPLETE*
+*Last updated: Session 10 — 2,238 tools · 25/25 synced · BUILD COMPLETE · Observability Ledger live*

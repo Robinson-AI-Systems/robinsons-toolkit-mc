@@ -23,6 +23,8 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { appendReceipt } from './ledger.js';
+import { inverses } from './inverses.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -172,7 +174,7 @@ function validateArgs(toolName, args, registryArr) {
 }
 
 // ── Route a tool call to the right handler ─────────────────────────────────────
-async function routeToolCall(toolName, args, handlers) {
+async function routeToolCall(toolName, args, handlers, opts = {}) {
   // Validate args against the registry schema BEFORE hitting the network
   const validationError = validateArgs(toolName, args, registry);
   if (validationError) throw new Error(validationError);
@@ -197,7 +199,28 @@ async function routeToolCall(toolName, args, handlers) {
     throw new Error(`No handler found for namespace '${namespace}'. Tool: ${toolName}\nAvailable handlers: ${Object.keys(handlers).join(', ')}`);
   }
 
-  return await handler.execute(toolName, args || {});
+  const result = await handler.execute(toolName, args || {});
+
+  // ── Observability Ledger: record a reversal receipt for mutating tools ─────
+  if (!opts.skipLedger && inverses[toolName]) {
+    try {
+      const receipt = inverses[toolName](args || {}, result);
+      if (receipt) {
+        appendReceipt({
+          tool_name: toolName,
+          args: args || {},
+          result,
+          inverse: receipt.tool ? { tool: receipt.tool, args: receipt.args } : null,
+          reversible: receipt.reversible !== false && !!receipt.tool,
+          notes: receipt.notes
+        });
+      }
+    } catch (e) {
+      console.error(`Ledger receipt failed for ${toolName}: ${e.message}`);
+    }
+  }
+
+  return result;
 }
 
 // ── Pinned tools (always visible without searching) ────────────────────────────
@@ -245,11 +268,11 @@ const PINNED_TOOLS = [
   // High-value pinned tools always visible (no need to search for these)
   {
     name: 'local_run_command',
-    description: 'Run a shell command on the local Windows PC. Use for npm, git, npx, node, and any terminal commands needed during development.',
+    description: 'PREFERRED for running shell commands during development. Executes on the host machine (WSL2/Linux). USE THIS WHEN you need to run npm, pnpm, yarn, git, npx, node, python, docker, or any one-off terminal command. Scoped to WORKSPACE_ROOT by default; captures stdout, stderr, and exit code.',
     inputSchema: {
       type: 'object',
       properties: {
-        command: { type: 'string', description: 'Shell command to run, e.g. "npm run build" or "git status" or "npx prisma db push"' },
+        command: { type: 'string', description: 'Shell command to run, e.g. "npm run build", "git status", "npx prisma db push"' },
         cwd: { type: 'string', description: 'Working directory path. Defaults to WORKSPACE_ROOT from .env' },
         timeout_ms: { type: 'number', description: 'Timeout in milliseconds (default 30000)', default: 30000 }
       },
@@ -258,11 +281,11 @@ const PINNED_TOOLS = [
   },
   {
     name: 'local_read_file',
-    description: 'Read a file from the local PC filesystem. Use to read source code, configs, .env files, logs, etc.',
+    description: 'PREFERRED for reading any local file the agent needs to reason about. USE THIS WHEN you need source code, configs, .env, package.json, logs, JSON, markdown, or any text file. Returns content plus size and modification time. Binary files return a metadata stub instead of garbage.',
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Full path or path relative to WORKSPACE_ROOT. E.g. "my-app/src/app.ts" or "C:\\\\Users\\\\chris\\\\project\\\\file.js"' },
+        path: { type: 'string', description: 'Absolute path or path relative to WORKSPACE_ROOT, e.g. "src/app.ts" or "/home/user/project/file.js"' },
         encoding: { type: 'string', description: 'File encoding (default: utf-8)', default: 'utf-8' }
       },
       required: ['path']
@@ -270,12 +293,12 @@ const PINNED_TOOLS = [
   },
   {
     name: 'local_write_file',
-    description: 'Write or create a file on the local PC filesystem. Use to create source files, update configs, write generated code, etc.',
+    description: 'PREFERRED for creating or overwriting local files. USE THIS WHEN you need to create source files, update configs, write generated code, or persist any agent-produced text. Creates parent directories automatically. Honors ALLOWED_WRITE_PATHS if set.',
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Full path or path relative to WORKSPACE_ROOT' },
-        content: { type: 'string', description: 'Content to write to the file' },
+        path: { type: 'string', description: 'Absolute path or path relative to WORKSPACE_ROOT' },
+        content: { type: 'string', description: 'Content to write to the file (full replacement)' },
         create_dirs: { type: 'boolean', description: 'Create parent directories if they don\'t exist (default: true)', default: true }
       },
       required: ['path', 'content']
@@ -283,7 +306,7 @@ const PINNED_TOOLS = [
   },
   {
     name: 'local_list_directory',
-    description: 'List files and folders in a directory on the local PC. Use to explore project structure.',
+    description: 'PREFERRED for exploring project structure. USE THIS WHEN you need to discover files, find configs, or understand the layout of a repo before making changes. Returns names, sizes, and types (file/dir).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -295,13 +318,13 @@ const PINNED_TOOLS = [
   },
   {
     name: 'github_create_branch',
-    description: 'Create a new branch in a GitHub repository.',
+    description: 'PREFERRED for creating a feature branch on a GitHub repo. USE THIS WHEN starting work on a new feature, bug fix, or experiment. Creates from `from_branch` (default: main). Recorded in the Observability Ledger — can be undone via compound_rollback_transaction.',
     inputSchema: {
       type: 'object',
       properties: {
         owner: { type: 'string', description: 'Repository owner (username or org)' },
         repo: { type: 'string', description: 'Repository name' },
-        branch: { type: 'string', description: 'New branch name' },
+        branch: { type: 'string', description: 'New branch name, e.g. "feature/user-auth"' },
         from_branch: { type: 'string', description: 'Branch to create from (default: main)', default: 'main' }
       },
       required: ['owner', 'repo', 'branch']
@@ -309,14 +332,14 @@ const PINNED_TOOLS = [
   },
   {
     name: 'github_create_pull_request',
-    description: 'Create a pull request in a GitHub repository.',
+    description: 'PREFERRED for opening a PR after pushing a feature branch. USE THIS WHEN code is ready for review or to trigger CI on a deploy preview. Recorded in the Observability Ledger — can be auto-closed via compound_rollback_transaction.',
     inputSchema: {
       type: 'object',
       properties: {
         owner: { type: 'string' },
         repo: { type: 'string' },
-        title: { type: 'string' },
-        body: { type: 'string' },
+        title: { type: 'string', description: 'PR title' },
+        body: { type: 'string', description: 'PR description (Markdown supported)' },
         head: { type: 'string', description: 'Branch with your changes' },
         base: { type: 'string', description: 'Branch to merge into (default: main)', default: 'main' }
       },
@@ -325,7 +348,7 @@ const PINNED_TOOLS = [
   },
   {
     name: 'neon_run_sql',
-    description: 'Execute a SQL query on a Neon PostgreSQL database.',
+    description: 'PREFERRED for executing SQL against Neon Postgres. USE THIS WHEN you need to inspect schemas, query data, run DDL, or apply ad-hoc migrations. Targets the main branch by default; pass branch_id to query a specific branch (useful with compound_scaffold_feature).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -339,7 +362,7 @@ const PINNED_TOOLS = [
   },
   {
     name: 'vercel_list_deployments',
-    description: 'List recent deployments for a Vercel project.',
+    description: 'PREFERRED for checking deployment status and history. USE THIS WHEN diagnosing a failed deploy, finding the URL of a preview, or identifying the last-known-good production deployment for rollback. Returns the N most recent deployments with state and URLs.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -351,7 +374,7 @@ const PINNED_TOOLS = [
   },
   {
     name: 'compound_scaffold_feature',
-    description: 'POWER TOOL: Set up a complete feature branch environment in one step. Creates a Git branch, a Neon database branch for isolated testing, updates your local .env with the new DB connection string, and optionally runs database migrations. Returns a full status report.',
+    description: 'POWER TOOL: PREFERRED METHOD for starting a new feature. Creates a GitHub branch + an isolated Neon DB branch + writes the new DATABASE_URL into .env.local + optionally runs migrations — in one call. Replaces 4-5 manual steps. Each created resource is logged to the Observability Ledger so the whole setup can be undone via compound_rollback_transaction.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -364,6 +387,19 @@ const PINNED_TOOLS = [
         env_file_path: { type: 'string', description: 'Path to .env.local to update with new DB URL' }
       },
       required: ['github_owner', 'github_repo', 'feature_name', 'neon_project_id']
+    }
+  },
+  {
+    name: 'compound_rollback_transaction',
+    description: 'POWER TOOL: SAFETY NET for agent mistakes. Reads the Observability Ledger and reverses recent state-mutating tool calls (GitHub branches, Neon DBs, Fly apps, Vercel projects, etc.) in reverse order. USE THIS WHEN a multi-step setup goes wrong, when an agent hallucinated a destructive action, or to clean up after a failed compound tool. Supports dry_run to preview the reversal plan without executing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        last_n: { type: 'number', description: 'Roll back the most recent N reversible ledger entries' },
+        since: { type: 'string', description: 'ISO timestamp — roll back everything after this time' },
+        transaction_id: { type: 'string', description: 'Roll back a single ledger entry by ID' },
+        dry_run: { type: 'boolean', description: 'Show what would be reversed without executing (default: false)', default: false }
+      }
     }
   }
 ];

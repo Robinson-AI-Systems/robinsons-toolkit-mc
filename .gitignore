@@ -7,3 +7,6 @@ node_modules/
 # System-specific junk files
 .DS_Store
 Thumbs.db
+
+# Observability Ledger (runtime transaction log)
+.toolkit-ledger.jsonl
