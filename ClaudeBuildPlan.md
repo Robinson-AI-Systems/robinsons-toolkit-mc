@@ -38,37 +38,36 @@ Every namespace build follows this exact sequence:
 
 ---
 
-## Priority Order
+## Priority Order — Session 14 Revision
 
-Ordered by: **Chris's explicit Session 5 directive** → **impact on active stack** → **size of gap**
+**Broken handlers (fix immediately — tools exist in registry but do nothing):**
+- 🔴 `cloudflare` — 148 registry / 0 handler wired
+- 🔴 `google` — 158 registry / 5 handler wired
+- 🔴 `search` — 23 registry / 10 handler wired
 
-**Completed namespaces (perfect sync, target hit):**
-- ✅ `vercel` — 150/150 (Session 2)
-- ✅ `neon` — 187/187 (Session 3)
-- ✅ `local` — 62/62 (Session 4)
+**New namespaces revealed by .env audit:**
+- 🔴 `moonshot` — MOONSHOT_API_KEY present, 0 tools exist
+- 🔴 `voyage` — VOYAGE_API_KEY present, 0 tools exist
+- 🔴 `sam` — SAM_API_KEY present, 0 tools exist (federal contracts)
+
+**Missing features in existing namespaces:**
+- 🟠 `openai` — OPENAI_ADMIN_KEY present, 0 admin tools built
+- 🟠 `anthropic` — ANTHROPIC_ADMIN_KEY present, 0 admin tools built
+- 🟠 `search` — SERPAPI_KEY present, 0 SerpApi tools built
+
+**Depth expansion priorities (all currently synced, need more tools):**
 
 | Priority | Namespace | Current | Target | Why |
 |---|---|---|---|---|
-| 🔴 1 | `github` | 201 | 250+ | Audit depth — Actions, code scanning, Dependabot, environments, traffic |
-| 🔴 2 | `anthropic` | 15 | 60+ | Claude API direct — batches, files, deeper messages, streaming |
-| 🔴 3 | `openai` | 41 | 100+ | RAG pipelines, Realtime API, Batch, Evals, Vector Stores deeper |
-| 🔴 4 | `cloudflare` | 54 | 120+ | D1, Workers AI, Queues, Durable Objects, Zero Trust |
-| 🔴 5 | `google` | 60 | 130+ | Gmail/Drive/Calendar/Sheets/Docs deeper coverage |
-| 🟠 6 | `stripe` | 71 | 130+ | Revenue critical, YardSync billing — Connect, Checkout, lifecycle |
-| 🟠 7 | `twilio` | 22 | 90+ | YardSync dispatch SMS/voice, critical gap |
-| 🟠 8 | `fly` | 37 | 100+ | Production hosting for backend services |
-| 🟡 9 | `supabase` | 36 | 100+ | Auth, realtime, edge functions deeper |
-| 🟡 10 | `clerk` | 30 | 80+ | Multi-tenant auth for Cortiware |
-| 🟡 11 | `resend` | 23 | 70+ | Transactional email, React Email |
-| 🟡 12 | `sentry` | 17 | 60+ | Error tracking, performance monitoring |
-| 🟡 13 | `qdrant` | 17 | 60+ | Vector search, RAG infrastructure |
-| 🟢 14 | `upstash` | 149 | 180+ | Add Vector + Kafka namespaces |
-| 🟢 15 | `mapbox` | 15 | 60+ | Routing, geocoding, YardSync maps |
-| 🟢 16 | `n8n` | 13 | 50+ | Workflow automation deeper |
-| 🟢 17 | `postgres` | 12 | 50+ | Direct DB ops, query analysis |
-| 🟢 18 | `compound` | 11 | 50+ | Cross-service Super Tools |
-| 🟢 19 | `search` | 10 | 30+ | Brave + Tavily deeper |
-| ⬜ 20 | `playwright` | 0 | 60+ | NEW namespace — browser automation |
+| 🟡 1 | `compound` | 29 | 50+ | Cross-service Super Tools — always highest ROI |
+| 🟡 2 | `sentry` | 71 | 90+ | Monitors, alerting rules, dashboards, performance |
+| 🟡 3 | `gemini` | 15 | 35+ | Thinking models, 2.0 Flash, video understanding |
+| 🟡 4 | `n8n` | 57 | 80+ | Execution history deeper, node catalog, template import |
+| 🟡 5 | `postgres` | 59 | 80+ | Advisory locks, LISTEN/NOTIFY, logical replication |
+| 🟡 6 | `qdrant` | 48 | 70+ | Named vectors, sparse vectors, multi-vector search |
+| 🟢 7 | `mapbox` | 45 | 65+ | Traffic/incidents API, isochrone analysis |
+| 🟢 8 | `resend` | 46 | 65+ | Broadcast scheduling, domain verification deeper |
+| 🟢 9 | `search` | 23 | 45+ | SerpApi + Brave/Tavily depth after fixes |
 
 ---
 
@@ -610,6 +609,117 @@ These orchestrate multiple namespaces together. Planned additions:
 *PDF:*
 - `playwright_generate_pdf` — render a URL as PDF
 - `playwright_generate_pdf_from_html` — render HTML string as PDF
+
+---
+
+---
+
+### `moonshot` — Moonshot AI (Kimi) — NEW NAMESPACE
+**Credential:** `MOONSHOT_API_KEY`
+**Target: 20+ tools**
+
+Moonshot AI (Kimi) is OpenAI-compatible, with a 128K context window and strong Chinese/English bilingual performance. API base: `https://api.moonshot.cn/v1`.
+
+*Core completions:*
+- `moonshot_chat` — chat completion with a Kimi model
+- `moonshot_chat_json` — chat completion with JSON mode enforced
+- `moonshot_chat_stream` — streaming chat completion
+- `moonshot_list_models` — list available Moonshot models (moonshot-v1-8k, 32k, 128k)
+
+*Files (Moonshot supports document parsing natively):*
+- `moonshot_upload_file` — upload a file for extraction (PDF, docx, txt, etc.)
+- `moonshot_list_files` — list uploaded files
+- `moonshot_get_file` — get file metadata
+- `moonshot_delete_file` — delete an uploaded file
+- `moonshot_get_file_content` — extract text content from an uploaded file
+
+*Vision:*
+- `moonshot_vision_chat` — chat with image input (URL or base64)
+
+*Function calling:*
+- `moonshot_function_call` — chat with tool/function definitions
+
+*Embeddings:*
+- `moonshot_embed_text` — generate text embeddings
+
+*Account:*
+- `moonshot_get_balance` — check API credit balance
+- `moonshot_list_usage` — token usage history
+
+**Super Tools:**
+- `moonshot_parse_document` — upload file + extract text in one call
+- `moonshot_long_context_summarize` — send a massive document (up to 128K tokens) and get a structured summary
+- `moonshot_compare_documents` — upload two documents and ask Kimi to compare them
+
+---
+
+### `voyage` — Voyage AI Embeddings — NEW NAMESPACE
+**Credential:** `VOYAGE_API_KEY`
+**Target: 12+ tools**
+
+Voyage AI produces state-of-the-art text embeddings, outperforming OpenAI on most retrieval benchmarks. Excellent for RAG pipelines. API base: `https://api.voyageai.com/v1`.
+
+*Embeddings:*
+- `voyage_embed` — generate embeddings for texts (voyage-3, voyage-3-lite, voyage-finance-2, voyage-code-3, voyage-law-2, voyage-multilingual-2)
+- `voyage_embed_query` — embed a single search query (query-optimized)
+- `voyage_embed_documents` — batch embed a list of documents
+- `voyage_embed_code` — embed code using voyage-code-3
+- `voyage_embed_finance` — embed financial text using voyage-finance-2
+- `voyage_embed_legal` — embed legal text using voyage-law-2
+
+*Reranking:*
+- `voyage_rerank` — rerank search results by relevance to a query (rerank-2, rerank-2-lite)
+
+*Models:*
+- `voyage_list_models` — list available models and their dimensions
+
+**Super Tools:**
+- `voyage_embed_and_store_qdrant` — embed documents with Voyage + store in Qdrant in one call
+- `voyage_search_pipeline` — embed query + search vector DB + rerank results in one call
+- `voyage_compare_similarity` — embed two texts and return cosine similarity score
+
+---
+
+### `sam` — SAM.gov Federal Contracts — NEW NAMESPACE
+**Credentials:** `SAM_API_KEY`, `INTAKE_SAM_TOKEN`
+**Target: 18+ tools**
+
+SAM.gov is the official US government procurement database. Critical for any platform that helps contractors (like YardSync) find government work. API base: `https://api.sam.gov`.
+
+*Contract Opportunities:*
+- `sam_search_opportunities` — search active contract opportunities by keyword, NAICS code, set-aside type, agency, state
+- `sam_get_opportunity` — get full details for a specific opportunity by notice ID
+- `sam_list_opportunity_attachments` — get documents attached to an opportunity
+- `sam_search_opportunities_by_naics` — search by NAICS code (trade/service category)
+- `sam_search_opportunities_by_agency` — all open opportunities from a specific agency
+- `sam_search_opportunities_near_location` — opportunities with place of performance near zip code
+
+*Awards & History:*
+- `sam_search_awards` — search contract award history
+- `sam_get_award` — get full award details
+- `sam_list_awards_by_contractor` — all awards to a specific DUNS/UEI
+- `sam_list_awards_by_agency` — all awards issued by an agency
+
+*Entity (Contractor) Registry:*
+- `sam_search_entities` — search registered contractors/vendors
+- `sam_get_entity` — get full entity registration (UEI, cage code, address, capabilities)
+- `sam_check_entity_active` — verify if an entity is currently active and eligible
+
+*Exclusions (debarred contractors):*
+- `sam_check_exclusions` — check if a company or individual is excluded from federal contracts
+
+*Wage Determinations:*
+- `sam_search_wage_determinations` — search Service Contract Act / Davis-Bacon wage determinations
+- `sam_get_wage_determination` — get wage rates for a specific WD number and revision
+
+*NAICS Codes:*
+- `sam_list_naics_codes` — search NAICS codes by keyword
+- `sam_get_naics_code` — get description and details for a NAICS code
+
+**Super Tools:**
+- `sam_find_opportunities_for_contractor` — given a company profile (NAICS codes, state, size), return best-match open opportunities
+- `sam_contractor_due_diligence` — look up entity + check exclusions + get award history in one call
+- `sam_bid_opportunity_summary` — get opportunity + all attachments + agency contact in one structured call
 
 ---
 

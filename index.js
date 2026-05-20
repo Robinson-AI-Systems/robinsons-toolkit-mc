@@ -3,11 +3,11 @@ console.log = console.error;
 /**
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║         ROBINSON'S TOOLKIT MCP SERVER  v2.0                         ║
- * ║         1400+ tools · 28 categories · Smart discovery               ║
+ * ║         2,399+ tools · 31 categories · Smart discovery              ║
  * ║         GitHub · Vercel · Neon · Fly.io · Stripe · Twilio           ║
  * ║         Resend · Cloudflare · OpenAI · Anthropic · Supabase         ║
  * ║         Mapbox · Clerk · Sentry · Google Workspace · Qdrant         ║
- * ║         Local Machine · Web Search · n8n · Postgres · Docker        ║
+ * ║         Moonshot · Voyage · SAM.gov · n8n · Postgres · Search       ║
  * ╚══════════════════════════════════════════════════════════════════════╝
  *
  * ARCHITECTURE: Smart Discovery (Option 2)
@@ -88,7 +88,7 @@ function getActiveNamespaces() {
     tavily:     () => !!process.env.TAVILY_API_KEY,
     google:     () => !!process.env.GOOGLE_ACCESS_TOKEN || !!process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH,
     qdrant:     () => !!process.env.QDRANT_URL,
-    n8n:        () => !!process.env.N8N_BASE_URL && !!process.env.N8N_API_KEY,
+    n8n:        () => !!process.env.N8N_BASE_URL && !!(process.env.N8N_ACCESS_TOKEN || process.env.N8N_API_KEY),
     postgres:   () => !!process.env.POSTGRES_CONNECTION_STRING,
     context7:   () => !!process.env.CONTEXT7_API_KEY,
     linear:     () => !!process.env.LINEAR_API_KEY,
@@ -98,6 +98,9 @@ function getActiveNamespaces() {
     local:      () => true, // Always available — local machine access
     compound:   () => true, // Always available — compound tools use whatever is configured
     ollama:     () => true, // Always available — local Ollama LLM (no API key needed)
+    moonshot:   () => !!process.env.MOONSHOT_API_KEY,
+    voyage:     () => !!process.env.VOYAGE_API_KEY,
+    sam:        () => !!(process.env.SAM_API_KEY || process.env.INTAKE_SAM_TOKEN),
   };
   for (const [name, check] of Object.entries(checks)) {
     namespaces[name] = check();
@@ -191,8 +194,8 @@ async function routeToolCall(toolName, args, handlers, opts = {}) {
     namespace = 'google';
   }
 
-  // Map brave/tavily prefixes to the unified search handler
-  if (namespace === 'brave' || namespace === 'tavily') namespace = 'search';
+  // Map brave/tavily/serp prefixes to the unified search handler
+  if (namespace === 'brave' || namespace === 'tavily' || namespace === 'serp') namespace = 'search';
 
   // Map cf_ prefix to the cloudflare handler
   if (namespace === 'cf') namespace = 'cloudflare';
