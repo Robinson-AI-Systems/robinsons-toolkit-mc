@@ -1,71 +1,1778 @@
 [
-  {"name":"anthropic_message","description":"Send a message to Claude and get a response. Full control over model, system prompt, temperature, tools, and tool_choice.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"messages":{"type":"array"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"},"temperature":{"type":"number"},"tools":{"type":"array"},"tool_choice":{"type":"object"}},"required":["messages"]},"tags":["claude","llm","ai","chat","anthropic","message"]},
-  {"name":"anthropic_message_with_tools","description":"Multi-turn Claude conversation with automatic tool-use handling. Runs up to max_turns.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"user_message":{"type":"string"},"tools":{"type":"array"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"},"max_turns":{"type":"number"}},"required":["user_message","tools"]},"tags":["claude","tools","multi-turn","ai","anthropic"]},
-  {"name":"anthropic_count_tokens","description":"Count the number of tokens in a prompt before sending it to Claude","namespace":"anthropic","inputSchema":{"type":"object","properties":{"messages":{"type":"array"},"model":{"type":"string"},"system":{"type":"string"}},"required":["messages"]},"tags":["tokens","count","pricing","anthropic"]},
-  {"name":"anthropic_list_models","description":"List all available Claude models","namespace":"anthropic","inputSchema":{"type":"object","properties":{}},"tags":["models","list","anthropic","claude"]},
-  {"name":"anthropic_get_model","description":"Get details about a specific Claude model","namespace":"anthropic","inputSchema":{"type":"object","properties":{"model_id":{"type":"string"}},"required":["model_id"]},"tags":["model","anthropic","claude"]},
-  {"name":"anthropic_create_batch","description":"Create a batch of Claude API requests to process asynchronously at reduced cost","namespace":"anthropic","inputSchema":{"type":"object","properties":{"requests":{"type":"array"}},"required":["requests"]},"tags":["batch","async","anthropic","bulk"]},
-  {"name":"anthropic_get_batch","description":"Get the status and results of a batch request","namespace":"anthropic","inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]},"tags":["batch","status","anthropic"]},
-  {"name":"anthropic_list_batches","description":"List all batch jobs in the Anthropic account","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number"}}},"tags":["batch","list","anthropic"]},
-  {"name":"anthropic_cancel_batch","description":"Cancel a running batch job","namespace":"anthropic","inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]},"tags":["batch","cancel","anthropic"]},
-  {"name":"anthropic_get_batch_results","description":"Download the results of a completed batch job as a list of responses","namespace":"anthropic","inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]},"tags":["batch","results","download","anthropic"]},
-  {"name":"anthropic_list_files","description":"List all files uploaded to the Anthropic API","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number"}}},"tags":["files","list","anthropic"]},
-  {"name":"anthropic_get_file","description":"Get metadata about a specific file uploaded to the Anthropic API","namespace":"anthropic","inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]},"tags":["file","anthropic"]},
-  {"name":"anthropic_delete_file","description":"Delete a file from the Anthropic API","namespace":"anthropic","inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]},"tags":["file","delete","anthropic"]},
-  {"name":"anthropic_get_usage","description":"Get API usage and cost statistics for the Anthropic account","namespace":"anthropic","inputSchema":{"type":"object","properties":{"start_time":{"type":"string"},"end_time":{"type":"string"}}},"tags":["usage","billing","cost","anthropic"]},
-  {"name":"anthropic_quick_ask","description":"Quick single question to Claude Haiku for fast, cheap responses. Great for classification, extraction, and simple tasks.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"question":{"type":"string"},"system":{"type":"string"},"model":{"type":"string"}},"required":["question"]},"tags":["quick","ask","claude","haiku","anthropic","fast"]},
-  {"name":"anthropic_message_from_url","description":"Fetch a URL and ask Claude a question about its contents. Returns the response plus the source size. Useful for analyzing articles, blog posts, or simple HTML pages.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"url":{"type":"string"},"question":{"type":"string"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"}},"required":["url","question"]},"tags":["url","fetch","claude","anthropic","analysis"]},
-  {"name":"anthropic_score_text","description":"Score text against multiple criteria with a score and reason for each. Returns a JSON object mapping each criterion to {score, reason}. Useful for evaluations and rubrics.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"criteria":{"type":"array","items":{"type":"string"}},"scale":{"type":"string","default":"1-10"},"model":{"type":"string"}},"required":["text","criteria"]},"tags":["score","evaluate","rubric","claude","anthropic"]},
-  {"name":"anthropic_redact_pii","description":"Redact personally identifiable information (names, emails, phones, SSNs, credit cards, addresses, DOBs) from text. Returns the redacted text. Uses Haiku by default for speed.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"replacement":{"type":"string","default":"[REDACTED]"},"model":{"type":"string"}},"required":["text"]},"tags":["pii","redact","privacy","gdpr","claude","anthropic"]},
-  {"name":"anthropic_vision_message","description":"Send images (by URL or base64) to Claude with a question. Returns the text response. Use for OCR, screenshot analysis, image description.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"images":{"type":"array","items":{"type":"object","properties":{"url":{"type":"string"},"base64":{"type":"string"},"media_type":{"type":"string"}}}},"question":{"type":"string"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"}},"required":["images","question"]},"tags":["vision","image","ocr","claude","anthropic","multimodal"]},
-  {"name":"anthropic_pdf_message","description":"Analyze a PDF document with Claude. Accepts either pdf_base64 or file_id (from anthropic_upload_file). Uses files-api + pdfs beta headers.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"pdf_base64":{"type":"string"},"file_id":{"type":"string"},"question":{"type":"string"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"}},"required":["question"]},"tags":["pdf","document","claude","anthropic","analysis"]},
-  {"name":"anthropic_message_with_caching","description":"Send a message with explicit prompt caching on a large context block. Returns cache_read_input_tokens and cache_creation_input_tokens for cost analysis.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"large_context":{"type":"string"},"question":{"type":"string"},"system":{"type":"string"},"model":{"type":"string"},"max_tokens":{"type":"number"}},"required":["large_context","question"]},"tags":["cache","prompt-caching","cost","claude","anthropic"]},
-  {"name":"anthropic_message_with_thinking","description":"Send a message with extended thinking enabled. Returns the thinking trace separately from the response. Best with Opus models.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"messages":{"type":"array"},"system":{"type":"string"},"model":{"type":"string"},"max_tokens":{"type":"number"},"thinking_budget":{"type":"number","default":5000}},"required":["messages"]},"tags":["thinking","extended-thinking","reasoning","claude","anthropic"]},
-  {"name":"anthropic_message_stream","description":"Send a message with streaming and accumulate the full response. Returns the complete text after the stream finishes plus token usage.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"messages":{"type":"array"},"system":{"type":"string"},"model":{"type":"string"},"max_tokens":{"type":"number"}},"required":["messages"]},"tags":["stream","sse","claude","anthropic","message"]},
-  {"name":"anthropic_extract_json","description":"Extract structured JSON from unstructured text using a JSON Schema. Returns {parsed, raw, usage}. Use for parsing emails, documents, transcripts.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"schema":{"type":"object"},"model":{"type":"string"},"max_tokens":{"type":"number"}},"required":["text","schema"]},"tags":["extraction","json","schema","structured","claude","anthropic"]},
-  {"name":"anthropic_classify","description":"Classify text into one of a provided list of labels using Claude Haiku. Returns the chosen label.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"labels":{"type":"array","items":{"type":"string"}},"model":{"type":"string"}},"required":["text","labels"]},"tags":["classify","classification","label","haiku","anthropic"]},
-  {"name":"anthropic_summarize","description":"Summarize text into a specified number of sentences with Claude Haiku. Fast and cheap.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"max_sentences":{"type":"number","default":3},"model":{"type":"string"}},"required":["text"]},"tags":["summarize","summary","haiku","anthropic"]},
-  {"name":"anthropic_translate","description":"Translate text between languages with Claude. Auto-detects source if not specified.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"target_language":{"type":"string"},"source_language":{"type":"string"},"model":{"type":"string"}},"required":["text","target_language"]},"tags":["translate","translation","language","claude","anthropic"]},
-  {"name":"anthropic_extract_entities","description":"Extract named entities (people, organizations, locations, dates, emails, phones, URLs by default — or custom types) from text as structured JSON.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"entity_types":{"type":"array","items":{"type":"string"}},"model":{"type":"string"}},"required":["text"]},"tags":["entities","ner","extraction","claude","anthropic"]},
-  {"name":"anthropic_upload_file","description":"Upload a file (provided as base64) to the Anthropic Files API for use with PDF analysis or multimodal messages. Uses files-api beta.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"filename":{"type":"string"},"content_base64":{"type":"string"},"mime_type":{"type":"string","default":"application/octet-stream"}},"required":["filename","content_base64"]},"tags":["files","upload","pdf","anthropic","beta"]},
-  {"name":"anthropic_get_file_content","description":"Download the content of a file previously uploaded to the Anthropic Files API, returned as base64.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]},"tags":["files","download","anthropic","beta"]},
-  {"name":"anthropic_upload_file_from_url","description":"Fetch a file from a URL and upload it to the Anthropic Files API in one step. Useful for processing remote documents.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"url":{"type":"string"},"filename":{"type":"string"}},"required":["url"]},"tags":["files","upload","url","anthropic","beta"]},
-  {"name":"anthropic_batch_simple","description":"Create a Claude message batch from a simple array of prompts. Each prompt becomes a separate request with the same model and system prompt. Returns the batch object.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"prompts":{"type":"array"},"model":{"type":"string"},"system":{"type":"string"},"max_tokens":{"type":"number"}},"required":["prompts"]},"tags":["batch","bulk","simple","anthropic"]},
-  {"name":"anthropic_wait_for_batch","description":"Poll a batch until processing_status === 'ended' or timeout. Returns the final batch object.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"},"poll_interval_ms":{"type":"number","default":5000},"max_wait_ms":{"type":"number","default":300000}},"required":["batch_id"]},"tags":["batch","wait","poll","anthropic"]},
-  {"name":"anthropic_delete_batch","description":"Delete a message batch and its results (only allowed once batch has ended).","namespace":"anthropic","inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]},"tags":["batch","delete","anthropic"]},
-  {"name":"anthropic_list_workspaces","description":"List workspaces in your Anthropic organization. Requires an Admin API key (ANTHROPIC_ADMIN_KEY).","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}},"tags":["admin","workspaces","organization","anthropic"]},
-  {"name":"anthropic_get_workspace","description":"Get details of a specific workspace. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"}},"required":["workspace_id"]},"tags":["admin","workspace","anthropic"]},
-  {"name":"anthropic_create_workspace","description":"Create a new workspace in your Anthropic organization. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]},"tags":["admin","workspace","create","anthropic"]},
-  {"name":"anthropic_update_workspace","description":"Rename a workspace. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"name":{"type":"string"}},"required":["workspace_id","name"]},"tags":["admin","workspace","update","rename","anthropic"]},
-  {"name":"anthropic_archive_workspace","description":"Archive a workspace, preventing further API key usage. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"}},"required":["workspace_id"]},"tags":["admin","workspace","archive","anthropic"]},
-  {"name":"anthropic_list_workspace_members","description":"List members of a workspace and their roles. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["workspace_id"]},"tags":["admin","workspace","members","anthropic"]},
-  {"name":"anthropic_get_workspace_member","description":"Get a workspace member's role. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"user_id":{"type":"string"}},"required":["workspace_id","user_id"]},"tags":["admin","workspace","member","anthropic"]},
-  {"name":"anthropic_add_workspace_member","description":"Add a user to a workspace with a role (workspace_admin, workspace_developer, workspace_billing, workspace_user). Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"user_id":{"type":"string"},"role":{"type":"string"}},"required":["workspace_id","user_id"]},"tags":["admin","workspace","member","add","anthropic"]},
-  {"name":"anthropic_update_workspace_member","description":"Change a workspace member's role. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"user_id":{"type":"string"},"role":{"type":"string"}},"required":["workspace_id","user_id","role"]},"tags":["admin","workspace","member","update","anthropic"]},
-  {"name":"anthropic_remove_workspace_member","description":"Remove a user from a workspace. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"user_id":{"type":"string"}},"required":["workspace_id","user_id"]},"tags":["admin","workspace","member","remove","anthropic"]},
-  {"name":"anthropic_list_org_users","description":"List all users in the Anthropic organization. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}},"tags":["admin","users","organization","anthropic"]},
-  {"name":"anthropic_get_org_user","description":"Get details for a specific organization user. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]},"tags":["admin","user","organization","anthropic"]},
-  {"name":"anthropic_update_org_user","description":"Update a user's organization role (admin, billing, developer, user). Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"user_id":{"type":"string"},"role":{"type":"string"}},"required":["user_id","role"]},"tags":["admin","user","role","anthropic"]},
-  {"name":"anthropic_remove_org_user","description":"Remove a user from the Anthropic organization. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]},"tags":["admin","user","remove","anthropic"]},
-  {"name":"anthropic_list_org_invites","description":"List pending invites to your Anthropic organization. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}},"tags":["admin","invites","organization","anthropic"]},
-  {"name":"anthropic_create_org_invite","description":"Send an invite to join your Anthropic organization. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"email":{"type":"string"},"role":{"type":"string","default":"user"}},"required":["email"]},"tags":["admin","invite","create","anthropic"]},
-  {"name":"anthropic_delete_org_invite","description":"Cancel a pending organization invite. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"invite_id":{"type":"string"}},"required":["invite_id"]},"tags":["admin","invite","delete","anthropic"]},
-  {"name":"anthropic_list_api_keys","description":"List API keys in your organization, optionally filtered by workspace. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20},"workspace_id":{"type":"string"}}},"tags":["admin","api-keys","organization","anthropic"]},
-  {"name":"anthropic_get_api_key","description":"Get details for an API key (metadata only — key value is not returned). Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"api_key_id":{"type":"string"}},"required":["api_key_id"]},"tags":["admin","api-key","get","anthropic"]},
-  {"name":"anthropic_update_api_key","description":"Rename an API key or change its status (active/inactive). Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"api_key_id":{"type":"string"},"name":{"type":"string"},"status":{"type":"string"}},"required":["api_key_id"]},"tags":["admin","api-key","update","anthropic"]},
-  {"name":"anthropic_get_usage_report","description":"Get message usage statistics with grouping and time bucketing. Useful for tracking token consumption per workspace/model. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"starting_at":{"type":"string"},"ending_at":{"type":"string"},"group_by":{"type":"string"},"bucket_width":{"type":"string"}}},"tags":["admin","usage","report","tokens","anthropic"]},
-  {"name":"anthropic_get_cost_report","description":"Get USD cost breakdown over a time range with optional grouping by workspace/model. Requires Admin API key.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"starting_at":{"type":"string"},"ending_at":{"type":"string"},"group_by":{"type":"string"}}},"tags":["admin","cost","billing","report","anthropic"]},
-  {"name":"anthropic_summarize_long_doc","description":"SUPER TOOL: Summarize a long document by chunking + per-chunk Haiku summaries + final merge with the chosen model. Handles arbitrarily long inputs.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"chunk_size":{"type":"number","default":8000},"target_length":{"type":"string","default":"3 paragraphs"},"model":{"type":"string"}},"required":["text"]},"tags":["super-tool","summarize","long","document","chunking","anthropic"]},
-  {"name":"anthropic_compare_models","description":"SUPER TOOL: Send the same prompt to multiple Claude models in parallel and return side-by-side responses with latency and usage. Defaults to Opus + Sonnet + Haiku.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"question":{"type":"string"},"models":{"type":"array","items":{"type":"string"}},"system":{"type":"string"},"max_tokens":{"type":"number"}},"required":["question"]},"tags":["super-tool","compare","models","benchmark","anthropic"]},
-  {"name":"anthropic_batch_classify","description":"SUPER TOOL: Classify a list of items using the Batch API with one shared label set. Returns the batch_id for polling. 50% cheaper than realtime.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"items":{"type":"array","items":{"type":"string"}},"labels":{"type":"array","items":{"type":"string"}},"model":{"type":"string"}},"required":["items","labels"]},"tags":["super-tool","batch","classify","bulk","anthropic"]},
-  {"name":"anthropic_extract_structured","description":"SUPER TOOL: Extract a JSON object matching a schema, with automatic retry on parse failure (max_retries=1 by default). Returns the parsed object on success.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"schema":{"type":"object"},"model":{"type":"string"},"max_retries":{"type":"number","default":1}},"required":["text","schema"]},"tags":["super-tool","extraction","json","schema","retry","anthropic"]},
-  {"name":"anthropic_chat_session","description":"SUPER TOOL: Stateful chat — pass the returned history array back as input on the next call to continue the conversation. Returns {response, history, usage}.","namespace":"anthropic","inputSchema":{"type":"object","properties":{"user_message":{"type":"string"},"history":{"type":"array"},"system":{"type":"string"},"model":{"type":"string"},"max_tokens":{"type":"number"}},"required":["user_message"]},"tags":["super-tool","chat","session","stateful","conversation","anthropic"]},
-  {"name":"anthropic_list_workspaces","description":"List all Anthropic workspaces in the organization. Requires ANTHROPIC_ADMIN_KEY. Returns workspace IDs, names, and settings.","namespace":"anthropic","tags":["anthropic","admin","workspaces","organization"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"anthropic_get_workspace","description":"Get details for a specific Anthropic workspace by ID. Requires ANTHROPIC_ADMIN_KEY. Returns name, settings, and membership info.","namespace":"anthropic","tags":["anthropic","admin","workspaces"],"inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"}},"required":["workspace_id"]}},
-  {"name":"anthropic_list_workspace_members","description":"List all members of an Anthropic workspace. Requires ANTHROPIC_ADMIN_KEY. Returns user emails, roles, and invitation status.","namespace":"anthropic","tags":["anthropic","admin","members","workspaces"],"inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"}},"required":["workspace_id"]}},
-  {"name":"anthropic_invite_workspace_member","description":"Invite a user to an Anthropic workspace by email with a specified role. Requires ANTHROPIC_ADMIN_KEY. Roles: developer, billing, admin.","namespace":"anthropic","tags":["anthropic","admin","invite","members"],"inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string"},"email":{"type":"string"},"role":{"type":"string","enum":["developer","billing","admin"],"default":"developer"}},"required":["workspace_id","email"]}},
-  {"name":"anthropic_list_api_keys","description":"List API keys for the Anthropic organization or a specific workspace. Requires ANTHROPIC_ADMIN_KEY. Values are never returned, only metadata.","namespace":"anthropic","tags":["anthropic","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"workspace_id":{"type":"string","description":"Optional workspace ID to filter keys"}}}},
-  {"name":"anthropic_create_api_key","description":"Create a new API key for the Anthropic organization. Requires ANTHROPIC_ADMIN_KEY. The key value is only returned once at creation time.","namespace":"anthropic","tags":["anthropic","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"workspace_id":{"type":"string"}},"required":["name"]}},
-  {"name":"anthropic_disable_api_key","description":"Disable an Anthropic API key by key ID. Requires ANTHROPIC_ADMIN_KEY. Immediately revokes the key without deleting the record.","namespace":"anthropic","tags":["anthropic","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"key_id":{"type":"string"}},"required":["key_id"]}},
-  {"name":"anthropic_get_usage","description":"Get API usage and cost metrics for the Anthropic organization by month. Requires ANTHROPIC_ADMIN_KEY. Filter by workspace and date range.","namespace":"anthropic","tags":["anthropic","admin","usage","billing","monitoring"],"inputSchema":{"type":"object","properties":{"start_month":{"type":"string","description":"Start month in YYYY-MM format"},"end_month":{"type":"string","description":"End month in YYYY-MM format"},"workspace_id":{"type":"string"}}}}
+  {
+    "name": "anthropic_message",
+    "description": "Send a message to Claude and get a response. Full control over model, system prompt, temperature, tools, and tool_choice.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "tool_choice": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    },
+    "tags": [
+      "claude",
+      "llm",
+      "ai",
+      "chat",
+      "anthropic",
+      "message"
+    ]
+  },
+  {
+    "name": "anthropic_message_with_tools",
+    "description": "Multi-turn Claude conversation with automatic tool-use handling. Runs up to max_turns.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_message": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        },
+        "max_turns": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "user_message",
+        "tools"
+      ]
+    },
+    "tags": [
+      "claude",
+      "tools",
+      "multi-turn",
+      "ai",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_count_tokens",
+    "description": "Count the number of tokens in a prompt before sending it to Claude",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    },
+    "tags": [
+      "tokens",
+      "count",
+      "pricing",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_models",
+    "description": "List all available Claude models",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "tags": [
+      "models",
+      "list",
+      "anthropic",
+      "claude"
+    ]
+  },
+  {
+    "name": "anthropic_get_model",
+    "description": "Get details about a specific Claude model",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id"
+      ]
+    },
+    "tags": [
+      "model",
+      "anthropic",
+      "claude"
+    ]
+  },
+  {
+    "name": "anthropic_create_batch",
+    "description": "Create a batch of Claude API requests to process asynchronously at reduced cost",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "requests"
+      ]
+    },
+    "tags": [
+      "batch",
+      "async",
+      "anthropic",
+      "bulk"
+    ]
+  },
+  {
+    "name": "anthropic_get_batch",
+    "description": "Get the status and results of a batch request",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    },
+    "tags": [
+      "batch",
+      "status",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_batches",
+    "description": "List all batch jobs in the Anthropic account",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "batch",
+      "list",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_cancel_batch",
+    "description": "Cancel a running batch job",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    },
+    "tags": [
+      "batch",
+      "cancel",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_batch_results",
+    "description": "Download the results of a completed batch job as a list of responses",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    },
+    "tags": [
+      "batch",
+      "results",
+      "download",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_files",
+    "description": "List all files uploaded to the Anthropic API",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "files",
+      "list",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_file",
+    "description": "Get metadata about a specific file uploaded to the Anthropic API",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    },
+    "tags": [
+      "file",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_delete_file",
+    "description": "Delete a file from the Anthropic API",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    },
+    "tags": [
+      "file",
+      "delete",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_usage",
+    "description": "Get API usage and cost statistics for the Anthropic account",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "string"
+        },
+        "end_time": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "usage",
+      "billing",
+      "cost",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_quick_ask",
+    "description": "Quick single question to Claude Haiku for fast, cheap responses. Great for classification, extraction, and simple tasks.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "question"
+      ]
+    },
+    "tags": [
+      "quick",
+      "ask",
+      "claude",
+      "haiku",
+      "anthropic",
+      "fast"
+    ]
+  },
+  {
+    "name": "anthropic_message_from_url",
+    "description": "Fetch a URL and ask Claude a question about its contents. Returns the response plus the source size. Useful for analyzing articles, blog posts, or simple HTML pages.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "question"
+      ]
+    },
+    "tags": [
+      "url",
+      "fetch",
+      "claude",
+      "anthropic",
+      "analysis"
+    ]
+  },
+  {
+    "name": "anthropic_score_text",
+    "description": "Score text against multiple criteria with a score and reason for each. Returns a JSON object mapping each criterion to {score, reason}. Useful for evaluations and rubrics.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "criteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scale": {
+          "type": "string",
+          "default": "1-10"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "criteria"
+      ]
+    },
+    "tags": [
+      "score",
+      "evaluate",
+      "rubric",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_redact_pii",
+    "description": "Redact personally identifiable information (names, emails, phones, SSNs, credit cards, addresses, DOBs) from text. Returns the redacted text. Uses Haiku by default for speed.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "replacement": {
+          "type": "string",
+          "default": "[REDACTED]"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "tags": [
+      "pii",
+      "redact",
+      "privacy",
+      "gdpr",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_vision_message",
+    "description": "Send images (by URL or base64) to Claude with a question. Returns the text response. Use for OCR, screenshot analysis, image description.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "base64": {
+                "type": "string"
+              },
+              "media_type": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "question": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "images",
+        "question"
+      ]
+    },
+    "tags": [
+      "vision",
+      "image",
+      "ocr",
+      "claude",
+      "anthropic",
+      "multimodal"
+    ]
+  },
+  {
+    "name": "anthropic_pdf_message",
+    "description": "Analyze a PDF document with Claude. Accepts either pdf_base64 or file_id (from anthropic_upload_file). Uses files-api + pdfs beta headers.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pdf_base64": {
+          "type": "string"
+        },
+        "file_id": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "question"
+      ]
+    },
+    "tags": [
+      "pdf",
+      "document",
+      "claude",
+      "anthropic",
+      "analysis"
+    ]
+  },
+  {
+    "name": "anthropic_message_with_caching",
+    "description": "Send a message with explicit prompt caching on a large context block. Returns cache_read_input_tokens and cache_creation_input_tokens for cost analysis.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "large_context": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "large_context",
+        "question"
+      ]
+    },
+    "tags": [
+      "cache",
+      "prompt-caching",
+      "cost",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_message_with_thinking",
+    "description": "Send a message with extended thinking enabled. Returns the thinking trace separately from the response. Best with Opus models.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        },
+        "thinking_budget": {
+          "type": "number",
+          "default": 5000
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    },
+    "tags": [
+      "thinking",
+      "extended-thinking",
+      "reasoning",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_message_stream",
+    "description": "Send a message with streaming and accumulate the full response. Returns the complete text after the stream finishes plus token usage.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    },
+    "tags": [
+      "stream",
+      "sse",
+      "claude",
+      "anthropic",
+      "message"
+    ]
+  },
+  {
+    "name": "anthropic_extract_json",
+    "description": "Extract structured JSON from unstructured text using a JSON Schema. Returns {parsed, raw, usage}. Use for parsing emails, documents, transcripts.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "text",
+        "schema"
+      ]
+    },
+    "tags": [
+      "extraction",
+      "json",
+      "schema",
+      "structured",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_classify",
+    "description": "Classify text into one of a provided list of labels using Claude Haiku. Returns the chosen label.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "labels"
+      ]
+    },
+    "tags": [
+      "classify",
+      "classification",
+      "label",
+      "haiku",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_summarize",
+    "description": "Summarize text into a specified number of sentences with Claude Haiku. Fast and cheap.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "max_sentences": {
+          "type": "number",
+          "default": 3
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "tags": [
+      "summarize",
+      "summary",
+      "haiku",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_translate",
+    "description": "Translate text between languages with Claude. Auto-detects source if not specified.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "target_language": {
+          "type": "string"
+        },
+        "source_language": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "target_language"
+      ]
+    },
+    "tags": [
+      "translate",
+      "translation",
+      "language",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_extract_entities",
+    "description": "Extract named entities (people, organizations, locations, dates, emails, phones, URLs by default — or custom types) from text as structured JSON.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "entity_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "tags": [
+      "entities",
+      "ner",
+      "extraction",
+      "claude",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_upload_file",
+    "description": "Upload a file (provided as base64) to the Anthropic Files API for use with PDF analysis or multimodal messages. Uses files-api beta.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "content_base64": {
+          "type": "string"
+        },
+        "mime_type": {
+          "type": "string",
+          "default": "application/octet-stream"
+        }
+      },
+      "required": [
+        "filename",
+        "content_base64"
+      ]
+    },
+    "tags": [
+      "files",
+      "upload",
+      "pdf",
+      "anthropic",
+      "beta"
+    ]
+  },
+  {
+    "name": "anthropic_get_file_content",
+    "description": "Download the content of a file previously uploaded to the Anthropic Files API, returned as base64.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    },
+    "tags": [
+      "files",
+      "download",
+      "anthropic",
+      "beta"
+    ]
+  },
+  {
+    "name": "anthropic_upload_file_from_url",
+    "description": "Fetch a file from a URL and upload it to the Anthropic Files API in one step. Useful for processing remote documents.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "tags": [
+      "files",
+      "upload",
+      "url",
+      "anthropic",
+      "beta"
+    ]
+  },
+  {
+    "name": "anthropic_batch_simple",
+    "description": "Create a Claude message batch from a simple array of prompts. Each prompt becomes a separate request with the same model and system prompt. Returns the batch object.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompts": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "prompts"
+      ]
+    },
+    "tags": [
+      "batch",
+      "bulk",
+      "simple",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_wait_for_batch",
+    "description": "Poll a batch until processing_status === 'ended' or timeout. Returns the final batch object.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        },
+        "poll_interval_ms": {
+          "type": "number",
+          "default": 5000
+        },
+        "max_wait_ms": {
+          "type": "number",
+          "default": 300000
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    },
+    "tags": [
+      "batch",
+      "wait",
+      "poll",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_delete_batch",
+    "description": "Delete a message batch and its results (only allowed once batch has ended).",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    },
+    "tags": [
+      "batch",
+      "delete",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_workspaces",
+    "description": "List workspaces in your Anthropic organization. Requires an Admin API key (ANTHROPIC_ADMIN_KEY).",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "workspaces",
+      "organization",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_workspace",
+    "description": "Get details of a specific workspace. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_create_workspace",
+    "description": "Create a new workspace in your Anthropic organization. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "create",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_update_workspace",
+    "description": "Rename a workspace. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "name"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "update",
+      "rename",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_archive_workspace",
+    "description": "Archive a workspace, preventing further API key usage. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "archive",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_workspace_members",
+    "description": "List members of a workspace and their roles. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "workspace_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "members",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_workspace_member",
+    "description": "Get a workspace member's role. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "user_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "member",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_add_workspace_member",
+    "description": "Add a user to a workspace with a role (workspace_admin, workspace_developer, workspace_billing, workspace_user). Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "user_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "member",
+      "add",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_update_workspace_member",
+    "description": "Change a workspace member's role. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "user_id",
+        "role"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "member",
+      "update",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_remove_workspace_member",
+    "description": "Remove a user from a workspace. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "user_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "workspace",
+      "member",
+      "remove",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_org_users",
+    "description": "List all users in the Anthropic organization. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "users",
+      "organization",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_org_user",
+    "description": "Get details for a specific organization user. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "user",
+      "organization",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_update_org_user",
+    "description": "Update a user's organization role (admin, billing, developer, user). Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id",
+        "role"
+      ]
+    },
+    "tags": [
+      "admin",
+      "user",
+      "role",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_remove_org_user",
+    "description": "Remove a user from the Anthropic organization. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "user",
+      "remove",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_org_invites",
+    "description": "List pending invites to your Anthropic organization. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "invites",
+      "organization",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_create_org_invite",
+    "description": "Send an invite to join your Anthropic organization. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "default": "user"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    },
+    "tags": [
+      "admin",
+      "invite",
+      "create",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_delete_org_invite",
+    "description": "Cancel a pending organization invite. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invite_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invite_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "invite",
+      "delete",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_list_api_keys",
+    "description": "List API keys in your organization, optionally filtered by workspace. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "api-keys",
+      "organization",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_api_key",
+    "description": "Get details for an API key (metadata only — key value is not returned). Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "api_key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "api_key_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "api-key",
+      "get",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_update_api_key",
+    "description": "Rename an API key or change its status (active/inactive). Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "api_key_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "api_key_id"
+      ]
+    },
+    "tags": [
+      "admin",
+      "api-key",
+      "update",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_usage_report",
+    "description": "Get message usage statistics with grouping and time bucketing. Useful for tracking token consumption per workspace/model. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "starting_at": {
+          "type": "string"
+        },
+        "ending_at": {
+          "type": "string"
+        },
+        "group_by": {
+          "type": "string"
+        },
+        "bucket_width": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "usage",
+      "report",
+      "tokens",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_get_cost_report",
+    "description": "Get USD cost breakdown over a time range with optional grouping by workspace/model. Requires Admin API key.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "starting_at": {
+          "type": "string"
+        },
+        "ending_at": {
+          "type": "string"
+        },
+        "group_by": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "admin",
+      "cost",
+      "billing",
+      "report",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_summarize_long_doc",
+    "description": "SUPER TOOL: Summarize a long document by chunking + per-chunk Haiku summaries + final merge with the chosen model. Handles arbitrarily long inputs.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "chunk_size": {
+          "type": "number",
+          "default": 8000
+        },
+        "target_length": {
+          "type": "string",
+          "default": "3 paragraphs"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "tags": [
+      "super-tool",
+      "summarize",
+      "long",
+      "document",
+      "chunking",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_compare_models",
+    "description": "SUPER TOOL: Send the same prompt to multiple Claude models in parallel and return side-by-side responses with latency and usage. Defaults to Opus + Sonnet + Haiku.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "system": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "question"
+      ]
+    },
+    "tags": [
+      "super-tool",
+      "compare",
+      "models",
+      "benchmark",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_batch_classify",
+    "description": "SUPER TOOL: Classify a list of items using the Batch API with one shared label set. Returns the batch_id for polling. 50% cheaper than realtime.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "items",
+        "labels"
+      ]
+    },
+    "tags": [
+      "super-tool",
+      "batch",
+      "classify",
+      "bulk",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_extract_structured",
+    "description": "SUPER TOOL: Extract a JSON object matching a schema, with automatic retry on parse failure (max_retries=1 by default). Returns the parsed object on success.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_retries": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "text",
+        "schema"
+      ]
+    },
+    "tags": [
+      "super-tool",
+      "extraction",
+      "json",
+      "schema",
+      "retry",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_chat_session",
+    "description": "SUPER TOOL: Stateful chat — pass the returned history array back as input on the next call to continue the conversation. Returns {response, history, usage}.",
+    "namespace": "anthropic",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_message": {
+          "type": "string"
+        },
+        "history": {
+          "type": "array"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "user_message"
+      ]
+    },
+    "tags": [
+      "super-tool",
+      "chat",
+      "session",
+      "stateful",
+      "conversation",
+      "anthropic"
+    ]
+  },
+  {
+    "name": "anthropic_invite_workspace_member",
+    "description": "Invite a user to an Anthropic workspace by email with a specified role. Requires ANTHROPIC_ADMIN_KEY. Roles: developer, billing, admin.",
+    "namespace": "anthropic",
+    "tags": [
+      "anthropic",
+      "admin",
+      "invite",
+      "members"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspace_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "developer",
+            "billing",
+            "admin"
+          ],
+          "default": "developer"
+        }
+      },
+      "required": [
+        "workspace_id",
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "anthropic_create_api_key",
+    "description": "Create a new API key for the Anthropic organization. Requires ANTHROPIC_ADMIN_KEY. The key value is only returned once at creation time.",
+    "namespace": "anthropic",
+    "tags": [
+      "anthropic",
+      "admin",
+      "api-keys",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "anthropic_disable_api_key",
+    "description": "Disable an Anthropic API key by key ID. Requires ANTHROPIC_ADMIN_KEY. Immediately revokes the key without deleting the record.",
+    "namespace": "anthropic",
+    "tags": [
+      "anthropic",
+      "admin",
+      "api-keys",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id"
+      ]
+    }
+  }
 ]

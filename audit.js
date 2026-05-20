@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, existsSync } from 'fs';
 const prefixMap = {
   cloudflare: ['cf_'],
   google: ['gmail_','drive_','calendar_','sheets_','docs_','slides_','tasks_','people_','admin_','forms_','contacts_','google_'],
-  search: ['brave_','tavily_','search_'],
+  search: ['brave_','tavily_','search_','serp_'],
 };
 
 const handlers = readdirSync('handlers').filter(f=>f.endsWith('.js')).sort();

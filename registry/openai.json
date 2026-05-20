@@ -1,121 +1,3165 @@
 [
-  {"name":"openai_chat_completion","description":"Send a chat completion request to any OpenAI model (GPT-4o, GPT-4, etc.)","namespace":"openai","tags":["openai","chat","gpt","ai","completion","llm","message"],"inputSchema":{"type":"object","properties":{"model":{"type":"string","default":"gpt-4o","description":"e.g. gpt-4o, gpt-4o-mini, gpt-4-turbo"},"messages":{"type":"array","description":"Array of {role, content} messages"},"temperature":{"type":"number","default":0.7},"max_tokens":{"type":"number"},"system":{"type":"string","description":"Shorthand system prompt (added as first message)"}},"required":["messages"]}},
-  {"name":"openai_chat_completion_json","description":"Chat completion with JSON mode enforced — guaranteed to return valid JSON","namespace":"openai","tags":["openai","chat","json","structured","output","gpt","completion"],"inputSchema":{"type":"object","properties":{"model":{"type":"string","default":"gpt-4o-mini"},"messages":{"type":"array"},"system":{"type":"string"},"temperature":{"type":"number","default":0.3}},"required":["messages"]}},
-  {"name":"openai_list_models","description":"List all available OpenAI models","namespace":"openai","tags":["openai","models","list","available"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"openai_get_model","description":"Get details of a specific OpenAI model","namespace":"openai","tags":["openai","model","detail","info"],"inputSchema":{"type":"object","properties":{"model_id":{"type":"string"}},"required":["model_id"]}},
-  {"name":"openai_delete_model","description":"Delete a fine-tuned OpenAI model","namespace":"openai","tags":["openai","model","delete","fine-tuned"],"inputSchema":{"type":"object","properties":{"model_id":{"type":"string"}},"required":["model_id"]}},
-  {"name":"openai_create_embedding","description":"Create a vector embedding for a single text using OpenAI embeddings","namespace":"openai","tags":["openai","embedding","vector","semantic","similarity","search"],"inputSchema":{"type":"object","properties":{"input":{"type":"string"},"model":{"type":"string","default":"text-embedding-3-small"}},"required":["input"]}},
-  {"name":"openai_create_embeddings_batch","description":"Create vector embeddings for multiple texts in one request","namespace":"openai","tags":["openai","embeddings","batch","vectors","bulk","semantic"],"inputSchema":{"type":"object","properties":{"inputs":{"type":"array","items":{"type":"string"}},"model":{"type":"string","default":"text-embedding-3-small"}},"required":["inputs"]}},
-  {"name":"openai_generate_image","description":"Generate an image from a text prompt using DALL-E 3","namespace":"openai","tags":["openai","image","generate","dalle","dall-e","art","vision"],"inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"model":{"type":"string","default":"dall-e-3"},"size":{"type":"string","enum":["1024x1024","1024x1792","1792x1024"],"default":"1024x1024"},"quality":{"type":"string","enum":["standard","hd"],"default":"standard"},"n":{"type":"number","default":1}},"required":["prompt"]}},
-  {"name":"openai_edit_image","description":"Edit or inpaint an image using DALL-E with a mask","namespace":"openai","tags":["openai","image","edit","inpaint","dalle","dall-e"],"inputSchema":{"type":"object","properties":{"image_url":{"type":"string"},"prompt":{"type":"string"},"mask_url":{"type":"string"}},"required":["image_url","prompt"]}},
-  {"name":"openai_text_to_speech","description":"Convert text to audio using OpenAI TTS (voices: alloy, echo, fable, onyx, nova, shimmer)","namespace":"openai","tags":["openai","tts","text-to-speech","audio","voice","speech"],"inputSchema":{"type":"object","properties":{"input":{"type":"string"},"voice":{"type":"string","enum":["alloy","echo","fable","onyx","nova","shimmer"],"default":"alloy"},"model":{"type":"string","default":"tts-1"},"speed":{"type":"number","default":1.0}},"required":["input"]}},
-  {"name":"openai_transcribe_audio","description":"Transcribe audio to text using OpenAI Whisper","namespace":"openai","tags":["openai","whisper","transcribe","audio","speech-to-text","stt"],"inputSchema":{"type":"object","properties":{"audio_url":{"type":"string"},"language":{"type":"string","description":"ISO 639-1 language code, e.g. 'en', 'es'"},"prompt":{"type":"string"}},"required":["audio_url"]}},
-  {"name":"openai_list_assistants","description":"List all OpenAI Assistants in the account","namespace":"openai","tags":["openai","assistants","list","agents"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_create_assistant","description":"Create an OpenAI Assistant with instructions and tools","namespace":"openai","tags":["openai","assistant","create","agent","tools"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"instructions":{"type":"string"},"model":{"type":"string","default":"gpt-4o"},"tools":{"type":"array","description":"e.g. [{type:'code_interpreter'},{type:'file_search'}]"}},"required":["name","instructions"]}},
-  {"name":"openai_get_assistant","description":"Get details of a specific OpenAI Assistant","namespace":"openai","tags":["openai","assistant","detail","info"],"inputSchema":{"type":"object","properties":{"assistant_id":{"type":"string"}},"required":["assistant_id"]}},
-  {"name":"openai_update_assistant","description":"Update an OpenAI Assistant's instructions, model, or tools","namespace":"openai","tags":["openai","assistant","update","edit","instructions"],"inputSchema":{"type":"object","properties":{"assistant_id":{"type":"string"},"name":{"type":"string"},"instructions":{"type":"string"},"model":{"type":"string"},"tools":{"type":"array"}},"required":["assistant_id"]}},
-  {"name":"openai_delete_assistant","description":"Delete an OpenAI Assistant","namespace":"openai","tags":["openai","assistant","delete"],"inputSchema":{"type":"object","properties":{"assistant_id":{"type":"string"}},"required":["assistant_id"]}},
-  {"name":"openai_create_thread","description":"Create a new conversation thread for an Assistant","namespace":"openai","tags":["openai","thread","create","assistant","conversation"],"inputSchema":{"type":"object","properties":{"messages":{"type":"array","description":"Optional initial messages"}}}},
-  {"name":"openai_get_thread","description":"Get details of an OpenAI conversation thread","namespace":"openai","tags":["openai","thread","detail","conversation"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"}},"required":["thread_id"]}},
-  {"name":"openai_delete_thread","description":"Delete an OpenAI conversation thread","namespace":"openai","tags":["openai","thread","delete","cleanup"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"}},"required":["thread_id"]}},
-  {"name":"openai_add_message_to_thread","description":"Add a user message to an existing Assistant thread","namespace":"openai","tags":["openai","thread","message","add","assistant"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"content":{"type":"string"},"role":{"type":"string","enum":["user","assistant"],"default":"user"}},"required":["thread_id","content"]}},
-  {"name":"openai_list_thread_messages","description":"List all messages in an OpenAI thread","namespace":"openai","tags":["openai","thread","messages","list","history"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["thread_id"]}},
-  {"name":"openai_create_run","description":"Run an Assistant on a thread to generate a response","namespace":"openai","tags":["openai","run","assistant","thread","generate","execute"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"assistant_id":{"type":"string"},"instructions":{"type":"string","description":"Additional run-specific instructions"}},"required":["thread_id","assistant_id"]}},
-  {"name":"openai_get_run","description":"Get the status of an Assistant run (poll until completed)","namespace":"openai","tags":["openai","run","status","poll","assistant"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"}},"required":["thread_id","run_id"]}},
-  {"name":"openai_list_runs","description":"List all runs for an OpenAI thread","namespace":"openai","tags":["openai","runs","list","thread","history"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"limit":{"type":"number","default":10}},"required":["thread_id"]}},
-  {"name":"openai_cancel_run","description":"Cancel a run that is in progress","namespace":"openai","tags":["openai","run","cancel","stop","assistant"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"}},"required":["thread_id","run_id"]}},
-  {"name":"openai_create_thread_and_run","description":"Create a thread, add a message, and run an Assistant in one call","namespace":"openai","tags":["openai","assistant","thread","run","shortcut","quick","chat"],"inputSchema":{"type":"object","properties":{"assistant_id":{"type":"string"},"message":{"type":"string"},"instructions":{"type":"string"}},"required":["assistant_id","message"]}},
-  {"name":"openai_list_files","description":"List files uploaded to OpenAI (for assistants, fine-tuning, etc.)","namespace":"openai","tags":["openai","files","list","uploads","documents"],"inputSchema":{"type":"object","properties":{"purpose":{"type":"string","enum":["assistants","fine-tune","batch"]}}}},
-  {"name":"openai_get_file","description":"Get metadata for an uploaded OpenAI file","namespace":"openai","tags":["openai","file","detail","upload","info"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]}},
-  {"name":"openai_delete_file","description":"Delete an uploaded OpenAI file","namespace":"openai","tags":["openai","file","delete","cleanup"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]}},
-  {"name":"openai_list_vector_stores","description":"List vector stores for file search in OpenAI Assistants","namespace":"openai","tags":["openai","vector-store","list","rag","search","embeddings"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_create_vector_store","description":"Create a vector store for file search capabilities","namespace":"openai","tags":["openai","vector-store","create","rag","embeddings","search"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"file_ids":{"type":"array","items":{"type":"string"}}},"required":["name"]}},
-  {"name":"openai_get_vector_store","description":"Get details of an OpenAI vector store","namespace":"openai","tags":["openai","vector-store","detail","rag","search"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"}},"required":["vector_store_id"]}},
-  {"name":"openai_delete_vector_store","description":"Delete an OpenAI vector store","namespace":"openai","tags":["openai","vector-store","delete","cleanup"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"}},"required":["vector_store_id"]}},
-  {"name":"openai_search_vector_store","description":"Search a vector store for relevant content using a query","namespace":"openai","tags":["openai","vector-store","search","rag","semantic","retrieval","query"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"query":{"type":"string"},"max_num_results":{"type":"number","default":5}},"required":["vector_store_id","query"]}},
-  {"name":"openai_list_fine_tuning_jobs","description":"List fine-tuning jobs in the OpenAI account","namespace":"openai","tags":["openai","fine-tuning","jobs","list","training"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":10}}}},
-  {"name":"openai_get_fine_tuning_job","description":"Get the status and details of a fine-tuning job","namespace":"openai","tags":["openai","fine-tuning","job","status","training"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"}},"required":["job_id"]}},
-  {"name":"openai_create_fine_tuning_job","description":"Start a fine-tuning job to train a custom model","namespace":"openai","tags":["openai","fine-tuning","create","train","custom-model"],"inputSchema":{"type":"object","properties":{"training_file":{"type":"string","description":"File ID of the training data"},"model":{"type":"string","default":"gpt-4o-mini"},"suffix":{"type":"string","description":"Custom name suffix for the resulting model"}},"required":["training_file"]}},
-  {"name":"openai_cancel_fine_tuning_job","description":"Cancel a running fine-tuning job","namespace":"openai","tags":["openai","fine-tuning","cancel","stop","training"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"}},"required":["job_id"]}},
-  {"name":"openai_moderate_content","description":"Check if content violates OpenAI's content policy using the moderation API","namespace":"openai","tags":["openai","moderation","safety","content","policy","filter"],"inputSchema":{"type":"object","properties":{"input":{"type":"string"}},"required":["input"]}},
-  {"name":"openai_get_usage","description":"Get API usage and cost data for the OpenAI account","namespace":"openai","tags":["openai","usage","cost","billing","api","stats"],"inputSchema":{"type":"object","properties":{"date":{"type":"string","description":"Date in YYYY-MM-DD format"}}}},
-  {"name":"openai_create_image_variation","description":"Generate variations of an image using DALL-E 2. Provide image as base64-encoded PNG.","namespace":"openai","tags":["openai","image","variation","dall-e"],"inputSchema":{"type":"object","properties":{"image_base64":{"type":"string"},"model":{"type":"string","default":"dall-e-2"},"size":{"type":"string","default":"1024x1024"},"n":{"type":"number","default":1},"response_format":{"type":"string","default":"url"}},"required":["image_base64"]}},
-  {"name":"openai_translate_audio","description":"Translate audio from any language to English using Whisper. Accepts base64-encoded audio.","namespace":"openai","tags":["openai","audio","translate","whisper","english"],"inputSchema":{"type":"object","properties":{"audio_base64":{"type":"string"},"filename":{"type":"string","default":"audio.mp3"},"model":{"type":"string","default":"whisper-1"},"prompt":{"type":"string"},"response_format":{"type":"string","default":"json"},"temperature":{"type":"number"}},"required":["audio_base64"]}},
-  {"name":"openai_create_response","description":"Create a response via the Responses API (modern primitive supporting tools, streaming, stateful conversations via previous_response_id, structured outputs).","namespace":"openai","tags":["openai","responses","modern","tools","stateful"],"inputSchema":{"type":"object","properties":{"input":{},"model":{"type":"string","default":"gpt-4o"},"instructions":{"type":"string"},"tools":{"type":"array"},"tool_choice":{},"temperature":{"type":"number"},"max_output_tokens":{"type":"number"},"response_format":{"type":"object"},"store":{"type":"boolean"},"previous_response_id":{"type":"string"},"parallel_tool_calls":{"type":"boolean"}},"required":["input"]}},
-  {"name":"openai_get_response","description":"Retrieve a stored Response by ID","namespace":"openai","tags":["openai","responses","get"],"inputSchema":{"type":"object","properties":{"response_id":{"type":"string"}},"required":["response_id"]}},
-  {"name":"openai_delete_response","description":"Delete a stored Response","namespace":"openai","tags":["openai","responses","delete"],"inputSchema":{"type":"object","properties":{"response_id":{"type":"string"}},"required":["response_id"]}},
-  {"name":"openai_cancel_response","description":"Cancel a Response that is still in progress","namespace":"openai","tags":["openai","responses","cancel"],"inputSchema":{"type":"object","properties":{"response_id":{"type":"string"}},"required":["response_id"]}},
-  {"name":"openai_list_response_input_items","description":"List the input items associated with a Response (useful for reconstructing context)","namespace":"openai","tags":["openai","responses","input","list"],"inputSchema":{"type":"object","properties":{"response_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["response_id"]}},
-  {"name":"openai_create_realtime_session","description":"Create an ephemeral Realtime API session for low-latency voice/text streaming. Returns an ephemeral client_secret for WebRTC/WebSocket clients.","namespace":"openai","tags":["openai","realtime","voice","streaming","webrtc"],"inputSchema":{"type":"object","properties":{"model":{"type":"string","default":"gpt-4o-realtime-preview"},"voice":{"type":"string","default":"alloy"},"instructions":{"type":"string"},"modalities":{"type":"array"},"input_audio_format":{"type":"string","default":"pcm16"},"output_audio_format":{"type":"string","default":"pcm16"},"turn_detection":{"type":"object"}}}},
-  {"name":"openai_create_realtime_transcription_session","description":"Create an ephemeral Realtime transcription session (live audio → text streaming)","namespace":"openai","tags":["openai","realtime","transcription","streaming","whisper"],"inputSchema":{"type":"object","properties":{"model":{"type":"string"},"input_audio_format":{"type":"string"},"input_audio_transcription":{"type":"object"}}}},
-  {"name":"openai_create_batch","description":"Submit a batch job for async processing at 50% discount. Requires a pre-uploaded JSONL input file. Common endpoints: /v1/chat/completions, /v1/embeddings.","namespace":"openai","tags":["openai","batch","async","bulk","discount"],"inputSchema":{"type":"object","properties":{"input_file_id":{"type":"string"},"endpoint":{"type":"string","default":"/v1/chat/completions"},"completion_window":{"type":"string","default":"24h"},"metadata":{"type":"object"}},"required":["input_file_id"]}},
-  {"name":"openai_get_batch","description":"Get the status of a batch job (validating, in_progress, completed, failed, cancelled)","namespace":"openai","tags":["openai","batch","status","get"],"inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]}},
-  {"name":"openai_cancel_batch","description":"Cancel an in-progress batch job","namespace":"openai","tags":["openai","batch","cancel"],"inputSchema":{"type":"object","properties":{"batch_id":{"type":"string"}},"required":["batch_id"]}},
-  {"name":"openai_list_batches","description":"List recent batch jobs in the OpenAI account","namespace":"openai","tags":["openai","batch","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_upload_file","description":"Upload a file (base64) to the OpenAI Files API. Purpose: assistants, fine-tune, batch, vision.","namespace":"openai","tags":["openai","files","upload","base64"],"inputSchema":{"type":"object","properties":{"filename":{"type":"string"},"content_base64":{"type":"string"},"purpose":{"type":"string","default":"assistants"}},"required":["filename","content_base64"]}},
-  {"name":"openai_get_file_content","description":"Download the content of an uploaded file. Returns text directly if content-type is text/json, otherwise base64.","namespace":"openai","tags":["openai","files","content","download"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]}},
-  {"name":"openai_update_vector_store","description":"Update a vector store's name, expiration policy, or metadata","namespace":"openai","tags":["openai","vector-store","update","metadata"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"name":{"type":"string"},"expires_after":{"type":"object"},"metadata":{"type":"object"}},"required":["vector_store_id"]}},
-  {"name":"openai_list_vector_store_files","description":"List files attached to a vector store, optionally filtered by status","namespace":"openai","tags":["openai","vector-store","files","list"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"limit":{"type":"number","default":20},"filter":{"type":"string"}},"required":["vector_store_id"]}},
-  {"name":"openai_add_file_to_vector_store","description":"Attach a single file (by ID) to a vector store. Triggers indexing.","namespace":"openai","tags":["openai","vector-store","file","add"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"file_id":{"type":"string"}},"required":["vector_store_id","file_id"]}},
-  {"name":"openai_get_vector_store_file","description":"Get status of a file in a vector store (in_progress, completed, failed, cancelled)","namespace":"openai","tags":["openai","vector-store","file","status"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"file_id":{"type":"string"}},"required":["vector_store_id","file_id"]}},
-  {"name":"openai_delete_vector_store_file","description":"Detach a file from a vector store (does not delete the underlying file)","namespace":"openai","tags":["openai","vector-store","file","delete","detach"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"file_id":{"type":"string"}},"required":["vector_store_id","file_id"]}},
-  {"name":"openai_create_vector_store_file_batch","description":"Attach multiple files to a vector store in a single batch operation","namespace":"openai","tags":["openai","vector-store","batch","files"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"file_ids":{"type":"array","items":{"type":"string"}}},"required":["vector_store_id","file_ids"]}},
-  {"name":"openai_get_vector_store_file_batch","description":"Get status of a vector store file batch","namespace":"openai","tags":["openai","vector-store","batch","status"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"batch_id":{"type":"string"}},"required":["vector_store_id","batch_id"]}},
-  {"name":"openai_cancel_vector_store_file_batch","description":"Cancel an in-progress vector store file batch","namespace":"openai","tags":["openai","vector-store","batch","cancel"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"batch_id":{"type":"string"}},"required":["vector_store_id","batch_id"]}},
-  {"name":"openai_list_vector_store_file_batch_files","description":"List files within a vector store file batch","namespace":"openai","tags":["openai","vector-store","batch","files","list"],"inputSchema":{"type":"object","properties":{"vector_store_id":{"type":"string"},"batch_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["vector_store_id","batch_id"]}},
-  {"name":"openai_list_fine_tuning_events","description":"List training events emitted during a fine-tuning job","namespace":"openai","tags":["openai","fine-tuning","events","training"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["job_id"]}},
-  {"name":"openai_list_fine_tuning_checkpoints","description":"List model checkpoints saved during a fine-tuning job","namespace":"openai","tags":["openai","fine-tuning","checkpoints","model"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"},"limit":{"type":"number","default":10}},"required":["job_id"]}},
-  {"name":"openai_pause_fine_tuning_job","description":"Pause a fine-tuning job (can be resumed later)","namespace":"openai","tags":["openai","fine-tuning","pause"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"}},"required":["job_id"]}},
-  {"name":"openai_resume_fine_tuning_job","description":"Resume a paused fine-tuning job","namespace":"openai","tags":["openai","fine-tuning","resume"],"inputSchema":{"type":"object","properties":{"job_id":{"type":"string"}},"required":["job_id"]}},
-  {"name":"openai_get_thread_message","description":"Get a specific message in an assistants thread","namespace":"openai","tags":["openai","assistants","thread","message","get"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"message_id":{"type":"string"}},"required":["thread_id","message_id"]}},
-  {"name":"openai_update_thread_message","description":"Update metadata on a thread message","namespace":"openai","tags":["openai","assistants","thread","message","update"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"message_id":{"type":"string"},"metadata":{"type":"object"}},"required":["thread_id","message_id"]}},
-  {"name":"openai_delete_thread_message","description":"Delete a message from a thread","namespace":"openai","tags":["openai","assistants","thread","message","delete"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"message_id":{"type":"string"}},"required":["thread_id","message_id"]}},
-  {"name":"openai_modify_thread","description":"Update metadata or tool_resources on a thread","namespace":"openai","tags":["openai","assistants","thread","modify"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"metadata":{"type":"object"},"tool_resources":{"type":"object"}},"required":["thread_id"]}},
-  {"name":"openai_modify_run","description":"Update metadata on an existing assistant run","namespace":"openai","tags":["openai","assistants","run","modify"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"},"metadata":{"type":"object"}},"required":["thread_id","run_id"]}},
-  {"name":"openai_submit_tool_outputs","description":"Submit tool outputs back to a run that is in requires_action state","namespace":"openai","tags":["openai","assistants","run","tools","outputs"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"},"tool_outputs":{"type":"array"}},"required":["thread_id","run_id","tool_outputs"]}},
-  {"name":"openai_list_run_steps","description":"List the steps an assistant took during a run (tool calls, message creations)","namespace":"openai","tags":["openai","assistants","run","steps","trace"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["thread_id","run_id"]}},
-  {"name":"openai_get_run_step","description":"Get details of a specific assistant run step","namespace":"openai","tags":["openai","assistants","run","step"],"inputSchema":{"type":"object","properties":{"thread_id":{"type":"string"},"run_id":{"type":"string"},"step_id":{"type":"string"}},"required":["thread_id","run_id","step_id"]}},
-  {"name":"openai_create_eval","description":"Create an evaluation (eval definition) with data source config and testing criteria","namespace":"openai","tags":["openai","evals","create","evaluation"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"data_source_config":{"type":"object"},"testing_criteria":{"type":"array"},"metadata":{"type":"object"}},"required":["name","data_source_config","testing_criteria"]}},
-  {"name":"openai_get_eval","description":"Get an evaluation definition by ID","namespace":"openai","tags":["openai","evals","get"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"}},"required":["eval_id"]}},
-  {"name":"openai_list_evals","description":"List evaluations in the OpenAI account","namespace":"openai","tags":["openai","evals","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_delete_eval","description":"Delete an evaluation definition","namespace":"openai","tags":["openai","evals","delete"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"}},"required":["eval_id"]}},
-  {"name":"openai_update_eval","description":"Rename an evaluation or update its metadata","namespace":"openai","tags":["openai","evals","update"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"name":{"type":"string"},"metadata":{"type":"object"}},"required":["eval_id"]}},
-  {"name":"openai_create_eval_run","description":"Run an evaluation against a data source (file or chat completions)","namespace":"openai","tags":["openai","evals","run","execute"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"name":{"type":"string"},"data_source":{"type":"object"},"metadata":{"type":"object"}},"required":["eval_id","data_source"]}},
-  {"name":"openai_get_eval_run","description":"Get the status and aggregate results of an eval run","namespace":"openai","tags":["openai","evals","run","status","results"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"run_id":{"type":"string"}},"required":["eval_id","run_id"]}},
-  {"name":"openai_list_eval_runs","description":"List runs of an evaluation","namespace":"openai","tags":["openai","evals","runs","list"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["eval_id"]}},
-  {"name":"openai_cancel_eval_run","description":"Cancel an in-progress eval run","namespace":"openai","tags":["openai","evals","run","cancel"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"run_id":{"type":"string"}},"required":["eval_id","run_id"]}},
-  {"name":"openai_list_eval_run_output_items","description":"List the per-sample output items from an eval run","namespace":"openai","tags":["openai","evals","run","output","items"],"inputSchema":{"type":"object","properties":{"eval_id":{"type":"string"},"run_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["eval_id","run_id"]}},
-  {"name":"openai_list_projects","description":"List projects in your OpenAI organization. Requires Admin API key (OPENAI_ADMIN_KEY).","namespace":"openai","tags":["openai","admin","projects","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_get_project","description":"Get details of an OpenAI organization project. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","get"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"}},"required":["project_id"]}},
-  {"name":"openai_create_project","description":"Create a new project in your OpenAI organization. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}},
-  {"name":"openai_update_project","description":"Rename a project. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","update","rename"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"name":{"type":"string"}},"required":["project_id","name"]}},
-  {"name":"openai_archive_project","description":"Archive a project (revokes its API keys). Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","archive"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"}},"required":["project_id"]}},
-  {"name":"openai_list_project_api_keys","description":"List API keys belonging to a project. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","api-keys","list"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["project_id"]}},
-  {"name":"openai_get_project_api_key","description":"Get details of a project API key (metadata only). Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","api-key","get"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"key_id":{"type":"string"}},"required":["project_id","key_id"]}},
-  {"name":"openai_delete_project_api_key","description":"Delete (revoke) a project API key. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","api-key","delete","revoke"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"key_id":{"type":"string"}},"required":["project_id","key_id"]}},
-  {"name":"openai_list_project_users","description":"List users assigned to an OpenAI project. Requires Admin API key.","namespace":"openai","tags":["openai","admin","project","users","list"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["project_id"]}},
-  {"name":"openai_list_org_users","description":"List all users in your OpenAI organization. Requires Admin API key.","namespace":"openai","tags":["openai","admin","org","users","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_list_org_invites","description":"List pending invitations to your OpenAI organization. Requires Admin API key.","namespace":"openai","tags":["openai","admin","org","invites","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_create_org_invite","description":"Invite a user to your OpenAI organization. Requires Admin API key.","namespace":"openai","tags":["openai","admin","org","invite","create"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"role":{"type":"string","default":"reader"}},"required":["email"]}},
-  {"name":"openai_delete_org_invite","description":"Cancel a pending organization invite. Requires Admin API key.","namespace":"openai","tags":["openai","admin","org","invite","delete"],"inputSchema":{"type":"object","properties":{"invite_id":{"type":"string"}},"required":["invite_id"]}},
-  {"name":"openai_get_org_costs","description":"Get USD cost breakdown for the OpenAI organization with optional grouping by project/model and time bucketing. Requires Admin API key.","namespace":"openai","tags":["openai","admin","cost","billing","report"],"inputSchema":{"type":"object","properties":{"start_time":{"type":"number"},"end_time":{"type":"number"},"bucket_width":{"type":"string"},"group_by":{"type":"string"}}}},
-  {"name":"openai_get_org_usage_completions","description":"Get chat completions token usage for the organization with time bucketing. Requires Admin API key.","namespace":"openai","tags":["openai","admin","usage","tokens","completions"],"inputSchema":{"type":"object","properties":{"start_time":{"type":"number"},"end_time":{"type":"number"},"bucket_width":{"type":"string"}}}},
-  {"name":"openai_estimate_tokens","description":"Approximate the token count of a string without making an API call (rough estimate, ~4 chars per token). Use for budgeting, not exact pricing.","namespace":"openai","tags":["openai","tokens","estimate","budget"],"inputSchema":{"type":"object","properties":{"text":{"type":"string"}},"required":["text"]}},
-  {"name":"openai_list_voices","description":"List available TTS voice IDs with descriptions","namespace":"openai","tags":["openai","tts","voices","list"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"openai_text_to_speech_save","description":"Generate TTS audio and return as base64 (mp3 or other format). Use with local_write_file to save to disk.","namespace":"openai","tags":["openai","tts","speech","audio","base64"],"inputSchema":{"type":"object","properties":{"input":{"type":"string"},"voice":{"type":"string","default":"alloy"},"model":{"type":"string","default":"tts-1"},"speed":{"type":"number","default":1},"format":{"type":"string","default":"mp3"}},"required":["input"]}},
-  {"name":"openai_rag_query","description":"SUPER TOOL: Embed query → search a vector store → generate an answer using only retrieved context. Returns answer + sources. One-call RAG pipeline.","namespace":"openai","tags":["openai","super-tool","rag","retrieval","vector-store","compound"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"vector_store_id":{"type":"string"},"model":{"type":"string","default":"gpt-4o"},"max_results":{"type":"number","default":5},"system":{"type":"string"}},"required":["query","vector_store_id"]}},
-  {"name":"openai_batch_embed_and_store","description":"SUPER TOOL: Generate embeddings for an array of texts AND upload each as a file attached to a vector store. Returns batch_id for monitoring indexing.","namespace":"openai","tags":["openai","super-tool","embeddings","vector-store","batch","bulk"],"inputSchema":{"type":"object","properties":{"texts":{"type":"array","items":{"type":"string"}},"vector_store_id":{"type":"string"},"embedding_model":{"type":"string","default":"text-embedding-3-small"}},"required":["texts","vector_store_id"]}},
-  {"name":"openai_assistant_thread_complete","description":"SUPER TOOL: Create thread + add user message + create run + poll until complete + return final assistant response. End-to-end assistant call in one tool.","namespace":"openai","tags":["openai","super-tool","assistants","thread","run","compound"],"inputSchema":{"type":"object","properties":{"assistant_id":{"type":"string"},"user_message":{"type":"string"},"instructions":{"type":"string"},"poll_interval_ms":{"type":"number","default":1500},"max_wait_ms":{"type":"number","default":120000}},"required":["assistant_id","user_message"]}},
-  {"name":"openai_structured_extraction","description":"SUPER TOOL: Extract a JSON object matching a JSON Schema with automatic retry on parse failure. Uses response_format json_object. Returns parsed object on success.","namespace":"openai","tags":["openai","super-tool","extraction","json","schema","structured"],"inputSchema":{"type":"object","properties":{"text":{"type":"string"},"schema":{"type":"object"},"model":{"type":"string","default":"gpt-4o"},"max_retries":{"type":"number","default":1}},"required":["text","schema"]}},
-  {"name":"openai_fine_tune_pipeline","description":"SUPER TOOL: Upload JSONL training (and optional validation) files + create fine-tuning job. Returns file IDs and job ID for monitoring.","namespace":"openai","tags":["openai","super-tool","fine-tuning","training","pipeline"],"inputSchema":{"type":"object","properties":{"training_jsonl_base64":{"type":"string"},"validation_jsonl_base64":{"type":"string"},"filename":{"type":"string","default":"training.jsonl"},"model":{"type":"string","default":"gpt-4o-mini"},"hyperparameters":{"type":"object"},"suffix":{"type":"string"}},"required":["training_jsonl_base64"]}},
-  {"name":"openai_list_org_users","description":"List all users in the OpenAI organization. Requires OPENAI_ADMIN_KEY. Returns user IDs, emails, roles, and whether they are active.","namespace":"openai","tags":["openai","admin","users","organization"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_invite_user","description":"Invite a user to the OpenAI organization by email with a specified role. Requires OPENAI_ADMIN_KEY. Roles: reader, owner.","namespace":"openai","tags":["openai","admin","users","invite","organization"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"role":{"type":"string","enum":["reader","owner"],"default":"reader"}},"required":["email"]}},
-  {"name":"openai_remove_user","description":"Remove a user from the OpenAI organization by user ID. Requires OPENAI_ADMIN_KEY. Revokes their access immediately.","namespace":"openai","tags":["openai","admin","users","remove","organization"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]}},
-  {"name":"openai_list_projects","description":"List all projects in the OpenAI organization. Requires OPENAI_ADMIN_KEY. Returns project IDs, names, and status.","namespace":"openai","tags":["openai","admin","projects","organization"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_create_project","description":"Create a new project in the OpenAI organization. Requires OPENAI_ADMIN_KEY. Projects allow separate API key management and usage tracking.","namespace":"openai","tags":["openai","admin","projects","organization"],"inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Project name"}},"required":["name"]}},
-  {"name":"openai_get_usage","description":"Get API usage metrics for the OpenAI organization over a time period. Requires OPENAI_ADMIN_KEY. Returns token counts and request counts by model and time bucket.","namespace":"openai","tags":["openai","admin","usage","metrics","monitoring"],"inputSchema":{"type":"object","properties":{"start_time":{"type":"number","description":"Unix timestamp for start of period"},"end_time":{"type":"number","description":"Unix timestamp for end of period"},"bucket_width":{"type":"string","enum":["1m","1h","1d"],"default":"1d"},"limit":{"type":"number","default":30}}}},
-  {"name":"openai_get_costs","description":"Get cost breakdown for the OpenAI organization over a time period. Requires OPENAI_ADMIN_KEY. Returns costs in USD by model and time bucket.","namespace":"openai","tags":["openai","admin","costs","billing","monitoring"],"inputSchema":{"type":"object","properties":{"start_time":{"type":"number","description":"Unix timestamp for start"},"bucket_width":{"type":"string","default":"1d"},"limit":{"type":"number","default":30}}}},
-  {"name":"openai_list_api_keys","description":"List all API keys in the OpenAI organization. Requires OPENAI_ADMIN_KEY. Returns key IDs, names, and last-used dates (values are never returned).","namespace":"openai","tags":["openai","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"openai_create_api_key","description":"Create a new API key in the OpenAI organization. Requires OPENAI_ADMIN_KEY. The key value is only returned once at creation time.","namespace":"openai","tags":["openai","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Human-readable name for the key"},"project_id":{"type":"string","description":"Optional project to scope the key to"}},"required":["name"]}},
-  {"name":"openai_delete_api_key","description":"Delete an API key from the OpenAI organization by key ID. Requires OPENAI_ADMIN_KEY. Immediately revokes the key.","namespace":"openai","tags":["openai","admin","api-keys","security"],"inputSchema":{"type":"object","properties":{"key_id":{"type":"string"}},"required":["key_id"]}}
+  {
+    "name": "openai_chat_completion",
+    "description": "Send a chat completion request to any OpenAI model (GPT-4o, GPT-4, etc.)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "chat",
+      "gpt",
+      "ai",
+      "completion",
+      "llm",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "e.g. gpt-4o, gpt-4o-mini, gpt-4-turbo"
+        },
+        "messages": {
+          "type": "array",
+          "description": "Array of {role, content} messages"
+        },
+        "temperature": {
+          "type": "number",
+          "default": 0.7
+        },
+        "max_tokens": {
+          "type": "number"
+        },
+        "system": {
+          "type": "string",
+          "description": "Shorthand system prompt (added as first message)"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    }
+  },
+  {
+    "name": "openai_chat_completion_json",
+    "description": "Chat completion with JSON mode enforced — guaranteed to return valid JSON",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "chat",
+      "json",
+      "structured",
+      "output",
+      "gpt",
+      "completion"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "default": "gpt-4o-mini"
+        },
+        "messages": {
+          "type": "array"
+        },
+        "system": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number",
+          "default": 0.3
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_models",
+    "description": "List all available OpenAI models",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "models",
+      "list",
+      "available"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "openai_get_model",
+    "description": "Get details of a specific OpenAI model",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "model",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_model",
+    "description": "Delete a fine-tuned OpenAI model",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "model",
+      "delete",
+      "fine-tuned"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_embedding",
+    "description": "Create a vector embedding for a single text using OpenAI embeddings",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "embedding",
+      "vector",
+      "semantic",
+      "similarity",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "text-embedding-3-small"
+        }
+      },
+      "required": [
+        "input"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_embeddings_batch",
+    "description": "Create vector embeddings for multiple texts in one request",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "embeddings",
+      "batch",
+      "vectors",
+      "bulk",
+      "semantic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "string",
+          "default": "text-embedding-3-small"
+        }
+      },
+      "required": [
+        "inputs"
+      ]
+    }
+  },
+  {
+    "name": "openai_generate_image",
+    "description": "Generate an image from a text prompt using DALL-E 3",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "image",
+      "generate",
+      "dalle",
+      "dall-e",
+      "art",
+      "vision"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "dall-e-3"
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "1024x1024",
+            "1024x1792",
+            "1792x1024"
+          ],
+          "default": "1024x1024"
+        },
+        "quality": {
+          "type": "string",
+          "enum": [
+            "standard",
+            "hd"
+          ],
+          "default": "standard"
+        },
+        "n": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    }
+  },
+  {
+    "name": "openai_edit_image",
+    "description": "Edit or inpaint an image using DALL-E with a mask",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "image",
+      "edit",
+      "inpaint",
+      "dalle",
+      "dall-e"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "image_url": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "mask_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_url",
+        "prompt"
+      ]
+    }
+  },
+  {
+    "name": "openai_text_to_speech",
+    "description": "Convert text to audio using OpenAI TTS (voices: alloy, echo, fable, onyx, nova, shimmer)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "tts",
+      "text-to-speech",
+      "audio",
+      "voice",
+      "speech"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string"
+        },
+        "voice": {
+          "type": "string",
+          "enum": [
+            "alloy",
+            "echo",
+            "fable",
+            "onyx",
+            "nova",
+            "shimmer"
+          ],
+          "default": "alloy"
+        },
+        "model": {
+          "type": "string",
+          "default": "tts-1"
+        },
+        "speed": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "input"
+      ]
+    }
+  },
+  {
+    "name": "openai_transcribe_audio",
+    "description": "Transcribe audio to text using OpenAI Whisper",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "whisper",
+      "transcribe",
+      "audio",
+      "speech-to-text",
+      "stt"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "audio_url": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string",
+          "description": "ISO 639-1 language code, e.g. 'en', 'es'"
+        },
+        "prompt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "audio_url"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_assistants",
+    "description": "List all OpenAI Assistants in the account",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "list",
+      "agents"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_assistant",
+    "description": "Create an OpenAI Assistant with instructions and tools",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistant",
+      "create",
+      "agent",
+      "tools"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-4o"
+        },
+        "tools": {
+          "type": "array",
+          "description": "e.g. [{type:'code_interpreter'},{type:'file_search'}]"
+        }
+      },
+      "required": [
+        "name",
+        "instructions"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_assistant",
+    "description": "Get details of a specific OpenAI Assistant",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistant",
+      "detail",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "assistant_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assistant_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_assistant",
+    "description": "Update an OpenAI Assistant's instructions, model, or tools",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistant",
+      "update",
+      "edit",
+      "instructions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "assistant_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "assistant_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_assistant",
+    "description": "Delete an OpenAI Assistant",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistant",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "assistant_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assistant_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_thread",
+    "description": "Create a new conversation thread for an Assistant",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "thread",
+      "create",
+      "assistant",
+      "conversation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "description": "Optional initial messages"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_get_thread",
+    "description": "Get details of an OpenAI conversation thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "thread",
+      "detail",
+      "conversation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_thread",
+    "description": "Delete an OpenAI conversation thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "thread",
+      "delete",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_add_message_to_thread",
+    "description": "Add a user message to an existing Assistant thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "thread",
+      "message",
+      "add",
+      "assistant"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "default": "user"
+        }
+      },
+      "required": [
+        "thread_id",
+        "content"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_thread_messages",
+    "description": "List all messages in an OpenAI thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "thread",
+      "messages",
+      "list",
+      "history"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "thread_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_run",
+    "description": "Run an Assistant on a thread to generate a response",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "run",
+      "assistant",
+      "thread",
+      "generate",
+      "execute"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "assistant_id": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Additional run-specific instructions"
+        }
+      },
+      "required": [
+        "thread_id",
+        "assistant_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_run",
+    "description": "Get the status of an Assistant run (poll until completed)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "run",
+      "status",
+      "poll",
+      "assistant"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_runs",
+    "description": "List all runs for an OpenAI thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "runs",
+      "list",
+      "thread",
+      "history"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        }
+      },
+      "required": [
+        "thread_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_run",
+    "description": "Cancel a run that is in progress",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "run",
+      "cancel",
+      "stop",
+      "assistant"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_thread_and_run",
+    "description": "Create a thread, add a message, and run an Assistant in one call",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistant",
+      "thread",
+      "run",
+      "shortcut",
+      "quick",
+      "chat"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "assistant_id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assistant_id",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_files",
+    "description": "List files uploaded to OpenAI (for assistants, fine-tuning, etc.)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "files",
+      "list",
+      "uploads",
+      "documents"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "assistants",
+            "fine-tune",
+            "batch"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_get_file",
+    "description": "Get metadata for an uploaded OpenAI file",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "file",
+      "detail",
+      "upload",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_file",
+    "description": "Delete an uploaded OpenAI file",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "file",
+      "delete",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_vector_stores",
+    "description": "List vector stores for file search in OpenAI Assistants",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "list",
+      "rag",
+      "search",
+      "embeddings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_vector_store",
+    "description": "Create a vector store for file search capabilities",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "create",
+      "rag",
+      "embeddings",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "file_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_vector_store",
+    "description": "Get details of an OpenAI vector store",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "detail",
+      "rag",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_vector_store",
+    "description": "Delete an OpenAI vector store",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "delete",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_search_vector_store",
+    "description": "Search a vector store for relevant content using a query",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "search",
+      "rag",
+      "semantic",
+      "retrieval",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "max_num_results": {
+          "type": "number",
+          "default": 5
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_fine_tuning_jobs",
+    "description": "List fine-tuning jobs in the OpenAI account",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "jobs",
+      "list",
+      "training"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_get_fine_tuning_job",
+    "description": "Get the status and details of a fine-tuning job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "job",
+      "status",
+      "training"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_fine_tuning_job",
+    "description": "Start a fine-tuning job to train a custom model",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "create",
+      "train",
+      "custom-model"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "training_file": {
+          "type": "string",
+          "description": "File ID of the training data"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-4o-mini"
+        },
+        "suffix": {
+          "type": "string",
+          "description": "Custom name suffix for the resulting model"
+        }
+      },
+      "required": [
+        "training_file"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_fine_tuning_job",
+    "description": "Cancel a running fine-tuning job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "cancel",
+      "stop",
+      "training"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_moderate_content",
+    "description": "Check if content violates OpenAI's content policy using the moderation API",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "moderation",
+      "safety",
+      "content",
+      "policy",
+      "filter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "input"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage",
+    "description": "Get API usage and cost data for the OpenAI account",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "cost",
+      "billing",
+      "api",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "description": "Date in YYYY-MM-DD format"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_image_variation",
+    "description": "Generate variations of an image using DALL-E 2. Provide image as base64-encoded PNG.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "image",
+      "variation",
+      "dall-e"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "image_base64": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "dall-e-2"
+        },
+        "size": {
+          "type": "string",
+          "default": "1024x1024"
+        },
+        "n": {
+          "type": "number",
+          "default": 1
+        },
+        "response_format": {
+          "type": "string",
+          "default": "url"
+        }
+      },
+      "required": [
+        "image_base64"
+      ]
+    }
+  },
+  {
+    "name": "openai_translate_audio",
+    "description": "Translate audio from any language to English using Whisper. Accepts base64-encoded audio.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "audio",
+      "translate",
+      "whisper",
+      "english"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "audio_base64": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string",
+          "default": "audio.mp3"
+        },
+        "model": {
+          "type": "string",
+          "default": "whisper-1"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "response_format": {
+          "type": "string",
+          "default": "json"
+        },
+        "temperature": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "audio_base64"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_response",
+    "description": "Create a response via the Responses API (modern primitive supporting tools, streaming, stateful conversations via previous_response_id, structured outputs).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "responses",
+      "modern",
+      "tools",
+      "stateful"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {},
+        "model": {
+          "type": "string",
+          "default": "gpt-4o"
+        },
+        "instructions": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "tool_choice": {},
+        "temperature": {
+          "type": "number"
+        },
+        "max_output_tokens": {
+          "type": "number"
+        },
+        "response_format": {
+          "type": "object"
+        },
+        "store": {
+          "type": "boolean"
+        },
+        "previous_response_id": {
+          "type": "string"
+        },
+        "parallel_tool_calls": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "input"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_response",
+    "description": "Retrieve a stored Response by ID",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "responses",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "response_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "response_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_response",
+    "description": "Delete a stored Response",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "responses",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "response_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "response_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_response",
+    "description": "Cancel a Response that is still in progress",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "responses",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "response_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "response_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_response_input_items",
+    "description": "List the input items associated with a Response (useful for reconstructing context)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "responses",
+      "input",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "response_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "response_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_realtime_session",
+    "description": "Create an ephemeral Realtime API session for low-latency voice/text streaming. Returns an ephemeral client_secret for WebRTC/WebSocket clients.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "realtime",
+      "voice",
+      "streaming",
+      "webrtc"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "default": "gpt-4o-realtime-preview"
+        },
+        "voice": {
+          "type": "string",
+          "default": "alloy"
+        },
+        "instructions": {
+          "type": "string"
+        },
+        "modalities": {
+          "type": "array"
+        },
+        "input_audio_format": {
+          "type": "string",
+          "default": "pcm16"
+        },
+        "output_audio_format": {
+          "type": "string",
+          "default": "pcm16"
+        },
+        "turn_detection": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_realtime_transcription_session",
+    "description": "Create an ephemeral Realtime transcription session (live audio → text streaming)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "realtime",
+      "transcription",
+      "streaming",
+      "whisper"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "input_audio_format": {
+          "type": "string"
+        },
+        "input_audio_transcription": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_batch",
+    "description": "Submit a batch job for async processing at 50% discount. Requires a pre-uploaded JSONL input file. Common endpoints: /v1/chat/completions, /v1/embeddings.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "batch",
+      "async",
+      "bulk",
+      "discount"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input_file_id": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string",
+          "default": "/v1/chat/completions"
+        },
+        "completion_window": {
+          "type": "string",
+          "default": "24h"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "input_file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_batch",
+    "description": "Get the status of a batch job (validating, in_progress, completed, failed, cancelled)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "batch",
+      "status",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_batch",
+    "description": "Cancel an in-progress batch job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "batch",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "batch_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_batches",
+    "description": "List recent batch jobs in the OpenAI account",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "batch",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_upload_file",
+    "description": "Upload a file (base64) to the OpenAI Files API. Purpose: assistants, fine-tune, batch, vision.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "files",
+      "upload",
+      "base64"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "content_base64": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string",
+          "default": "assistants"
+        }
+      },
+      "required": [
+        "filename",
+        "content_base64"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_file_content",
+    "description": "Download the content of an uploaded file. Returns text directly if content-type is text/json, otherwise base64.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "files",
+      "content",
+      "download"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_vector_store",
+    "description": "Update a vector store's name, expiration policy, or metadata",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "update",
+      "metadata"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "expires_after": {
+          "type": "object"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_vector_store_files",
+    "description": "List files attached to a vector store, optionally filtered by status",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "files",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "filter": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_add_file_to_vector_store",
+    "description": "Attach a single file (by ID) to a vector store. Triggers indexing.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "file",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_vector_store_file",
+    "description": "Get status of a file in a vector store (in_progress, completed, failed, cancelled)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "file",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_vector_store_file",
+    "description": "Detach a file from a vector store (does not delete the underlying file)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "file",
+      "delete",
+      "detach"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_vector_store_file_batch",
+    "description": "Attach multiple files to a vector store in a single batch operation",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "batch",
+      "files"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "file_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "file_ids"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_vector_store_file_batch",
+    "description": "Get status of a vector store file batch",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "batch",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "batch_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_vector_store_file_batch",
+    "description": "Cancel an in-progress vector store file batch",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "batch",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "batch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "batch_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_vector_store_file_batch_files",
+    "description": "List files within a vector store file batch",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "vector-store",
+      "batch",
+      "files",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vector_store_id": {
+          "type": "string"
+        },
+        "batch_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "vector_store_id",
+        "batch_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_fine_tuning_events",
+    "description": "List training events emitted during a fine-tuning job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "events",
+      "training"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_fine_tuning_checkpoints",
+    "description": "List model checkpoints saved during a fine-tuning job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "checkpoints",
+      "model"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_pause_fine_tuning_job",
+    "description": "Pause a fine-tuning job (can be resumed later)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_resume_fine_tuning_job",
+    "description": "Resume a paused fine-tuning job",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "resume"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_thread_message",
+    "description": "Get a specific message in an assistants thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "thread",
+      "message",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id",
+        "message_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_thread_message",
+    "description": "Update metadata on a thread message",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "thread",
+      "message",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "message_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "thread_id",
+        "message_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_thread_message",
+    "description": "Delete a message from a thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "thread",
+      "message",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id",
+        "message_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_modify_thread",
+    "description": "Update metadata or tool_resources on a thread",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "thread",
+      "modify"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        },
+        "tool_resources": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "thread_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_modify_run",
+    "description": "Update metadata on an existing assistant run",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "run",
+      "modify"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_submit_tool_outputs",
+    "description": "Submit tool outputs back to a run that is in requires_action state",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "run",
+      "tools",
+      "outputs"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "tool_outputs": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id",
+        "tool_outputs"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_run_steps",
+    "description": "List the steps an assistant took during a run (tool calls, message creations)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "run",
+      "steps",
+      "trace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_run_step",
+    "description": "Get details of a specific assistant run step",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "assistants",
+      "run",
+      "step"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thread_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "step_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "thread_id",
+        "run_id",
+        "step_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_eval",
+    "description": "Create an evaluation (eval definition) with data source config and testing criteria",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "create",
+      "evaluation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "data_source_config": {
+          "type": "object"
+        },
+        "testing_criteria": {
+          "type": "array"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "data_source_config",
+        "testing_criteria"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_eval",
+    "description": "Get an evaluation definition by ID",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eval_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_evals",
+    "description": "List evaluations in the OpenAI account",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_delete_eval",
+    "description": "Delete an evaluation definition",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eval_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_eval",
+    "description": "Rename an evaluation or update its metadata",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "eval_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_eval_run",
+    "description": "Run an evaluation against a data source (file or chat completions)",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "run",
+      "execute"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "data_source": {
+          "type": "object"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "eval_id",
+        "data_source"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_eval_run",
+    "description": "Get the status and aggregate results of an eval run",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "run",
+      "status",
+      "results"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eval_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_eval_runs",
+    "description": "List runs of an evaluation",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "runs",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "eval_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_cancel_eval_run",
+    "description": "Cancel an in-progress eval run",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "run",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "eval_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_eval_run_output_items",
+    "description": "List the per-sample output items from an eval run",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "evals",
+      "run",
+      "output",
+      "items"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "eval_id",
+        "run_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_projects",
+    "description": "List projects in your OpenAI organization. Requires Admin API key (OPENAI_ADMIN_KEY).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "projects",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_get_project",
+    "description": "Get details of an OpenAI organization project. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_project",
+    "description": "Create a new project in your OpenAI organization. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_project",
+    "description": "Rename a project. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "update",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "openai_archive_project",
+    "description": "Archive a project (revokes its API keys). Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "archive"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_project_api_keys",
+    "description": "List API keys belonging to a project. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "api-keys",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_project_api_key",
+    "description": "Get details of a project API key (metadata only). Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "api-key",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "key_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_project_api_key",
+    "description": "Delete (revoke) a project API key. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "api-key",
+      "delete",
+      "revoke"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "key_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_project_users",
+    "description": "List users assigned to an OpenAI project. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "project",
+      "users",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_org_users",
+    "description": "List all users in your OpenAI organization. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "org",
+      "users",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_list_org_invites",
+    "description": "List pending invitations to your OpenAI organization. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "org",
+      "invites",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_org_invite",
+    "description": "Invite a user to your OpenAI organization. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "org",
+      "invite",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "default": "reader"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_org_invite",
+    "description": "Cancel a pending organization invite. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "org",
+      "invite",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invite_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invite_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_org_costs",
+    "description": "Get USD cost breakdown for the OpenAI organization with optional grouping by project/model and time bucketing. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "cost",
+      "billing",
+      "report"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "group_by": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_get_org_usage_completions",
+    "description": "Get chat completions token usage for the organization with time bucketing. Requires Admin API key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "usage",
+      "tokens",
+      "completions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_estimate_tokens",
+    "description": "Approximate the token count of a string without making an API call (rough estimate, ~4 chars per token). Use for budgeting, not exact pricing.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "tokens",
+      "estimate",
+      "budget"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_voices",
+    "description": "List available TTS voice IDs with descriptions",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "tts",
+      "voices",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "openai_text_to_speech_save",
+    "description": "Generate TTS audio and return as base64 (mp3 or other format). Use with local_write_file to save to disk.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "tts",
+      "speech",
+      "audio",
+      "base64"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "string"
+        },
+        "voice": {
+          "type": "string",
+          "default": "alloy"
+        },
+        "model": {
+          "type": "string",
+          "default": "tts-1"
+        },
+        "speed": {
+          "type": "number",
+          "default": 1
+        },
+        "format": {
+          "type": "string",
+          "default": "mp3"
+        }
+      },
+      "required": [
+        "input"
+      ]
+    }
+  },
+  {
+    "name": "openai_rag_query",
+    "description": "SUPER TOOL: Embed query → search a vector store → generate an answer using only retrieved context. Returns answer + sources. One-call RAG pipeline.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "super-tool",
+      "rag",
+      "retrieval",
+      "vector-store",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "vector_store_id": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-4o"
+        },
+        "max_results": {
+          "type": "number",
+          "default": 5
+        },
+        "system": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_batch_embed_and_store",
+    "description": "SUPER TOOL: Generate embeddings for an array of texts AND upload each as a file attached to a vector store. Returns batch_id for monitoring indexing.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "super-tool",
+      "embeddings",
+      "vector-store",
+      "batch",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vector_store_id": {
+          "type": "string"
+        },
+        "embedding_model": {
+          "type": "string",
+          "default": "text-embedding-3-small"
+        }
+      },
+      "required": [
+        "texts",
+        "vector_store_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_assistant_thread_complete",
+    "description": "SUPER TOOL: Create thread + add user message + create run + poll until complete + return final assistant response. End-to-end assistant call in one tool.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "super-tool",
+      "assistants",
+      "thread",
+      "run",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "assistant_id": {
+          "type": "string"
+        },
+        "user_message": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "string"
+        },
+        "poll_interval_ms": {
+          "type": "number",
+          "default": 1500
+        },
+        "max_wait_ms": {
+          "type": "number",
+          "default": 120000
+        }
+      },
+      "required": [
+        "assistant_id",
+        "user_message"
+      ]
+    }
+  },
+  {
+    "name": "openai_structured_extraction",
+    "description": "SUPER TOOL: Extract a JSON object matching a JSON Schema with automatic retry on parse failure. Uses response_format json_object. Returns parsed object on success.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "super-tool",
+      "extraction",
+      "json",
+      "schema",
+      "structured"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-4o"
+        },
+        "max_retries": {
+          "type": "number",
+          "default": 1
+        }
+      },
+      "required": [
+        "text",
+        "schema"
+      ]
+    }
+  },
+  {
+    "name": "openai_fine_tune_pipeline",
+    "description": "SUPER TOOL: Upload JSONL training (and optional validation) files + create fine-tuning job. Returns file IDs and job ID for monitoring.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "super-tool",
+      "fine-tuning",
+      "training",
+      "pipeline"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "training_jsonl_base64": {
+          "type": "string"
+        },
+        "validation_jsonl_base64": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string",
+          "default": "training.jsonl"
+        },
+        "model": {
+          "type": "string",
+          "default": "gpt-4o-mini"
+        },
+        "hyperparameters": {
+          "type": "object"
+        },
+        "suffix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "training_jsonl_base64"
+      ]
+    }
+  },
+  {
+    "name": "openai_invite_user",
+    "description": "Invite a user to the OpenAI organization by email with a specified role. Requires OPENAI_ADMIN_KEY. Roles: reader, owner.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "users",
+      "invite",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "reader",
+            "owner"
+          ],
+          "default": "reader"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "openai_remove_user",
+    "description": "Remove a user from the OpenAI organization by user ID. Requires OPENAI_ADMIN_KEY. Revokes their access immediately.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "users",
+      "remove",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_costs",
+    "description": "Get cost breakdown for the OpenAI organization over a time period. Requires OPENAI_ADMIN_KEY. Returns costs in USD by model and time bucket.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "costs",
+      "billing",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number",
+          "description": "Unix timestamp for start"
+        },
+        "bucket_width": {
+          "type": "string",
+          "default": "1d"
+        },
+        "limit": {
+          "type": "number",
+          "default": 30
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_list_api_keys",
+    "description": "List all API keys in the OpenAI organization. Requires OPENAI_ADMIN_KEY. Returns key IDs, names, and last-used dates (values are never returned).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "api-keys",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "openai_create_api_key",
+    "description": "Create a new API key in the OpenAI organization. Requires OPENAI_ADMIN_KEY. The key value is only returned once at creation time.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "api-keys",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for the key"
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Optional project to scope the key to"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_api_key",
+    "description": "Delete an API key from the OpenAI organization by key ID. Requires OPENAI_ADMIN_KEY. Immediately revokes the key.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "api-keys",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id"
+      ]
+    }
+  }
 ]

@@ -356,45 +356,74 @@ After each session:
 
 ---
 
-## Current State — Session 14 (in progress)
+## Current State — Session 15 (CLEAN BASELINE)
 
-**Total registered tools: 2,399** across 28 namespaces (audited)
-**Sync issues: ⚠️ 3 namespaces broken (cloudflare, google, search partial) — handlers not fully wired to registry**
+**Total registered tools: 2,464** across 31 namespaces
+**Sync: ✅ ALL 31 NAMESPACES PERFECTLY SYNCED — zero issues**
 
-### Namespace Status — Actual audit results
+### What Phase 1 Actually Found (Session 15 audit)
 
-| Namespace | Registry | Handler Wired | Sync | Status |
-|---|---|---|---|---|
-| `github` | 282 | 282 | ✅ | ✅ COMPLETE |
-| `neon` | 187 | 187 | ✅ | ✅ COMPLETE |
-| `upstash` | 166 | 166 | ✅ | ✅ COMPLETE (Redis + Vector + Kafka) |
-| `google` | 158 | 5 | ❌ | 🔴 BROKEN — handler mostly empty stubs |
-| `vercel` | 150 | 150 | ✅ | ✅ COMPLETE |
-| `cloudflare` | 148 | 0 | ❌ | 🔴 BROKEN — handler completely empty |
-| `stripe` | 143 | 143 | ✅ | ✅ COMPLETE |
-| `openai` | 109 | 109 | ✅ | ✅ COMPLETE (but missing admin tools) |
-| `fly` | 101 | 101 | ✅ | ✅ COMPLETE |
-| `supabase` | 100 | 100 | ✅ | ✅ COMPLETE |
-| `twilio` | 94 | 94 | ✅ | ✅ COMPLETE |
-| `clerk` | 75 | 75 | ✅ | ✅ COMPLETE |
-| `sentry` | 71 | 71 | ✅ | ✅ COMPLETE (but shallow — needs monitors/dashboards) |
-| `local` | 62 | 62 | ✅ | ✅ COMPLETE |
-| `anthropic` | 61 | 61 | ✅ | ✅ COMPLETE (but missing admin tools) |
-| `postgres` | 59 | 59 | ✅ | ✅ COMPLETE (but shallow on advanced features) |
-| `n8n` | 57 | 57 | ✅ | ✅ COMPLETE (but shallow on history/templates) |
-| `resend` | 46 | 46 | ✅ | ✅ COMPLETE |
-| `mapbox` | 45 | 45 | ✅ | ✅ COMPLETE |
-| `context7` | 45 | 45 | ✅ | ✅ COMPLETE |
-| `qdrant` | 48 | 48 | ✅ | ✅ COMPLETE (but missing named/sparse vectors) |
-| `linear` | 38 | 38 | ✅ | ✅ COMPLETE |
-| `slack` | 37 | 37 | ✅ | ✅ COMPLETE |
-| `playwright` | 34 | 34 | ✅ | ✅ COMPLETE |
-| `compound` | 29 | 29 | ✅ | ✅ COMPLETE (but needs +15 Super Tools) |
-| `search` | 23 | 10 | ❌ | 🔴 BROKEN — 13 registry tools not in handler |
-| `gemini` | 15 | 15 | ✅ | ✅ COMPLETE (but missing Thinking/2.0 Flash/video) |
-| `ollama` | 16 | 16 | ✅ | ✅ COMPLETE |
+Session 14 notes were based on stale data. The real state when Phase 1 began:
+- cloudflare, google, search were NOT broken — all handlers fully implemented
+- search had 30 tools (not 23) — SerpApi tools were present but audit.js prefixMap was missing `serp_`
+- openai had 4 duplicate registry entries (119 → 115 after dedup)
+- anthropic had 5 duplicate registry entries (69 → 64 after dedup)
+- moonshot, voyage, sam already existed (17, 11, 21 tools)
 
----
+### Phase 1 Fixes Applied
+1. **audit.js** — added `serp_` to search prefixMap → search now shows ✅ 30
+2. **openai registry** — removed 4 duplicate entries (119 → 115)
+3. **anthropic registry** — removed 5 duplicate entries (69 → 64)
+4. Result: 2,464 tools, 31 namespaces, 100% synced
+
+### Namespace Status — Verified Session 15
+
+| Namespace | Tools | Sync |
+|---|---|---|
+| `github` | 282 | ✅ |
+| `neon` | 187 | ✅ |
+| `upstash` | 166 | ✅ |
+| `vercel` | 150 | ✅ |
+| `cloudflare` | 148 | ✅ |
+| `stripe` | 143 | ✅ |
+| `openai` | 115 | ✅ |
+| `fly` | 101 | ✅ |
+| `supabase` | 100 | ✅ |
+| `twilio` | 94 | ✅ |
+| `clerk` | 75 | ✅ |
+| `sentry` | 71 | ✅ |
+| `anthropic` | 64 | ✅ |
+| `local` | 62 | ✅ |
+| `postgres` | 59 | ✅ |
+| `n8n` | 57 | ✅ |
+| `qdrant` | 48 | ✅ |
+| `resend` | 46 | ✅ |
+| `context7` | 45 | ✅ |
+| `mapbox` | 45 | ✅ |
+| `linear` | 38 | ✅ |
+| `playwright` | 34 | ✅ |
+| `slack` | 37 | ✅ |
+| `search` | 30 | ✅ |
+| `sam` | 21 | ✅ |
+| `moonshot` | 17 | ✅ |
+| `ollama` | 16 | ✅ |
+| `voyage` | 11 | ✅ |
+| `gemini` | 15 | ✅ |
+| `compound` | 29 | ✅ |
+| `local` | 62 | ✅ |
+
+### Open Build Gaps (depth expansion — no sync issues)
+
+| Namespace | Current | Planned Additions | Priority |
+|---|---|---|---|
+| `sentry` | 71 | monitors, alerting rules, dashboards, performance | 🟠 |
+| `gemini` | 15 | Thinking models, 2.0 Flash, video, Batch API | 🟠 |
+| `compound` | 29 | +15 new Super Tools | 🟡 |
+| `n8n` | 57 | execution history, node catalog, templates | 🟡 |
+| `postgres` | 59 | advisory locks, LISTEN/NOTIFY, replication | 🟡 |
+| `qdrant` | 48 | named/sparse vectors, multi-vector | 🟡 |
+| `mapbox` | 45 | traffic/incidents, isochrone | 🟢 |
+| `resend` | 46 | broadcast scheduling, domain verification | 🟢 |
 
 ## Session Log
 
@@ -438,6 +467,14 @@ gemini: 0→15, fly: 76→101, supabase: 98→100. Total: 2,355 across 28 namesp
 Fixed doc inconsistencies; updated BUILD COMPLETE counts; added Open Build Gaps table.
 
 ### Session 14 (current) — Full .env audit + broken sync fixes + new namespaces
+
+### Session 15 — Phase 1: Audit correction + registry deduplication
+- Discovered Session 14 stale data: cloudflare/google/search were NOT broken — all fully implemented
+- Fixed audit.js prefixMap: added `serp_` prefix for search namespace → search: ❌ → ✅ 30
+- Deduped openai registry: 119 → 115 (removed 4 duplicate admin tool entries)
+- Deduped anthropic registry: 69 → 64 (removed 5 duplicate admin tool entries)
+- Result: 2,464 tools across 31 namespaces, 100% synced, clean boot confirmed
+- CLAUDE.md updated with accurate state table
 - Full .env audit revealed: 3 broken handlers (cloudflare 0/148, google 5/158, search 10/23)
 - New namespaces to build: moonshot, voyage, sam
 - Missing admin API coverage in openai and anthropic
