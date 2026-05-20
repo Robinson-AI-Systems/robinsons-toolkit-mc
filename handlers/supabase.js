@@ -478,6 +478,25 @@ async function execute(tool, args) {
     return { tables: audit, summary, recommendation: summary.unprotected > 0 ? `${summary.unprotected} tables have no RLS — enable RLS and create policies for public-facing tables` : 'All tables have RLS enabled' };
   }
 
+  // ── BACKUPS & RECOVERY ────────────────────────────────────────────────────
+  if (tool === 'supabase_list_backups') {
+    const backups = await mgmt('GET', `/projects/${project_ref}/backups`);
+    return (backups || []).map(b => ({
+      id: b.backup_id || b.id,
+      created_at: b.created_at,
+      size_bytes: b.size_bytes,
+      type: b.backup_type || 'manual',
+      status: b.status || 'completed'
+    }));
+  }
+
+  if (tool === 'supabase_restore_backup') {
+    const { backup_id } = args;
+    if (!backup_id) throw new Error('backup_id is required');
+    const result = await mgmt('POST', `/projects/${project_ref}/backups/${backup_id}/restore`, {});
+    return { project_ref, backup_id, restore_started: true, status: result.status || 'restoring' };
+  }
+
   throw new Error(`Unknown Supabase tool: ${tool}`);
 }
 
