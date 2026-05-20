@@ -580,6 +580,89 @@ async function execute(tool, args) {
     return { training_file_id: trainingFile.id, validation_file_id, fine_tuning_job_id: job.id, status: job.status };
   }
 
+  // ── ADMIN API (requires OPENAI_ADMIN_KEY) ──────────────────────────────────────────
+  async function admin(method, path, body) {
+    const key = process.env.OPENAI_ADMIN_KEY;
+    if (!key) throw new Error('OPENAI_ADMIN_KEY not set in .env — org admin API requires admin key');
+    const res = await fetch(`https://api.openai.com/v1${path}`, {
+      method,
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`OpenAI Admin API ${res.status}: ${err.error?.message || res.statusText}`);
+    }
+    return await res.json();
+  }
+
+  if (tool === 'openai_list_org_users') {
+    const { limit = 20 } = args;
+    const data = await admin('GET', `/organization/users?limit=${limit}`);
+    return data.data || data;
+  }
+
+  if (tool === 'openai_invite_user') {
+    const { email, role = 'reader' } = args;
+    if (!email) throw new Error('email is required');
+    return await admin('POST', '/organization/invites', { email, role });
+  }
+
+  if (tool === 'openai_remove_user') {
+    const { user_id } = args;
+    if (!user_id) throw new Error('user_id is required');
+    return await admin('DELETE', `/organization/users/${user_id}`);
+  }
+
+  if (tool === 'openai_list_projects') {
+    const { limit = 20 } = args;
+    const data = await admin('GET', `/organization/projects?limit=${limit}`);
+    return data.data || data;
+  }
+
+  if (tool === 'openai_create_project') {
+    const { name } = args;
+    if (!name) throw new Error('name is required');
+    return await admin('POST', '/organization/projects', { name });
+  }
+
+  if (tool === 'openai_get_usage') {
+    const { start_time, end_time, bucket_width = '1d', limit = 30 } = args;
+    const params = new URLSearchParams({ bucket_width, limit });
+    if (start_time) params.set('start_time', start_time);
+    if (end_time) params.set('end_time', end_time);
+    const data = await admin('GET', `/organization/usage/completions?${params}`);
+    return data;
+  }
+
+  if (tool === 'openai_get_costs') {
+    const { start_time, bucket_width = '1d', limit = 30 } = args;
+    const params = new URLSearchParams({ bucket_width, limit });
+    if (start_time) params.set('start_time', start_time);
+    const data = await admin('GET', `/organization/costs?${params}`);
+    return data;
+  }
+
+  if (tool === 'openai_list_api_keys') {
+    const { limit = 20 } = args;
+    const data = await admin('GET', `/organization/api_keys?limit=${limit}`);
+    return data.data || data;
+  }
+
+  if (tool === 'openai_create_api_key') {
+    const { name, project_id } = args;
+    if (!name) throw new Error('name is required');
+    const body = { name };
+    if (project_id) body.project_id = project_id;
+    return await admin('POST', '/organization/api_keys', body);
+  }
+
+  if (tool === 'openai_delete_api_key') {
+    const { key_id } = args;
+    if (!key_id) throw new Error('key_id is required');
+    return await admin('DELETE', `/organization/api_keys/${key_id}`);
+  }
+
   throw new Error(`Unknown OpenAI tool: ${tool}`);
 }
 

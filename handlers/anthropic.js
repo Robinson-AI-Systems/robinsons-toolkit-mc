@@ -514,6 +514,82 @@ async function execute(tool, args) {
     };
   }
 
+  // ── ADMIN API (requires ANTHROPIC_ADMIN_KEY) ───────────────────────────────────────
+  async function anthAdmin(method, path, body) {
+    const key = process.env.ANTHROPIC_ADMIN_KEY;
+    if (!key) throw new Error('ANTHROPIC_ADMIN_KEY not set in .env — workspace admin API requires admin key');
+    const res = await fetch(`https://api.anthropic.com/v1${path}`, {
+      method,
+      headers: {
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`Anthropic Admin API ${res.status}: ${err.error?.message || res.statusText}`);
+    }
+    return await res.json();
+  }
+
+  if (tool === 'anthropic_list_workspaces') {
+    const data = await anthAdmin('GET', '/workspaces');
+    return data.data || data;
+  }
+
+  if (tool === 'anthropic_get_workspace') {
+    const { workspace_id } = args;
+    if (!workspace_id) throw new Error('workspace_id is required');
+    return await anthAdmin('GET', `/workspaces/${workspace_id}`);
+  }
+
+  if (tool === 'anthropic_list_workspace_members') {
+    const { workspace_id } = args;
+    if (!workspace_id) throw new Error('workspace_id is required');
+    const data = await anthAdmin('GET', `/workspaces/${workspace_id}/members`);
+    return data.data || data;
+  }
+
+  if (tool === 'anthropic_invite_workspace_member') {
+    const { workspace_id, email, role = 'developer' } = args;
+    if (!workspace_id || !email) throw new Error('workspace_id and email are required');
+    return await anthAdmin('POST', `/workspaces/${workspace_id}/invites`, { email, role });
+  }
+
+  if (tool === 'anthropic_list_api_keys') {
+    const { workspace_id } = args;
+    const path = workspace_id ? `/workspaces/${workspace_id}/api_keys` : '/api_keys';
+    const data = await anthAdmin('GET', path);
+    return data.data || data;
+  }
+
+  if (tool === 'anthropic_create_api_key') {
+    const { name, workspace_id } = args;
+    if (!name) throw new Error('name is required');
+    const body = { name };
+    if (workspace_id) body.workspace_id = workspace_id;
+    return await anthAdmin('POST', '/api_keys', body);
+  }
+
+  if (tool === 'anthropic_disable_api_key') {
+    const { key_id } = args;
+    if (!key_id) throw new Error('key_id is required');
+    return await anthAdmin('POST', `/api_keys/${key_id}/disable`);
+  }
+
+  if (tool === 'anthropic_get_usage') {
+    const { start_month, end_month, workspace_id } = args;
+    let path = '/usage';
+    const params = new URLSearchParams();
+    if (start_month) params.set('start_month', start_month);
+    if (end_month) params.set('end_month', end_month);
+    if (workspace_id) params.set('workspace_id', workspace_id);
+    if (params.toString()) path += `?${params}`;
+    return await anthAdmin('GET', path);
+  }
+
   throw new Error(`Unknown Anthropic tool: ${tool}`);
 }
 

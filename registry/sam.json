@@ -1,0 +1,303 @@
+[
+  {
+    "name": "sam_search_opportunities",
+    "namespace": "sam",
+    "description": "Search active federal contract opportunities on SAM.gov by keywords, NAICS code, set-aside type (small business, 8a, WOSB, HUBZone), agency, and state.",
+    "tags": ["sam", "contracts", "opportunities", "federal", "procurement"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keywords": { "type": "string", "description": "Search keywords, e.g. \"janitorial cleaning services\"" },
+        "naics_code": { "type": "string", "description": "NAICS industry code, e.g. \"561720\" for janitorial services" },
+        "set_aside_code": { "type": "string", "description": "Set-aside type: SBA (Small Business), 8A (8(a)), WOSB, EDWOSB, HZC (HUBZone), VOSB, SDVOSB" },
+        "agency": { "type": "string", "description": "Agency or department name, e.g. \"Department of Defense\"" },
+        "state": { "type": "string", "description": "Two-letter state code for place of performance, e.g. \"CO\"" },
+        "posted_from": { "type": "string", "description": "Posted on or after this date (MM/DD/YYYY)" },
+        "posted_to": { "type": "string", "description": "Posted on or before this date (MM/DD/YYYY)" },
+        "limit": { "type": "number", "description": "Number of results (default: 25)", "default": 25 },
+        "offset": { "type": "number", "description": "Pagination offset (default: 0)", "default": 0 }
+      }
+    }
+  },
+  {
+    "name": "sam_get_opportunity",
+    "namespace": "sam",
+    "description": "Get full details for a specific federal contract opportunity by its SAM.gov notice ID. Includes description, contacts, and attachments.",
+    "tags": ["sam", "contracts", "opportunities", "details", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "notice_id": { "type": "string", "description": "SAM.gov notice/solicitation ID" }
+      },
+      "required": ["notice_id"]
+    }
+  },
+  {
+    "name": "sam_list_opportunity_attachments",
+    "namespace": "sam",
+    "description": "Get all documents and attachments for a federal contract opportunity, including SOW, solicitation package, and Q&A documents.",
+    "tags": ["sam", "contracts", "attachments", "documents", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "notice_id": { "type": "string", "description": "SAM.gov notice ID" }
+      },
+      "required": ["notice_id"]
+    }
+  },
+  {
+    "name": "sam_search_opportunities_by_naics",
+    "namespace": "sam",
+    "description": "Search active federal contract opportunities filtered by a specific NAICS industry code. Best for finding all contracts in a particular trade or service category.",
+    "tags": ["sam", "contracts", "naics", "opportunities", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naics_code": { "type": "string", "description": "6-digit NAICS code, e.g. \"561720\"" },
+        "keywords": { "type": "string", "description": "Optional additional keyword filter" },
+        "limit": { "type": "number", "default": 25 }
+      },
+      "required": ["naics_code"]
+    }
+  },
+  {
+    "name": "sam_search_opportunities_by_agency",
+    "namespace": "sam",
+    "description": "Get all active contract opportunities posted by a specific federal agency or department.",
+    "tags": ["sam", "contracts", "agency", "opportunities", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "agency": { "type": "string", "description": "Agency name or code, e.g. \"Department of Veterans Affairs\"" },
+        "limit": { "type": "number", "default": 25 }
+      },
+      "required": ["agency"]
+    }
+  },
+  {
+    "name": "sam_search_opportunities_near_location",
+    "namespace": "sam",
+    "description": "Search for federal contract opportunities with a place of performance near a given ZIP code. Useful for finding local government contracts.",
+    "tags": ["sam", "contracts", "location", "local", "opportunities"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zip_code": { "type": "string", "description": "ZIP code for place of performance" },
+        "naics_code": { "type": "string", "description": "Optional NAICS code filter" },
+        "limit": { "type": "number", "default": 25 }
+      },
+      "required": ["zip_code"]
+    }
+  },
+  {
+    "name": "sam_search_awards",
+    "namespace": "sam",
+    "description": "Search federal contract award history via USASpending.gov by keywords, NAICS code, agency, or contractor UEI. Returns award amounts and recipients.",
+    "tags": ["sam", "awards", "contracts", "history", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keywords": { "type": "string", "description": "Keywords to search award descriptions" },
+        "naics_code": { "type": "string", "description": "NAICS code filter" },
+        "agency": { "type": "string", "description": "Awarding agency name" },
+        "uei": { "type": "string", "description": "Contractor UEI number to filter by recipient" },
+        "limit": { "type": "number", "default": 25 }
+      }
+    }
+  },
+  {
+    "name": "sam_get_award",
+    "namespace": "sam",
+    "description": "Get full details for a specific federal contract award by award ID from USASpending.gov. Includes amounts, timeline, and contractor details.",
+    "tags": ["sam", "awards", "contracts", "details", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "award_id": { "type": "string", "description": "USASpending award ID (e.g. CONT_AWD_...)" }
+      },
+      "required": ["award_id"]
+    }
+  },
+  {
+    "name": "sam_list_awards_by_contractor",
+    "namespace": "sam",
+    "description": "Get all federal contract awards received by a specific contractor, identified by their UEI (Unique Entity Identifier). Shows award history and total amounts.",
+    "tags": ["sam", "awards", "contractor", "history", "uei"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "uei": { "type": "string", "description": "Contractor Unique Entity Identifier (UEI)" },
+        "limit": { "type": "number", "default": 25 }
+      },
+      "required": ["uei"]
+    }
+  },
+  {
+    "name": "sam_list_awards_by_agency",
+    "namespace": "sam",
+    "description": "Get all federal contract awards issued by a specific agency. Useful for researching what a department is spending on and who is winning their contracts.",
+    "tags": ["sam", "awards", "agency", "procurement", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "agency": { "type": "string", "description": "Agency name, e.g. \"Department of Defense\"" },
+        "limit": { "type": "number", "default": 25 }
+      },
+      "required": ["agency"]
+    }
+  },
+  {
+    "name": "sam_search_entities",
+    "namespace": "sam",
+    "description": "Search the SAM.gov entity registry for registered contractors and vendors. Filter by company name, state, or NAICS code.",
+    "tags": ["sam", "entities", "contractors", "vendors", "registry"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keywords": { "type": "string", "description": "General search keywords" },
+        "legal_name": { "type": "string", "description": "Legal business name to search" },
+        "state": { "type": "string", "description": "Two-letter state code" },
+        "naics_code": { "type": "string", "description": "NAICS code filter" },
+        "limit": { "type": "number", "default": 10 }
+      }
+    }
+  },
+  {
+    "name": "sam_get_entity",
+    "namespace": "sam",
+    "description": "Get full SAM.gov entity registration for a specific contractor by their UEI. Returns CAGE code, address, business type, and NAICS codes.",
+    "tags": ["sam", "entities", "contractor", "uei", "registration"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "uei": { "type": "string", "description": "Unique Entity Identifier (UEI) — 12-character alphanumeric" }
+      },
+      "required": ["uei"]
+    }
+  },
+  {
+    "name": "sam_check_entity_active",
+    "namespace": "sam",
+    "description": "Verify whether a contractor is currently active and eligible for federal contracts on SAM.gov. Returns registration status and expiration date.",
+    "tags": ["sam", "entities", "active", "eligibility", "verification"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "uei": { "type": "string", "description": "Unique Entity Identifier (UEI)" }
+      },
+      "required": ["uei"]
+    }
+  },
+  {
+    "name": "sam_check_exclusions",
+    "namespace": "sam",
+    "description": "Check whether a company or individual is excluded (debarred) from receiving federal contracts. Returns exclusion type, agency, and dates.",
+    "tags": ["sam", "exclusions", "debarment", "compliance", "federal"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Company or individual name to check" },
+        "uei": { "type": "string", "description": "UEI to check (more precise than name)" }
+      }
+    }
+  },
+  {
+    "name": "sam_search_wage_determinations",
+    "namespace": "sam",
+    "description": "Search Service Contract Act and Davis-Bacon Act wage determinations by state, county, or keywords. Required for government service contracts.",
+    "tags": ["sam", "wages", "compliance", "SCA", "Davis-Bacon"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "state": { "type": "string", "description": "Two-letter state code" },
+        "county": { "type": "string", "description": "County name" },
+        "keywords": { "type": "string", "description": "Keyword filter" },
+        "type": { "type": "string", "description": "WD type: SCA (Service Contract Act) or DBA (Davis-Bacon Act)" },
+        "limit": { "type": "number", "default": 10 }
+      }
+    }
+  },
+  {
+    "name": "sam_get_wage_determination",
+    "namespace": "sam",
+    "description": "Get the current wage rates for a specific wage determination number and revision. Returns minimum pay rates by job classification.",
+    "tags": ["sam", "wages", "SCA", "Davis-Bacon", "compliance"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "wd_number": { "type": "string", "description": "Wage determination number, e.g. \"2015-4281\"" },
+        "revision": { "type": "number", "description": "Revision number (optional, returns latest if omitted)" }
+      },
+      "required": ["wd_number"]
+    }
+  },
+  {
+    "name": "sam_list_naics_codes",
+    "namespace": "sam",
+    "description": "Search NAICS (North American Industry Classification System) codes by keyword to find the right industry code for a contracting service.",
+    "tags": ["sam", "naics", "codes", "classification", "industry"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "keywords": { "type": "string", "description": "Industry description keywords, e.g. \"cleaning\" or \"landscaping\"" },
+        "limit": { "type": "number", "default": 20 }
+      },
+      "required": ["keywords"]
+    }
+  },
+  {
+    "name": "sam_get_naics_code",
+    "namespace": "sam",
+    "description": "Get full description and details for a specific NAICS code including sector, subsector, industry group, and size standard.",
+    "tags": ["sam", "naics", "codes", "classification"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naics_code": { "type": "string", "description": "6-digit NAICS code" }
+      },
+      "required": ["naics_code"]
+    }
+  },
+  {
+    "name": "sam_find_opportunities_for_contractor",
+    "namespace": "sam",
+    "description": "SUPER TOOL: Find federal contract opportunities that match a contractor's profile. Searches across multiple NAICS codes and filters by state. Returns ranked, summarized opportunities ready for bidding.",
+    "tags": ["sam", "super-tool", "opportunities", "matching", "contractor"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "naics_codes": { "type": "array", "description": "Array of NAICS codes the contractor works in (up to 3 searched)" },
+        "state": { "type": "string", "description": "State code to filter by place of performance" },
+        "keywords": { "type": "string", "description": "Optional keyword filter" },
+        "limit": { "type": "number", "description": "Max results to return (default: 15)", "default": 15 }
+      },
+      "required": ["naics_codes"]
+    }
+  },
+  {
+    "name": "sam_contractor_due_diligence",
+    "namespace": "sam",
+    "description": "SUPER TOOL: Full contractor vetting in one call — entity registration status + exclusions check. Verifies if a company is SAM-registered, active, and not debarred. Essential before partnering or subcontracting.",
+    "tags": ["sam", "super-tool", "due-diligence", "compliance", "vetting"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "uei": { "type": "string", "description": "Unique Entity Identifier (preferred)" },
+        "name": { "type": "string", "description": "Legal business name (alternative to uei)" }
+      }
+    }
+  },
+  {
+    "name": "sam_bid_opportunity_summary",
+    "namespace": "sam",
+    "description": "SUPER TOOL: Get a complete bid package summary for a contract opportunity — full description, response deadline, agency contact, NAICS code, set-aside type, and all attachments in one structured call.",
+    "tags": ["sam", "super-tool", "bid", "opportunity", "summary"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "notice_id": { "type": "string", "description": "SAM.gov notice/solicitation ID" }
+      },
+      "required": ["notice_id"]
+    }
+  }
+]

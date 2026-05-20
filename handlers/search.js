@@ -218,6 +218,84 @@ async function execute(tool, args) {
     return await execute('brave_web_search', { query: searchQuery, count: max_results, result_filter: 'web' });
   }
 
+  // ── SERPAPI (Google/YouTube/Maps scraping) ────────────────────────────────────
+  async function serp(engine, params) {
+    const key = process.env.SERPAPI_KEY;
+    if (!key) throw new Error('SERPAPI_KEY not set in .env');
+    const url = new URL('https://serpapi.com/search.json');
+    url.searchParams.set('api_key', key);
+    url.searchParams.set('engine', engine);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+    }
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`SerpApi ${res.status}: ${err.error || res.statusText}`);
+    }
+    return await res.json();
+  }
+
+  if (tool === 'serp_google_search') {
+    const { query, num = 10, location, hl = 'en', gl = 'us' } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('google', { q: query, num, location, hl, gl });
+    return {
+      organic: (data.organic_results || []).map(r => ({ title: r.title, link: r.link, snippet: r.snippet, position: r.position })),
+      answer_box: data.answer_box || null,
+      knowledge_graph: data.knowledge_graph ? { title: data.knowledge_graph.title, description: data.knowledge_graph.description } : null,
+      related: (data.related_searches || []).slice(0, 5).map(r => r.query)
+    };
+  }
+
+  if (tool === 'serp_google_news') {
+    const { query, num = 10, hl = 'en' } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('google', { q: query, num, hl, tbm: 'nws' });
+    return (data.news_results || []).map(r => ({ title: r.title, link: r.link, source: r.source?.name, date: r.date, snippet: r.snippet }));
+  }
+
+  if (tool === 'serp_google_images') {
+    const { query, num = 10 } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('google_images', { q: query, num });
+    return (data.images_results || []).slice(0, num).map(r => ({ title: r.title, original: r.original, thumbnail: r.thumbnail, source: r.source, link: r.link }));
+  }
+
+  if (tool === 'serp_google_maps') {
+    const { query, location, ll, type = 'search' } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('google_maps', { q: query, ll, type });
+    return (data.local_results || []).map(r => ({ title: r.title, address: r.address, phone: r.phone, rating: r.rating, reviews: r.reviews, type: r.type, hours: r.hours?.schedule }));
+  }
+
+  if (tool === 'serp_google_shopping') {
+    const { query, num = 10, min_price, max_price } = args;
+    if (!query) throw new Error('query is required');
+    const params = { q: query, num, tbm: 'shop' };
+    if (min_price) params.tbs = `price:1,ppr_min:${min_price}${max_price ? `,ppr_max:${max_price}` : ''}`;
+    const data = await serp('google', params);
+    return (data.shopping_results || []).slice(0, num).map(r => ({ title: r.title, price: r.price, source: r.source, link: r.link, rating: r.rating, thumbnail: r.thumbnail }));
+  }
+
+  if (tool === 'serp_google_jobs') {
+    const { query, location, chips } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('google_jobs', { q: query, location, chips });
+    return (data.jobs_results || []).map(r => ({
+      title: r.title, company: r.company_name, location: r.location,
+      posted: r.detected_extensions?.posted_at, via: r.via,
+      description: (r.description || '').slice(0, 300)
+    }));
+  }
+
+  if (tool === 'serp_youtube_search') {
+    const { query, num = 10 } = args;
+    if (!query) throw new Error('query is required');
+    const data = await serp('youtube', { search_query: query });
+    return (data.video_results || []).slice(0, num).map(r => ({ title: r.title, link: r.link, channel: r.channel?.name, views: r.views, length: r.length, published_date: r.published_date, description: (r.description || '').slice(0, 200) }));
+  }
+
   throw new Error(`Unknown search tool: ${tool}`);
 }
 

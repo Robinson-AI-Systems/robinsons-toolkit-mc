@@ -1,0 +1,231 @@
+[
+  {
+    "name": "moonshot_list_models",
+    "namespace": "moonshot",
+    "description": "List all available Moonshot AI (Kimi) models including moonshot-v1-8k, moonshot-v1-32k, moonshot-v1-128k, and vision models.",
+    "tags": ["moonshot", "models", "kimi"],
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "moonshot_chat",
+    "namespace": "moonshot",
+    "description": "Chat completion with a Kimi/Moonshot model. Supports moonshot-v1-8k (default), 32k, and 128k context windows. Strong Chinese and English bilingual performance.",
+    "tags": ["moonshot", "chat", "completion", "kimi", "llm"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": { "type": "array", "description": "Array of {role, content} messages" },
+        "model": { "type": "string", "description": "Model to use (default: moonshot-v1-8k)", "enum": ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"], "default": "moonshot-v1-8k" },
+        "temperature": { "type": "number", "description": "Sampling temperature 0-1 (default: 0.6)", "default": 0.6 },
+        "max_tokens": { "type": "number", "description": "Max tokens to generate (default: 2048)", "default": 2048 },
+        "system": { "type": "string", "description": "Optional system prompt prepended to messages" }
+      },
+      "required": ["messages"]
+    }
+  },
+  {
+    "name": "moonshot_chat_json",
+    "namespace": "moonshot",
+    "description": "Chat completion with JSON mode enforced. The model will always return valid JSON. Returns both the parsed object and raw string.",
+    "tags": ["moonshot", "chat", "json", "structured", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": { "type": "array", "description": "Array of {role, content} messages" },
+        "model": { "type": "string", "description": "Model to use (default: moonshot-v1-8k)", "default": "moonshot-v1-8k" },
+        "temperature": { "type": "number", "description": "Sampling temperature 0-1 (default: 0.3 for structured output)", "default": 0.3 },
+        "max_tokens": { "type": "number", "default": 2048 },
+        "system": { "type": "string", "description": "Optional system prompt" }
+      },
+      "required": ["messages"]
+    }
+  },
+  {
+    "name": "moonshot_chat_long",
+    "namespace": "moonshot",
+    "description": "Chat completion using moonshot-v1-128k for processing very large documents or contexts up to 128,000 tokens. Ideal for long-form analysis.",
+    "tags": ["moonshot", "chat", "long-context", "128k", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": { "type": "array", "description": "Array of {role, content} messages" },
+        "system": { "type": "string", "description": "Optional system prompt" },
+        "temperature": { "type": "number", "default": 0.6 },
+        "max_tokens": { "type": "number", "default": 4096 }
+      },
+      "required": ["messages"]
+    }
+  },
+  {
+    "name": "moonshot_vision_chat",
+    "namespace": "moonshot",
+    "description": "Chat with an image input using Moonshot's vision model. Accepts image URL or base64 encoded image data alongside a text prompt.",
+    "tags": ["moonshot", "vision", "image", "multimodal", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": { "type": "string", "description": "Text prompt or question about the image" },
+        "image_url": { "type": "string", "description": "URL of the image to analyze" },
+        "image_base64": { "type": "string", "description": "Base64 encoded image data (alternative to image_url)" },
+        "image_media_type": { "type": "string", "description": "MIME type of base64 image (default: image/jpeg)", "default": "image/jpeg" },
+        "model": { "type": "string", "description": "Vision model to use", "default": "moonshot-v1-8k-vision-preview" }
+      },
+      "required": ["prompt"]
+    }
+  },
+  {
+    "name": "moonshot_function_call",
+    "namespace": "moonshot",
+    "description": "Chat completion with function/tool definitions. The model can decide to call one or more of the provided tools. Returns tool_calls array.",
+    "tags": ["moonshot", "function-calling", "tools", "agent", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": { "type": "array", "description": "Array of {role, content} messages" },
+        "tools": { "type": "array", "description": "Array of tool definitions with name, description, and parameters" },
+        "model": { "type": "string", "default": "moonshot-v1-8k" },
+        "temperature": { "type": "number", "default": 0.3 }
+      },
+      "required": ["messages", "tools"]
+    }
+  },
+  {
+    "name": "moonshot_embed_text",
+    "namespace": "moonshot",
+    "description": "Generate text embeddings using Moonshot's embedding model. Accepts a single string or array of strings. Returns embedding vectors.",
+    "tags": ["moonshot", "embeddings", "vectors", "rag", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": { "description": "Text string or array of strings to embed" },
+        "model": { "type": "string", "description": "Embedding model (default: moonshot-v1-embedding)", "default": "moonshot-v1-embedding" }
+      },
+      "required": ["text"]
+    }
+  },
+  {
+    "name": "moonshot_upload_file",
+    "namespace": "moonshot",
+    "description": "Upload a file to Moonshot for text extraction. Supports PDF, DOCX, TXT, and other document formats. Returns file_id for content extraction.",
+    "tags": ["moonshot", "files", "upload", "documents", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_content": { "type": "string", "description": "File content as text or base64 encoded data" },
+        "filename": { "type": "string", "description": "Filename with extension, e.g. \"report.pdf\"" },
+        "purpose": { "type": "string", "description": "Purpose of upload (default: file-extract)", "default": "file-extract" }
+      },
+      "required": ["file_content", "filename"]
+    }
+  },
+  {
+    "name": "moonshot_list_files",
+    "namespace": "moonshot",
+    "description": "List all files uploaded to Moonshot. Returns file IDs, names, sizes, and creation timestamps.",
+    "tags": ["moonshot", "files", "list", "kimi"],
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "moonshot_get_file",
+    "namespace": "moonshot",
+    "description": "Get metadata for a specific uploaded file by its file_id. Returns filename, size, status, and creation time.",
+    "tags": ["moonshot", "files", "metadata", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": { "type": "string", "description": "File ID returned from moonshot_upload_file" }
+      },
+      "required": ["file_id"]
+    }
+  },
+  {
+    "name": "moonshot_delete_file",
+    "namespace": "moonshot",
+    "description": "Delete an uploaded file from Moonshot by its file_id. Frees storage quota.",
+    "tags": ["moonshot", "files", "delete", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": { "type": "string", "description": "File ID to delete" }
+      },
+      "required": ["file_id"]
+    }
+  },
+  {
+    "name": "moonshot_get_file_content",
+    "namespace": "moonshot",
+    "description": "Extract and return the text content from an uploaded file. Moonshot parses PDFs, Word docs, and other formats into plain text.",
+    "tags": ["moonshot", "files", "extract", "parse", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": { "type": "string", "description": "File ID of the uploaded document" }
+      },
+      "required": ["file_id"]
+    }
+  },
+  {
+    "name": "moonshot_get_balance",
+    "namespace": "moonshot",
+    "description": "Check the current API credit balance for the Moonshot account. Returns available balance and total topped up.",
+    "tags": ["moonshot", "account", "balance", "billing", "kimi"],
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "moonshot_list_usage",
+    "namespace": "moonshot",
+    "description": "Get API usage history for the Moonshot account. Filter by year and month to see token consumption and costs.",
+    "tags": ["moonshot", "account", "usage", "billing", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "year": { "type": "number", "description": "Year to filter by (e.g. 2026)" },
+        "month": { "type": "number", "description": "Month to filter by (1-12)" }
+      }
+    }
+  },
+  {
+    "name": "moonshot_parse_document",
+    "namespace": "moonshot",
+    "description": "SUPER TOOL: Upload a document file and immediately extract all its text content in one call. Handles PDF, DOCX, TXT and more. Returns file_id and extracted text.",
+    "tags": ["moonshot", "super-tool", "parse", "documents", "extract", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_content": { "type": "string", "description": "File content as text or base64" },
+        "filename": { "type": "string", "description": "Filename with extension, e.g. \"contract.pdf\"" }
+      },
+      "required": ["file_content", "filename"]
+    }
+  },
+  {
+    "name": "moonshot_long_context_summarize",
+    "namespace": "moonshot",
+    "description": "SUPER TOOL: Summarize a very large document (up to 128K tokens) using moonshot-v1-128k. Returns structured or plain summary with usage stats. Ideal for contracts, reports, and research papers.",
+    "tags": ["moonshot", "super-tool", "summarize", "long-context", "128k", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "description": "Full document text to summarize (up to ~512K characters)" },
+        "format": { "type": "string", "description": "Output format: structured (default, with sections) or plain", "enum": ["structured", "plain"], "default": "structured" },
+        "language": { "type": "string", "description": "Language for the summary (default: English)", "default": "English" }
+      },
+      "required": ["text"]
+    }
+  },
+  {
+    "name": "moonshot_compare_documents",
+    "namespace": "moonshot",
+    "description": "SUPER TOOL: Compare two documents using moonshot-v1-128k and return a structured analysis of differences and similarities. Useful for contract comparison, changelog analysis, and document review.",
+    "tags": ["moonshot", "super-tool", "compare", "documents", "analysis", "kimi"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc1": { "type": "string", "description": "First document text" },
+        "doc2": { "type": "string", "description": "Second document text" },
+        "comparison_focus": { "type": "string", "description": "What aspect to focus comparison on (default: key differences and similarities)", "default": "key differences and similarities" }
+      },
+      "required": ["doc1", "doc2"]
+    }
+  }
+]

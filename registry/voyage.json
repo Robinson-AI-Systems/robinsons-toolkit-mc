@@ -1,0 +1,156 @@
+[
+  {
+    "name": "voyage_embed",
+    "namespace": "voyage",
+    "description": "Generate embeddings using Voyage AI. Supports voyage-3 (default), voyage-3-lite, voyage-code-3, voyage-finance-2, voyage-law-2, and voyage-multilingual-2 models.",
+    "tags": ["voyage", "embeddings", "vectors", "rag"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "description": "Array of text strings to embed" },
+        "model": { "type": "string", "description": "Embedding model (default: voyage-3)", "default": "voyage-3" },
+        "input_type": { "type": "string", "description": "Input type hint: query or document (improves quality)", "enum": ["query", "document"] }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "voyage_embed_query",
+    "namespace": "voyage",
+    "description": "Embed a single search query using Voyage AI with query-optimized settings for maximum retrieval relevance. Returns a single embedding vector.",
+    "tags": ["voyage", "embeddings", "query", "search", "rag"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Search query text to embed" },
+        "model": { "type": "string", "description": "Model to use (default: voyage-3)", "default": "voyage-3" }
+      },
+      "required": ["query"]
+    }
+  },
+  {
+    "name": "voyage_embed_documents",
+    "namespace": "voyage",
+    "description": "Batch embed a list of documents using Voyage AI with document-optimized settings. Best for indexing content into a vector database.",
+    "tags": ["voyage", "embeddings", "documents", "batch", "indexing"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documents": { "type": "array", "description": "Array of document strings to embed" },
+        "model": { "type": "string", "description": "Model to use (default: voyage-3)", "default": "voyage-3" }
+      },
+      "required": ["documents"]
+    }
+  },
+  {
+    "name": "voyage_embed_code",
+    "namespace": "voyage",
+    "description": "Embed code snippets using voyage-code-3, Voyage AI's state-of-the-art code embedding model. Best performance for code search and retrieval tasks.",
+    "tags": ["voyage", "embeddings", "code", "code-search", "programming"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "description": "Array of code snippets or technical text to embed" }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "voyage_embed_finance",
+    "namespace": "voyage",
+    "description": "Embed financial documents using voyage-finance-2. Optimized for financial filings, earnings reports, and economic text. Superior retrieval for finance use cases.",
+    "tags": ["voyage", "embeddings", "finance", "financial", "rag"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "description": "Financial texts to embed" },
+        "input_type": { "type": "string", "enum": ["query", "document"], "default": "document" }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "voyage_embed_legal",
+    "namespace": "voyage",
+    "description": "Embed legal text using voyage-law-2. Optimized for contracts, case law, statutes, and legal documents. Best-in-class for legal RAG applications.",
+    "tags": ["voyage", "embeddings", "legal", "contracts", "law", "rag"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "description": "Legal texts to embed" },
+        "input_type": { "type": "string", "enum": ["query", "document"], "default": "document" }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "voyage_embed_multilingual",
+    "namespace": "voyage",
+    "description": "Embed text in multiple languages using voyage-multilingual-2. Supports cross-lingual retrieval across 10+ languages including English, Spanish, French, German, Chinese, and more.",
+    "tags": ["voyage", "embeddings", "multilingual", "international", "rag"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "texts": { "type": "array", "description": "Multilingual texts to embed" },
+        "input_type": { "type": "string", "enum": ["query", "document"], "default": "document" }
+      },
+      "required": ["texts"]
+    }
+  },
+  {
+    "name": "voyage_rerank",
+    "namespace": "voyage",
+    "description": "Rerank a list of candidate documents by relevance to a query using Voyage's cross-encoder reranker. Significantly improves retrieval precision as a post-processing step after vector search.",
+    "tags": ["voyage", "reranking", "retrieval", "rag", "relevance"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Search query to rank documents against" },
+        "documents": { "type": "array", "description": "Array of document strings to rerank" },
+        "model": { "type": "string", "description": "Reranker model (default: rerank-2)", "default": "rerank-2" },
+        "top_k": { "type": "number", "description": "Return only the top K results (default: all)" },
+        "return_documents": { "type": "boolean", "description": "Include document text in results (default: true)", "default": true }
+      },
+      "required": ["query", "documents"]
+    }
+  },
+  {
+    "name": "voyage_list_models",
+    "namespace": "voyage",
+    "description": "List all available Voyage AI embedding and reranking models with their context lengths, dimensions, and intended use cases.",
+    "tags": ["voyage", "models", "info"],
+    "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "name": "voyage_compare_similarity",
+    "namespace": "voyage",
+    "description": "SUPER TOOL: Embed two texts and return their cosine similarity score (0-1) with a human-readable interpretation. Useful for semantic similarity checks and deduplication.",
+    "tags": ["voyage", "super-tool", "similarity", "comparison", "embeddings"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text1": { "type": "string", "description": "First text to compare" },
+        "text2": { "type": "string", "description": "Second text to compare" },
+        "model": { "type": "string", "description": "Embedding model to use (default: voyage-3)", "default": "voyage-3" }
+      },
+      "required": ["text1", "text2"]
+    }
+  },
+  {
+    "name": "voyage_search_pipeline",
+    "namespace": "voyage",
+    "description": "SUPER TOOL: Full RAG retrieval pipeline — embed query with Voyage + score candidates by cosine similarity + rerank top results in one call. Returns relevance-ranked documents ready to pass to an LLM.",
+    "tags": ["voyage", "super-tool", "rag", "search", "pipeline", "reranking"],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string", "description": "Search query" },
+        "candidate_documents": { "type": "array", "description": "Array of candidate document strings to search through" },
+        "model": { "type": "string", "description": "Embedding model (default: voyage-3)", "default": "voyage-3" },
+        "rerank_model": { "type": "string", "description": "Reranker model (default: rerank-2)", "default": "rerank-2" },
+        "top_k": { "type": "number", "description": "Number of top results to return (default: 5)", "default": 5 }
+      },
+      "required": ["query", "candidate_documents"]
+    }
+  }
+]
