@@ -583,6 +583,181 @@ async function execute(tool, args) {
     };
   }
 
+
+  // ── NOTIFY TEAM ───────────────────────────────────────────────────────────
+  // Send a Slack alert AND create a Linear issue in one call
+  if (tool === 'compound_notify_team') {
+    const { title, message, slack_channel, linear_team_id, priority = 2, severity = 'warning', slack_action_url } = args;
+    if (!title || !message) throw new Error('title and message are required');
+    const results = { steps: [] };
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        await slack.execute('slack_send_alert', { channel: slack_channel, title, message, severity, action_url: slack_action_url });
+        results.steps.push({ step: 'slack_alert', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_alert', success: false, error: e.message }); }
+    }
+    if (linear_team_id) {
+      try {
+        const linear = await loadHandler('linear');
+        const issue = await linear.execute('linear_create_issue', { title, description: message, team_id: linear_team_id, priority });
+        results.steps.push({ step: 'linear_issue', success: true, identifier: issue.issue?.identifier });
+        results.linear_issue = issue.issue?.identifier;
+      } catch (e) { results.steps.push({ step: 'linear_issue', success: false, error: e.message }); }
+    }
+    return results;
+  }
+
+  // ── INCIDENT ALERT ────────────────────────────────────────────────────────
+  // Sentry error → Slack critical alert → Linear urgent issue in one call
+  if (tool === 'compound_incident_alert') {
+    const { sentry_issue_id, slack_channel, linear_team_id, additional_context } = args;
+    if (!sentry_issue_id) throw new Error('sentry_issue_id is required');
+    const results = { steps: [] };
+    let issueTitle = `Incident: Sentry issue ${sentry_issue_id}`;
+    let issueDetails = additional_context || '';
+    try {
+      const sentry = await loadHandler('sentry');
+      const issue = await sentry.execute('sentry_get_issue', { issue_id: sentry_issue_id });
+      issueTitle = `🚨 ${issue.title}`;
+      issueDetails = `**Sentry:** ${issue.permalink || ''}
+**Level:** ${issue.level}
+**Count:** ${issue.count} occurrences
+**Last seen:** ${issue.lastSeen}
+${additional_context || ''}`;
+      results.sentry_issue = { title: issue.title, level: issue.level, count: issue.count };
+      results.steps.push({ step: 'sentry_fetch', success: true });
+    } catch (e) { results.steps.push({ step: 'sentry_fetch', success: false, error: e.message }); }
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        await slack.execute('slack_send_alert', { channel: slack_channel, title: issueTitle, message: issueDetails, severity: 'critical' });
+        results.steps.push({ step: 'slack_alert', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_alert', success: false, error: e.message }); }
+    }
+    if (linear_team_id) {
+      try {
+        const linear = await loadHandler('linear');
+        const created = await linear.execute('linear_create_issue', { title: issueTitle, description: issueDetails, team_id: linear_team_id, priority: 1 });
+        results.steps.push({ step: 'linear_issue', success: true, identifier: created.issue?.identifier });
+        results.linear_issue = created.issue?.identifier;
+      } catch (e) { results.steps.push({ step: 'linear_issue', success: false, error: e.message }); }
+    }
+    return results;
+  }
+
+  // ── STANDUP SUMMARY ──────────────────────────────────────────────────────
+  // My Linear issues + recent Sentry errors + last Vercel deploy in one call
+  if (tool === 'compound_standup_summary') {
+    const { linear_team_id, sentry_project, vercel_project_id } = args;
+    const summary = { generated_at: new Date().toISOString() };
+    if (linear_team_id) {
+      try {
+        const linear = await loadHandler('linear');
+        summary.my_issues = await linear.execute('linear_my_work_today', {});
+      } catch (e) { summary.linear_error = e.message; }
+    }
+    if (sentry_project) {
+      try {
+        const sentry = await loadHandler('sentry');
+        const issues = await sentry.execute('sentry_list_issues', { project_slug: sentry_project, limit: 5, query: 'is:unresolved', sort: 'date' });
+        summary.recent_errors = issues.map ? issues.map(i => ({ id: i.id, title: i.title, count: i.count, lastSeen: i.lastSeen })) : [];
+      } catch (e) { summary.sentry_error = e.message; }
+    }
+    if (vercel_project_id) {
+      try {
+        const vercel = await loadHandler('vercel');
+        const deploys = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 3 });
+        summary.recent_deploys = deploys.deployments?.map(d => ({ state: d.state, created: d.createdAt, url: d.url }));
+      } catch (e) { summary.vercel_error = e.message; }
+    }
+    return summary;
+  }
+
+  // ── BUG REPORT ────────────────────────────────────────────────────────────
+  // Fetch Sentry error context → create linked Linear issue → notify Slack
+  if (tool === 'compound_bug_report_from_sentry') {
+    const { sentry_issue_id, linear_team_id, slack_channel, assignee_id } = args;
+    if (!sentry_issue_id || !linear_team_id) throw new Error('sentry_issue_id and linear_team_id are required');
+    const results = { steps: [] };
+    let issueTitle = `Bug: Sentry ${sentry_issue_id}`;
+    let issueDesc = `Sentry issue ID: ${sentry_issue_id}`;
+    try {
+      const sentry = await loadHandler('sentry');
+      const [issue, latestEvent] = await Promise.all([
+        sentry.execute('sentry_get_issue', { issue_id: sentry_issue_id }),
+        sentry.execute('sentry_get_latest_event', { issue_id: sentry_issue_id }).catch(() => null)
+      ]);
+      issueTitle = `Bug: ${issue.title}`;
+      issueDesc = `**Source:** Sentry ${issue.permalink || ''}
+**Level:** ${issue.level} | **Count:** ${issue.count}
+**First seen:** ${issue.firstSeen}
+**Last seen:** ${issue.lastSeen}`;
+      if (latestEvent?.culprit) issueDesc += `
+**Culprit:** ${latestEvent.culprit}`;
+      results.steps.push({ step: 'sentry_fetch', success: true });
+    } catch (e) { results.steps.push({ step: 'sentry_fetch', success: false, error: e.message }); }
+    const linear = await loadHandler('linear');
+    const created = await linear.execute('linear_create_issue', { title: issueTitle, description: issueDesc, team_id: linear_team_id, priority: 2, assignee_id });
+    results.steps.push({ step: 'linear_issue', success: !!created.success, identifier: created.issue?.identifier });
+    results.linear_issue = { identifier: created.issue?.identifier, url: created.issue?.url };
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        await slack.execute('slack_send_alert', { channel: slack_channel, title: issueTitle, message: `Linear issue created: ${created.issue?.identifier}
+${issueDesc.slice(0, 200)}`, severity: 'warning', action_url: created.issue?.url, action_text: 'View in Linear' });
+        results.steps.push({ step: 'slack_notify', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_notify', success: false, error: e.message }); }
+    }
+    return results;
+  }
+
+  // ── DEPLOY ANNOUNCEMENT ───────────────────────────────────────────────────
+  // Deploy to Vercel + Sentry release + Slack announcement in one call
+  if (tool === 'compound_deploy_and_announce') {
+    const { version, project_path, vercel_project_id, sentry_project, slack_channel, app_name, environment = 'production', changes } = args;
+    if (!version || !app_name) throw new Error('version and app_name are required');
+    const results = { steps: [] };
+    // Reuse existing deploy_and_release
+    const deployResult = await execute('compound_deploy_and_release', { version, project_path, vercel_project_id, sentry_project, environment, git_push: !!project_path });
+    results.deploy = deployResult;
+    // Announce on Slack
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        const deployUrl = deployResult.deployment?.url;
+        await slack.execute('slack_announce_deployment', { channel: slack_channel, app_name, version, environment, status: deployResult.all_succeeded ? 'success' : 'failed', changes, url: deployUrl });
+        results.steps.push({ step: 'slack_announcement', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_announcement', success: false, error: e.message }); }
+    }
+    return results;
+  }
+
+  // ── LINEAR + SLACK SPRINT KICKOFF ─────────────────────────────────────────
+  // Post sprint contents to Slack when a new cycle starts
+  if (tool === 'compound_sprint_kickoff_announcement') {
+    const { linear_team_id, slack_channel } = args;
+    if (!linear_team_id) throw new Error('linear_team_id is required');
+    const linear = await loadHandler('linear');
+    const cycle = await linear.execute('linear_get_active_cycle', { team_id: linear_team_id });
+    if (!cycle) throw new Error('No active cycle found for this team');
+    const issueData = await linear.execute('linear_list_issues', { team_id: linear_team_id, first: 50 });
+    const inCycle = (issueData.issues || []).filter(i => i.cycle?.id === cycle.id);
+    const text = [
+      `🏃 *Sprint ${cycle.number} is live* — ${cycle.name || ''}`,
+      `*Dates:* ${new Date(cycle.startsAt).toLocaleDateString()} → ${new Date(cycle.endsAt).toLocaleDateString()}`,
+      `*Issues in sprint:* ${inCycle.length}`,
+      inCycle.filter(i => i.priority === 1).length ? `*🚨 Urgent:* ${inCycle.filter(i => i.priority === 1).map(i => i.identifier).join(', ')}` : ''
+    ].filter(Boolean).join('
+');
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      const slack = await loadHandler('slack');
+      const msg = await slack.execute('slack_send_message', { channel: slack_channel, text });
+      return { cycle, message_sent: true, ts: msg.ts };
+    }
+    return { cycle, message_sent: false, preview: text };
+  }
+
   throw new Error(`Unknown compound tool: ${tool}`);
 }
 

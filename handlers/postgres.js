@@ -267,6 +267,116 @@ async function execute(tool, args) {
     };
   }
 
+
+  // ── SCHEMA MANAGEMENT ────────────────────────────────────────────────────
+  if (tool === 'postgres_create_schema') {
+    const { schema_name, authorization } = args;
+    if (!schema_name) throw new Error('schema_name is required');
+    let sql = `CREATE SCHEMA IF NOT EXISTS ${schema_name}`;
+    if (authorization) sql += ` AUTHORIZATION ${authorization}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_schema') {
+    const { schema_name, cascade = false } = args;
+    if (!schema_name) throw new Error('schema_name is required');
+    return await pg(`DROP SCHEMA IF EXISTS ${schema_name} ${cascade ? 'CASCADE' : 'RESTRICT'}`);
+  }
+  if (tool === 'postgres_create_table') {
+    const { table_name, columns, schema = 'public', if_not_exists = true } = args;
+    if (!table_name || !columns) throw new Error('table_name and columns are required');
+    // columns: [{name, type, nullable, default, primary_key}]
+    const colDefs = columns.map(c => {
+      let def = `${c.name} ${c.type}`;
+      if (c.primary_key) def += ' PRIMARY KEY';
+      if (c.not_null || c.nullable === false) def += ' NOT NULL';
+      if (c.default !== undefined) def += ` DEFAULT ${c.default}`;
+      return def;
+    }).join(', ');
+    return await pg(`CREATE TABLE ${if_not_exists ? 'IF NOT EXISTS' : ''} ${schema}.${table_name} (${colDefs})`);
+  }
+  if (tool === 'postgres_truncate_table') {
+    const { table_name, schema = 'public', cascade = false, restart_identity = false } = args;
+    if (!table_name) throw new Error('table_name is required');
+    let sql = `TRUNCATE TABLE ${schema}.${table_name}`;
+    if (restart_identity) sql += ' RESTART IDENTITY';
+    if (cascade) sql += ' CASCADE';
+    return await pg(sql);
+  }
+  if (tool === 'postgres_copy_to_csv') {
+    // Export query results as CSV text using PostgreSQL COPY TO STDOUT
+    const { sql, delimiter = ',' } = args;
+    if (!sql) throw new Error('sql is required');
+    const result = await pg(`COPY (${sql}) TO STDOUT WITH (FORMAT csv, HEADER true, DELIMITER '${delimiter}')`);
+    return { csv: result, note: 'CSV output with headers' };
+  }
+
+  // ── USER MANAGEMENT ──────────────────────────────────────────────────────
+  if (tool === 'postgres_create_user') {
+    const { username, password, superuser = false, createdb = false, login = true } = args;
+    if (!username) throw new Error('username is required');
+    let sql = `CREATE ROLE ${username}`;
+    const opts = [];
+    if (login) opts.push('LOGIN');
+    if (password) opts.push(`PASSWORD '${password.replace(/'/g, "''")}'`);
+    if (superuser) opts.push('SUPERUSER');
+    if (createdb) opts.push('CREATEDB');
+    if (opts.length) sql += ' ' + opts.join(' ');
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_user') {
+    const { username } = args;
+    if (!username) throw new Error('username is required');
+    return await pg(`DROP ROLE IF EXISTS ${username}`);
+  }
+  if (tool === 'postgres_alter_user_password') {
+    const { username, password } = args;
+    if (!username || !password) throw new Error('username and password are required');
+    return await pg(`ALTER ROLE ${username} WITH PASSWORD '${password.replace(/'/g, "''")}'`);
+  }
+
+  // ── SEQUENCES ────────────────────────────────────────────────────────────
+  if (tool === 'postgres_nextval') {
+    const { sequence_name, schema = 'public' } = args;
+    if (!sequence_name) throw new Error('sequence_name is required');
+    const result = await pg(`SELECT nextval('${schema}.${sequence_name}')`);
+    return { nextval: result[0]?.nextval };
+  }
+  if (tool === 'postgres_setval') {
+    const { sequence_name, value, is_called = true, schema = 'public' } = args;
+    if (!sequence_name || value === undefined) throw new Error('sequence_name and value are required');
+    const result = await pg(`SELECT setval('${schema}.${sequence_name}', ${value}, ${is_called})`);
+    return { setval: result[0]?.setval };
+  }
+
+  // ── REPLICATION ──────────────────────────────────────────────────────────
+  if (tool === 'postgres_list_publications') {
+    return await pg(`SELECT pubname, puballtables, pubinsert, pubupdate, pubdelete FROM pg_publication ORDER BY pubname`);
+  }
+  if (tool === 'postgres_list_subscriptions') {
+    return await pg(`SELECT subname, subenabled, subslotname, subpublications FROM pg_subscription ORDER BY subname`);
+  }
+
+  // ── SESSION CONFIG ───────────────────────────────────────────────────────
+  if (tool === 'postgres_set_session_config') {
+    const { parameter, value } = args;
+    if (!parameter || value === undefined) throw new Error('parameter and value are required');
+    return await pg(`SET LOCAL ${parameter} = '${String(value).replace(/'/g, "''")}'`);
+  }
+  if (tool === 'postgres_show_config') {
+    const { parameter } = args;
+    if (parameter) {
+      const result = await pg(`SHOW ${parameter}`);
+      return result[0];
+    }
+    return await pg(`SELECT name, setting, unit, short_desc, source FROM pg_settings ORDER BY name`);
+  }
+  if (tool === 'postgres_get_wait_events') {
+    return await pg(`SELECT pid, wait_event_type, wait_event, state, LEFT(query, 80) AS query_snippet FROM pg_stat_activity WHERE wait_event IS NOT NULL AND state != 'idle' ORDER BY wait_event_type, wait_event`);
+  }
+  if (tool === 'postgres_get_bgwriter_stats') {
+    return await pg(`SELECT checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time, buffers_checkpoint, buffers_clean, maxwritten_clean, buffers_backend, buffers_alloc, stats_reset FROM pg_stat_bgwriter`);
+  }
+
   throw new Error(`Unknown Postgres tool: ${tool}`);
 }
 

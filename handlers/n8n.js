@@ -264,6 +264,55 @@ async function execute(tool, args) {
     };
   }
 
+
+  // ── COMMUNITY PACKAGES ────────────────────────────────────────────────────
+  if (tool === 'n8n_list_community_packages') {
+    return await n8n('GET', '/community-packages');
+  }
+  if (tool === 'n8n_install_community_package') {
+    if (!args.package_name) throw new Error('package_name is required (e.g. n8n-nodes-baserow)');
+    return await n8n('POST', '/community-packages', { name: args.package_name });
+  }
+  if (tool === 'n8n_update_community_package') {
+    if (!args.package_name) throw new Error('package_name is required');
+    return await n8n('PATCH', `/community-packages/${encodeURIComponent(args.package_name)}`);
+  }
+  if (tool === 'n8n_remove_community_package') {
+    if (!args.package_name) throw new Error('package_name is required');
+    return await n8n('DELETE', `/community-packages/${encodeURIComponent(args.package_name)}`);
+  }
+
+  // ── EXTERNAL SECRETS ──────────────────────────────────────────────────────
+  if (tool === 'n8n_list_external_secrets_providers') {
+    return await n8n('GET', '/external-secrets/providers');
+  }
+  if (tool === 'n8n_list_external_secrets') {
+    if (!args.provider_name) throw new Error('provider_name is required');
+    return await n8n('GET', `/external-secrets/providers/${args.provider_name}/secrets`);
+  }
+  if (tool === 'n8n_reload_external_secrets') {
+    if (!args.provider_name) throw new Error('provider_name is required');
+    return await n8n('POST', `/external-secrets/providers/${args.provider_name}/test`);
+  }
+
+  // ── EXECUTION CONVENIENCE ─────────────────────────────────────────────────
+  if (tool === 'n8n_list_workflow_executions') {
+    const { workflow_id, status, limit = 20, include_data = false } = args;
+    if (!workflow_id) throw new Error('workflow_id is required');
+    let path = `/executions?workflowId=${workflow_id}&limit=${limit}&includeData=${include_data}`;
+    if (status) path += `&status=${status}`;
+    return await n8n('GET', path);
+  }
+  if (tool === 'n8n_list_failed_executions') {
+    const { workflow_id, limit = 20 } = args;
+    let path = `/executions?status=error&limit=${limit}`;
+    if (workflow_id) path += `&workflowId=${workflow_id}`;
+    return await n8n('GET', path);
+  }
+  if (tool === 'n8n_get_instance_settings') {
+    return await n8n('GET', '/settings');
+  }
+
   throw new Error(`Unknown n8n tool: ${tool}`);
 }
 

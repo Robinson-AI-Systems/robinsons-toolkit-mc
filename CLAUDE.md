@@ -23,7 +23,7 @@
 
 **Smart Discovery** — Agent sees 4 meta-tools + ~15 pinned tools. Everything else found via `search_toolkit`.
 
-**Key files:** `index.js` · `handlers/*.js` · `registry/*.json` · `.env` · `audit.js`
+**Key files:** `index.js` · `handlers/*.js` · `registry/*.json` · `.env` · `audit.js` · `ledger.js` · `inverses.js`
 
 **Routing special cases in `index.js`:**
 - `gmail_*` `drive_*` `calendar_*` `sheets_*` `docs_*` `slides_*` `forms_*` `people_*` `contacts_*` → `google`
@@ -32,13 +32,14 @@
 
 **Always-on namespaces (no API key):** `local`, `compound`, `ollama`, `playwright`
 
+**Observability Ledger:** every state-mutating tool call writes a reversal receipt to `.toolkit-ledger.jsonl`; `compound_rollback_transaction` replays inverses in reverse order.
+
 ---
 
-## Current State — Session 12
+## Current State — Session 12 (last updated)
 
-**Total registered tools: 2,328** across 28 namespaces
+**Total registered tools: 2,355** across 28 namespaces
 **Validation: ✅ 28/28 namespaces perfectly synced** (run `node audit.js` to verify)
-**Observability Ledger:** every state-mutating tool call records a reversal receipt to `.toolkit-ledger.jsonl`; `compound_rollback_transaction` undoes recent agent actions.
 
 ### Namespace Status — Sorted by tool count
 
@@ -52,45 +53,44 @@
 | `cloudflare` | 148 | ✅ | ✅ COMPLETE |
 | `stripe` | 143 | ✅ | ✅ COMPLETE |
 | `openai` | 109 | ✅ | ✅ COMPLETE |
-| `supabase` | 98 | ✅ | ✅ COMPLETE |
+| `fly` | 101 | ✅ | ✅ COMPLETE |
+| `supabase` | 100 | ✅ | ✅ COMPLETE |
 | `twilio` | 94 | ✅ | ✅ COMPLETE |
-| `fly` | 76 | ✅ | ✅ COMPLETE |
 | `clerk` | 75 | ✅ | ✅ COMPLETE |
 | `local` | 62 | ✅ | ✅ COMPLETE |
 | `anthropic` | 61 | ✅ | ✅ COMPLETE |
 | `sentry` | 59 | ✅ | ✅ COMPLETE |
+| `context7` | 45 | ✅ | ✅ COMPLETE |
+| `mapbox` | 45 | ✅ | ✅ COMPLETE |
 | `qdrant` | 48 | ✅ | ✅ COMPLETE |
 | `n8n` | 47 | ✅ | ✅ COMPLETE |
 | `resend` | 46 | ✅ | ✅ COMPLETE |
-| `mapbox` | 45 | ✅ | ✅ COMPLETE |
 | `postgres` | 43 | ✅ | ✅ COMPLETE |
-| `context7` | 45 | ✅ | ✅ COMPLETE |
-| `playwright` | 34 | ✅ | ✅ COMPLETE (NEW) |
+| `linear` | 38 | ✅ | ✅ COMPLETE |
+| `playwright` | 34 | ✅ | ✅ COMPLETE |
+| `slack` | 37 | ✅ | ✅ COMPLETE |
 | `search` | 23 | ✅ | ✅ COMPLETE |
 | `compound` | 23 | ✅ | ✅ COMPLETE (+ rollback) |
-| `linear` | 38 | ✅ | ✅ COMPLETE |
-| `slack` | 37 | ✅ | ✅ COMPLETE |
+| `gemini` | 15 | ✅ | ✅ COMPLETE |
 | `ollama` | 16 | ✅ | ✅ COMPLETE |
-| `gemini` | 15 | ✅ | ✅ COMPLETE (NEW) |
 
 ---
 
-## 🎉 BUILD COMPLETE
+## Open Build Gaps
 
-The backlog is empty. All planned namespaces are built and synced.
+These namespaces are functional but have meaningful headroom vs their API surface area:
 
-### What's been built:
-- **27 namespaces**, **2,313 registered tools**
-- Every namespace tested with `node audit.js` (27/27 ✅)
-- Boot test: clean (exit 124)
-- Observability Ledger + `compound_rollback_transaction` (Phase 3.1)
-- Phase 6 description polish on all pinned tools
-- All code committed and pushed to GitHub
-
-### If continuing development, potential next additions:
-- More compound Super Tools as real workflow patterns emerge
-- Deeper coverage in any namespace that needs it
-- New namespaces as new services are adopted (e.g. Linear, Notion, Slack)
+| Namespace | Current | Headroom | Priority |
+|---|---|---|---|
+| `sentry` | 59 | monitors, alerting rules, dashboards deeper | 🟠 |
+| `qdrant` | 48 | more payload filter types, named-vector ops | 🟡 |
+| `n8n` | 47 | executions deeper, node types, templates | 🟡 |
+| `postgres` | 43 | more schema ops, advisory locks, LISTEN/NOTIFY | 🟡 |
+| `resend` | 46 | deeper broadcast scheduling, domain verification | 🟡 |
+| `compound` | 23 | always room for cross-service Super Tools | 🟢 |
+| `search` | 23 | deeper Brave/Tavily coverage | 🟢 |
+| `mapbox` | 45 | traffic/incidents API | 🟢 |
+| `gemini` | 15 | Thinking models, RAG with File API, deeper Imagen | 🟢 |
 
 ---
 
@@ -117,26 +117,27 @@ fly 37→76, supabase 36→98, clerk 30→75, resend 22→46, sentry 17→59, qd
 ### Session 7 — Validation + Compound + Search
 Validated all namespaces; compound 11→22, search 10→23. Total: 2,141.
 
-### Session 8 — BUILD COMPLETE
-- context7: 0→39 (NEW — profoundly robust docs namespace)
-- playwright: 0→34 (NEW — browser automation namespace)
-- upstash: 149→166 (+17 — Vector + Kafka sections)
-- index.js: added context7 + playwright to namespace registry
-- CLAUDE.md + README.md updated with final counts
-- Total: 2,231 across 25 namespaces
+### Session 8 — Three new namespaces
+context7: 0→39, playwright: 0→34, upstash: 149→166 (Vector + Kafka). Total: 2,231 across 25 namespaces.
 
-### Session 9 (`c86cea9`) — context7 sync + verified examples
-- context7: 39→45 (+6 — added `context7_verified_examples` and registry entries for 5 previously orphaned handler tools: `smart_query`, `upgrade_impact`, `secure_fetch`, `fallback_index`, `cache_status`)
-- Added runtime arg validator + layer docs
-- Audit now reports 25/25 synced (was 24/25 with 5 H-not-R gaps in context7)
-- Total: 2,237 across 25 namespaces
+### Session 9 (`c86cea9`) — context7 v2 sync
+context7: 39→45 (+6 hardened tools: smart_query, upgrade_impact, secure_fetch, fallback_index, cache_status, verified_examples). audit.js rewritten with correct cross-prefix handling. Total: 2,237.
 
 ### Session 10 (`ee21b28`) — Observability Ledger + Phase 6 polish
-- **Phase 3.1 — Observability Ledger:** `ledger.js` (append/read/markRolledBack of `.toolkit-ledger.jsonl`), `inverses.js` (reversal map for ~20 mutation tools across GitHub/Neon/Vercel/Fly), `routeToolCall` records receipts after successful mutations.
-- **`compound_rollback_transaction`** (NEW pinned tool): replays inverses in reverse order. Filters by `last_n` / `since` / `transaction_id`; supports `dry_run` to preview the plan.
-- **Phase 6 — Description polish:** rewrote all 13 pinned tool descriptions with intent-leading "PREFERRED / POWER TOOL / USE THIS WHEN" language. Fixed factual drift (local_* tools now correctly say WSL2/Linux, not Windows).
-- `.gitignore`: added `.toolkit-ledger.jsonl` (runtime state).
-- compound: 22→23 (+1). Total: 2,238 across 25 namespaces.
+Phase 3.1: `ledger.js`, `inverses.js`, `compound_rollback_transaction` (pinned). Phase 6: rewrote all pinned tool descriptions. compound: 22→23. Total: 2,238.
+
+### Session 11 (`cf2a6e3`) — Linear + Slack
+linear: 0→38 (issues, projects, cycles, sprints, Super Tools). slack: 0→37 (messages, channels, users, reactions, files, Super Tools). Total: 2,313 across 27 namespaces.
+
+### Session 12 (`1ca42c7` `1bf77f9` `3f47041`) — Gemini + fly/supabase expansion
+gemini: 0→15 (text, JSON schema, code execution, grounding, multimodal, Imagen, TTS, embeddings, caching, batch). fly: 76→101 (+25). supabase: 98→100 (+2 backup/restore tools). .env.example refreshed with all optional vars. Total: 2,355 across 28 namespaces.
+
+### Session 13 (current) — Gap audit + doc repair
+- Identified and fixed doc inconsistencies: fly 76→101, supabase 98→100, total 2,328→2,355
+- Fixed broken session log structure (sessions 11/12/13 were below env section)
+- Updated BUILD COMPLETE counts, removed stale "potential next additions"
+- Added "Open Build Gaps" table replacing the completed Session 13 plan
+- Closing actual build gaps: sentry, qdrant, n8n, postgres, resend, compound
 
 ---
 
@@ -162,87 +163,81 @@ git add -A && git commit -m "..." && git push origin main
 
 ```
 WORKSPACE_ROOT=
-LINEAR_API_KEY=                  # linear.app → Settings → API → Personal API keys
-SLACK_BOT_TOKEN=                 # xoxb-... from Slack app → OAuth & Permissions
-SLACK_DEFAULT_CHANNEL=           # optional default channel ID for quick sends
 
+# Source control & deployment
 GITHUB_TOKEN=
 VERCEL_TOKEN=
-NEON_API_KEY=
+VERCEL_TEAM_ID=                  # optional — required for team-scoped endpoints
 FLY_API_TOKEN=
-STRIPE_SECRET_KEY=
-TWILIO_ACCOUNT_SID=
-TWILIO_AUTH_TOKEN=
-RESEND_API_KEY=
-CLOUDFLARE_API_TOKEN=
-CLOUDFLARE_ACCOUNT_ID=
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
+
+# Databases
+NEON_API_KEY=
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+POSTGRES_CONNECTION_STRING=
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
-UPSTASH_VECTOR_REST_URL=         # Upstash Vector
-UPSTASH_VECTOR_REST_TOKEN=       # Upstash Vector
-UPSTASH_KAFKA_REST_URL=          # Upstash Kafka
-UPSTASH_KAFKA_REST_TOKEN=        # Upstash Kafka
-GOOGLE_ACCESS_TOKEN=             # either/or
-GOOGLE_SERVICE_ACCOUNT_KEY_PATH=
-MAPBOX_ACCESS_TOKEN=
-MAPBOX_USERNAME=                 # required for datasets/tilesets/styles
-CLERK_SECRET_KEY=
-SENTRY_AUTH_TOKEN=
-SENTRY_ORG_SLUG=
-CONTEXT7_API_KEY=                # Free at https://context7.com/dashboard
+UPSTASH_VECTOR_REST_URL=
+UPSTASH_VECTOR_REST_TOKEN=
+UPSTASH_KAFKA_REST_URL=
+UPSTASH_KAFKA_REST_TOKEN=
+
+# AI providers
+OPENAI_API_KEY=
+OPENAI_ADMIN_KEY=                # optional — org admin operations
+ANTHROPIC_API_KEY=
+ANTHROPIC_ADMIN_KEY=             # optional — org admin operations
 GEMINI_API_KEY=                  # https://aistudio.google.com/app/apikey
+OLLAMA_BASE_URL=                 # default: http://172.19.16.1:11434
+OLLAMA_DEFAULT_MODEL=            # default: qwen2.5-coder:7b
+OLLAMA_TIMEOUT_MS=               # default: 300000
+
+# Auth & payments
+CLERK_SECRET_KEY=
+STRIPE_SECRET_KEY=
+
+# Communications
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=             # optional — default outbound number
+TWILIO_VERIFY_SERVICE_SID=       # optional — for Verify API
+RESEND_API_KEY=
+SLACK_BOT_TOKEN=                 # xoxb-... from Slack app → OAuth & Permissions
+SLACK_DEFAULT_CHANNEL=           # optional default channel ID
+
+# Cloud infrastructure
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
+
+# Google Workspace
+GOOGLE_ACCESS_TOKEN=             # either/or with service account
+GOOGLE_SERVICE_ACCOUNT_KEY_PATH=
+GOOGLE_SERVICE_ACCOUNT_SUBJECT=  # optional — for domain-wide delegation
+
+# Mapping & search
+MAPBOX_ACCESS_TOKEN=
+MAPBOX_USERNAME=                 # required for datasets/tilesets/styles/uploads
 BRAVE_SEARCH_API_KEY=            # either/or
 TAVILY_API_KEY=
+
+# Monitoring & observability
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG_SLUG=
+SENTRY_PROJECT_SLUG=             # optional — default project for quick lookups
+
+# Vector database & automation
 QDRANT_URL=
 QDRANT_API_KEY=                  # optional for cloud instances
 N8N_BASE_URL=
 N8N_API_KEY=
-POSTGRES_CONNECTION_STRING=
-OLLAMA_BASE_URL=                 # default: http://172.19.16.1:11434
-OLLAMA_DEFAULT_MODEL=            # default: qwen2.5-coder:7b
-OLLAMA_TIMEOUT_MS=               # default: 300000
+
+# Issue tracking & documentation
+LINEAR_API_KEY=                  # linear.app → Settings → API → Personal API keys
+
+# Documentation
+CONTEXT7_API_KEY=                # free at https://context7.com/dashboard
 ```
 
 ---
 
-### Session 11 — Linear + Slack namespaces
-- linear: 0→38 (NEW — issues, projects, cycles, teams, sprints, Super Tools)
-- slack: 0→37 (NEW — messages, channels, users, reactions, files, Super Tools)
-- Removed incorrectly added posthog handler (PostHog is a Claude Desktop connector)
-- index.js: added linear + slack to namespace credential checks
-- Total: 2,313 across 27 namespaces
-
-### Session 12 (current) — Gemini orchestration handler
-- gemini: 0→15 (NEW — native Google Gemini API client, no SDK dependency)
-- Tools: `gemini_standard_query`, `gemini_structured_extractor`, `gemini_code_execution_engine`, `gemini_grounded_query`, `gemini_analyze_media`, `gemini_generate_image`, `gemini_spatial_analysis`, `gemini_text_to_speech`, `gemini_generate_embeddings`, `gemini_cache_document`, `gemini_batch_processor`, `gemini_deep_research_start`, `gemini_deep_research_status`, `gemini_cancel_batch_job`, `gemini_list_models`
-- Built on native `fetch` against `generativelanguage.googleapis.com/v1beta` — covers text, JSON schema, code execution, Google Search grounding, multimodal (image/audio/video/PDF via Files API), Imagen image generation, spatial bounding boxes (0-1000 grid), native TTS, embeddings (single + batchEmbedContents), context caching, parallel client-side batching, long-running batchGenerateContent operations, and model discovery
-- Graceful error explainer for 401/403/404/429/5xx (auth, billing, quota, model-not-found)
-- 403 on `cachedContents` is caught and returned as `{ok:false, error:'cached_contents_requires_billing'}` so the agent sees a structured signal instead of a thrown error
-- index.js: added `gemini: () => !!process.env.GEMINI_API_KEY` to `getActiveNamespaces`
-- .env.example + CLAUDE.md env table: added `GEMINI_API_KEY`
-- Total: 2,328 across 28 namespaces
-
-### Session 13 (current) — Gap Closure Initiative
-- **Scope:** Systematic expansion from current tools → planned targets per ClaudeBuildPlan
-- **Methodology:** Highest priority namespaces first (github, anthropic, openai, cloudflare, google → stripe, twilio, fly → remaining medium/low)
-- **Goal:** Eliminate all gaps; achieve 500+ tools per high-priority namespace; ensure zero stubs, real API paths, full error handling
-- **.env.example refresh:** Added all missing optional/advanced env vars (OPENAI_ADMIN_KEY, ANTHROPIC_ADMIN_KEY, UPSTASH_API_KEY/EMAIL, GOOGLE_SERVICE_ACCOUNT_SUBJECT, SENTRY_PROJECT_SLUG, TWILIO_PHONE_NUMBER/VERIFY_SERVICE_SID, VERCEL_TEAM_ID, ALLOWED_WRITE_PATHS)
-- **Priority build order:**
-  - 🔴 `github`: 201→250+ (Actions, code scanning, Dependabot, environments, traffic)
-  - 🔴 `anthropic`: 15→60+ (batches, files, deeper messages)
-  - 🔴 `openai`: 41→100+ (RAG, Realtime API, Batch, Evals, Vector Stores)
-  - 🔴 `cloudflare`: 54→120+ (D1, Workers AI, Queues, Durable Objects, Zero Trust)
-  - 🔴 `google`: 60→130+ (deeper Gmail, Drive, Sheets, Docs, Calendar coverage)
-  - 🟠 `stripe`: 71→130+ (Connect, Checkout, lifecycle, reporting)
-  - 🟠 `twilio`: 22→90+ (voice, numbers, messaging services, Verify, studio, conversations)
-  - 🟠 `fly`: 37→100+ (apps, machines, volumes, networks, organizations)
-  - 🟡 Middle tier: `supabase`, `clerk`, `resend`, `sentry`, `qdrant`
-  - 🟢 Lower tier: `upstash`, `mapbox`, `n8n`, `postgres`, `compound`, `search`
-
----
-
-*Last updated: Session 13 — 2,328 tools → gap closure in progress · 28/28 namespaces synced · BUILD COMPLETE as baseline*
+*Last updated: Session 13 — 2,355 tools · 28/28 synced · gap audit complete*

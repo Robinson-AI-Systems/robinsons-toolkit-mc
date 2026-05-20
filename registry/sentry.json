@@ -1,61 +1,1882 @@
 [
-  {"name":"sentry_list_issues","description":"List Sentry issues filtered by query, sort, environment, and project. Defaults to unresolved issues sorted by date.","namespace":"sentry","tags":["sentry","issues","list","errors","unresolved"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"},"query":{"type":"string","description":"Sentry search query e.g. 'is:unresolved level:error'"},"sort":{"type":"string","description":"date, freq, new, or users"},"environment":{"type":"string"}},"required":[]}},
-  {"name":"sentry_get_issue","description":"Get full details for a specific Sentry issue by its ID.","namespace":"sentry","tags":["sentry","issue","get","error","details"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_update_issue","description":"Update a Sentry issue's status, assignee, or seen state.","namespace":"sentry","tags":["sentry","issue","update","status","assign"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"},"status":{"type":"string","description":"resolved, ignored, or unresolved"},"assignedTo":{"type":"string","description":"Username or team slug"},"hasSeen":{"type":"boolean"}},"required":["issue_id"]}},
-  {"name":"sentry_resolve_issue","description":"Mark a Sentry issue as resolved.","namespace":"sentry","tags":["sentry","issue","resolve","fix","close"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_ignore_issue","description":"Ignore a Sentry issue so it stops appearing in the default view.","namespace":"sentry","tags":["sentry","issue","ignore","mute","suppress"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_delete_issue","description":"Permanently delete a Sentry issue.","namespace":"sentry","tags":["sentry","issue","delete","remove"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_list_issue_events","description":"List events (individual occurrences) for a Sentry issue.","namespace":"sentry","tags":["sentry","issue","events","occurrences","list"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"},"limit":{"type":"number"}},"required":["issue_id"]}},
-  {"name":"sentry_get_latest_event","description":"Get the most recent event for a Sentry issue, including full stack trace.","namespace":"sentry","tags":["sentry","issue","event","latest","stack-trace"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_bulk_update_issues","description":"Update multiple Sentry issues at once — e.g. resolve or ignore a batch of issues.","namespace":"sentry","tags":["sentry","issues","bulk","update","resolve","batch"],"inputSchema":{"type":"object","properties":{"issue_ids":{"type":"array","items":{"type":"string"}},"status":{"type":"string"},"assignedTo":{"type":"string"}},"required":["issue_ids"]}},
-  {"name":"sentry_assign_issue","description":"Assign a Sentry issue to a specific user or team.","namespace":"sentry","tags":["sentry","issue","assign","owner","team"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"},"username":{"type":"string","description":"Username or team:team-slug"}},"required":["issue_id","username"]}},
-  {"name":"sentry_list_issue_tags","description":"List all tags attached to a Sentry issue (browser, environment, user, etc.).","namespace":"sentry","tags":["sentry","issue","tags","metadata","list"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"}},"required":["issue_id"]}},
-  {"name":"sentry_get_issue_tag_values","description":"Get all distinct values for a specific tag on a Sentry issue — e.g. all affected user emails.","namespace":"sentry","tags":["sentry","issue","tag","values","users","affected"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"},"tag_key":{"type":"string","description":"Tag key e.g. user, browser, environment"},"limit":{"type":"number"}},"required":["issue_id","tag_key"]}},
-  {"name":"sentry_get_issue_hashes","description":"Get the event hashes used for deduplication of a Sentry issue.","namespace":"sentry","tags":["sentry","issue","hashes","deduplication"],"inputSchema":{"type":"object","properties":{"issue_id":{"type":"string"},"limit":{"type":"number"}},"required":["issue_id"]}},
-  {"name":"sentry_merge_issues","description":"Merge multiple Sentry issues into a single parent issue.","namespace":"sentry","tags":["sentry","issues","merge","deduplicate"],"inputSchema":{"type":"object","properties":{"parent_issue_id":{"type":"string"},"child_issue_ids":{"type":"array","items":{"type":"string"}}},"required":["parent_issue_id","child_issue_ids"]}},
-  {"name":"sentry_list_project_events","description":"List raw events for a Sentry project with optional query filtering.","namespace":"sentry","tags":["sentry","events","list","project"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"},"query":{"type":"string"}},"required":[]}},
-  {"name":"sentry_get_event","description":"Get a specific event by its ID in a Sentry project.","namespace":"sentry","tags":["sentry","event","get","details"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"event_id":{"type":"string"}},"required":["event_id"]}},
-  {"name":"sentry_list_projects","description":"List all Sentry projects in the organization.","namespace":"sentry","tags":["sentry","projects","list"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"sentry_get_project","description":"Get details for a specific Sentry project.","namespace":"sentry","tags":["sentry","project","get","details"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_create_project","description":"Create a new Sentry project under a team.","namespace":"sentry","tags":["sentry","project","create","new"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"team_slug":{"type":"string"},"platform":{"type":"string"}},"required":["name","team_slug"]}},
-  {"name":"sentry_update_project","description":"Update a Sentry project's name, platform, or settings.","namespace":"sentry","tags":["sentry","project","update","settings"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"name":{"type":"string"},"platform":{"type":"string"},"resolve_age":{"type":"number"}},"required":[]}},
-  {"name":"sentry_delete_project","description":"Delete a Sentry project.","namespace":"sentry","tags":["sentry","project","delete","remove"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_get_project_stats","description":"Get event volume statistics for a Sentry project over a time range.","namespace":"sentry","tags":["sentry","project","stats","volume","errors"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"stat":{"type":"string","description":"received, rejected, blacklisted, or generated"},"since":{"type":"number"},"until":{"type":"number"}},"required":[]}},
-  {"name":"sentry_list_project_keys","description":"List DSN client keys for a Sentry project.","namespace":"sentry","tags":["sentry","project","dsn","keys","list","client"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_create_project_key","description":"Create a new DSN client key for a Sentry project.","namespace":"sentry","tags":["sentry","project","dsn","key","create"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"name":{"type":"string"}},"required":[]}},
-  {"name":"sentry_delete_project_key","description":"Delete a DSN client key from a Sentry project.","namespace":"sentry","tags":["sentry","project","dsn","key","delete"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"key_id":{"type":"string"}},"required":["key_id"]}},
-  {"name":"sentry_list_teams","description":"List all teams in the Sentry organization.","namespace":"sentry","tags":["sentry","teams","list","organization"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"sentry_get_team","description":"Get details for a specific Sentry team.","namespace":"sentry","tags":["sentry","team","get"],"inputSchema":{"type":"object","properties":{"team_slug":{"type":"string"}},"required":["team_slug"]}},
-  {"name":"sentry_create_team","description":"Create a new team in the Sentry organization.","namespace":"sentry","tags":["sentry","team","create","new"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"slug":{"type":"string"}},"required":["name"]}},
-  {"name":"sentry_update_team","description":"Update a Sentry team's name.","namespace":"sentry","tags":["sentry","team","update","rename"],"inputSchema":{"type":"object","properties":{"team_slug":{"type":"string"},"name":{"type":"string"}},"required":["team_slug","name"]}},
-  {"name":"sentry_delete_team","description":"Delete a Sentry team.","namespace":"sentry","tags":["sentry","team","delete"],"inputSchema":{"type":"object","properties":{"team_slug":{"type":"string"}},"required":["team_slug"]}},
-  {"name":"sentry_list_team_members","description":"List members of a Sentry team.","namespace":"sentry","tags":["sentry","team","members","list"],"inputSchema":{"type":"object","properties":{"team_slug":{"type":"string"}},"required":["team_slug"]}},
-  {"name":"sentry_list_members","description":"List all members of the Sentry organization.","namespace":"sentry","tags":["sentry","members","list","users","organization"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_get_member","description":"Get details for a specific organization member.","namespace":"sentry","tags":["sentry","member","get","user"],"inputSchema":{"type":"object","properties":{"member_id":{"type":"string"}},"required":["member_id"]}},
-  {"name":"sentry_list_releases","description":"List releases for the organization or a specific project.","namespace":"sentry","tags":["sentry","releases","list","deploy","versions"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_get_release","description":"Get details for a specific release version.","namespace":"sentry","tags":["sentry","release","get","version"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_create_release","description":"Create a new release in Sentry to associate errors with a specific version.","namespace":"sentry","tags":["sentry","release","create","deploy","version","ci-cd"],"inputSchema":{"type":"object","properties":{"version":{"type":"string","description":"Release version e.g. '1.2.0' or a git SHA"},"project_slug":{"type":"string"},"projects":{"type":"array","items":{"type":"string"}},"refs":{"type":"array","description":"Git commit refs"},"url":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_finalize_release","description":"Mark a release as finalized/deployed in Sentry.","namespace":"sentry","tags":["sentry","release","finalize","deploy","complete"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"},"project_slug":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_delete_release","description":"Delete a release from Sentry.","namespace":"sentry","tags":["sentry","release","delete"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_list_release_commits","description":"List commits associated with a Sentry release.","namespace":"sentry","tags":["sentry","release","commits","git","changelog"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_list_release_deploys","description":"List deployments for a Sentry release.","namespace":"sentry","tags":["sentry","release","deploys","environments","list"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"}},"required":["version"]}},
-  {"name":"sentry_create_release_deploy","description":"Record a deployment event for a Sentry release in a specific environment.","namespace":"sentry","tags":["sentry","release","deploy","create","environment","production"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"},"environment":{"type":"string"},"url":{"type":"string"},"name":{"type":"string"}},"required":["version","environment"]}},
-  {"name":"sentry_list_alert_rules","description":"List metric alert rules for a Sentry project.","namespace":"sentry","tags":["sentry","alerts","rules","list","monitoring"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_get_alert_rule","description":"Get details for a specific Sentry metric alert rule.","namespace":"sentry","tags":["sentry","alert","rule","get"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"alert_id":{"type":"string"}},"required":["alert_id"]}},
-  {"name":"sentry_delete_alert_rule","description":"Delete a metric alert rule from a Sentry project.","namespace":"sentry","tags":["sentry","alert","rule","delete"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"alert_id":{"type":"string"}},"required":["alert_id"]}},
-  {"name":"sentry_list_issue_alert_rules","description":"List issue-based alert rules (notifications) for a Sentry project.","namespace":"sentry","tags":["sentry","alerts","issue","notifications","list"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_list_monitors","description":"List all cron job monitors in the Sentry organization.","namespace":"sentry","tags":["sentry","monitors","cron","jobs","list","uptime"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_get_monitor","description":"Get details for a specific cron monitor.","namespace":"sentry","tags":["sentry","monitor","cron","get"],"inputSchema":{"type":"object","properties":{"monitor_slug":{"type":"string"}},"required":["monitor_slug"]}},
-  {"name":"sentry_create_monitor","description":"Create a new cron job monitor to track scheduled job health.","namespace":"sentry","tags":["sentry","monitor","cron","create","scheduled-job","health"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"slug":{"type":"string"},"schedule":{"type":"object","description":"{type: 'crontab', value: '0 * * * *'}"},"timezone":{"type":"string"},"checkin_margin":{"type":"number"},"max_runtime":{"type":"number"}},"required":["name","schedule"]}},
-  {"name":"sentry_update_monitor","description":"Update a cron monitor's schedule or mute state.","namespace":"sentry","tags":["sentry","monitor","update","cron","mute"],"inputSchema":{"type":"object","properties":{"monitor_slug":{"type":"string"},"name":{"type":"string"},"is_muted":{"type":"boolean"},"schedule":{"type":"object"}},"required":["monitor_slug"]}},
-  {"name":"sentry_delete_monitor","description":"Delete a cron monitor.","namespace":"sentry","tags":["sentry","monitor","delete","cron"],"inputSchema":{"type":"object","properties":{"monitor_slug":{"type":"string"}},"required":["monitor_slug"]}},
-  {"name":"sentry_list_monitor_checkins","description":"List recent check-ins for a cron monitor to see health history.","namespace":"sentry","tags":["sentry","monitor","checkins","history","cron"],"inputSchema":{"type":"object","properties":{"monitor_slug":{"type":"string"},"limit":{"type":"number"}},"required":["monitor_slug"]}},
-  {"name":"sentry_get_org_stats","description":"Get organization-wide error/transaction volume stats grouped by outcome.","namespace":"sentry","tags":["sentry","stats","volume","errors","organization","usage"],"inputSchema":{"type":"object","properties":{"category":{"type":"string","description":"error, transaction, or attachment"},"start":{"type":"string"},"end":{"type":"string"}},"required":[]}},
-  {"name":"sentry_list_dashboards","description":"List all dashboards in the Sentry organization.","namespace":"sentry","tags":["sentry","dashboards","list","monitoring"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_get_dashboard","description":"Get a specific Sentry dashboard and its widgets.","namespace":"sentry","tags":["sentry","dashboard","get","widgets"],"inputSchema":{"type":"object","properties":{"dashboard_id":{"type":"string"}},"required":["dashboard_id"]}},
-  {"name":"sentry_list_debug_files","description":"List debug info files (dSYMs, PDB files, source maps) for a project.","namespace":"sentry","tags":["sentry","debug","files","dsym","source-maps","list"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_list_source_map_archives","description":"List source map artifact bundles uploaded to a Sentry project.","namespace":"sentry","tags":["sentry","source-maps","artifacts","bundles","list"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"}},"required":[]}},
-  {"name":"sentry_triage_errors","description":"SUPER TOOL: Get top unresolved errors sorted by user impact — issue ID, title, error count, users affected, and last seen — ready for triage.","namespace":"sentry","tags":["sentry","triage","errors","users","impact","super-tool","monitoring"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"},"limit":{"type":"number"},"environment":{"type":"string"}},"required":[]}},
-  {"name":"sentry_production_health","description":"SUPER TOOL: Production health check — project count, top 5 recent unresolved issues, and error volume stats in one call.","namespace":"sentry","tags":["sentry","health","production","monitoring","super-tool","overview"],"inputSchema":{"type":"object","properties":{"project_slug":{"type":"string"}},"required":[]}},
-  {"name":"sentry_deploy_release","description":"SUPER TOOL: Create a release in Sentry and immediately mark it as deployed to an environment — the standard CI/CD workflow in one call.","namespace":"sentry","tags":["sentry","deploy","release","ci-cd","production","super-tool"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"},"environment":{"type":"string"},"project_slug":{"type":"string"},"refs":{"type":"array"},"projects":{"type":"array"}},"required":["version","environment"]}}
+  {
+    "name": "sentry_list_issues",
+    "description": "List Sentry issues filtered by query, sort, environment, and project. Defaults to unresolved issues sorted by date.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issues",
+      "list",
+      "errors",
+      "unresolved"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "query": {
+          "type": "string",
+          "description": "Sentry search query e.g. 'is:unresolved level:error'"
+        },
+        "sort": {
+          "type": "string",
+          "description": "date, freq, new, or users"
+        },
+        "environment": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_issue",
+    "description": "Get full details for a specific Sentry issue by its ID.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "get",
+      "error",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_issue",
+    "description": "Update a Sentry issue's status, assignee, or seen state.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "update",
+      "status",
+      "assign"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "resolved, ignored, or unresolved"
+        },
+        "assignedTo": {
+          "type": "string",
+          "description": "Username or team slug"
+        },
+        "hasSeen": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_resolve_issue",
+    "description": "Mark a Sentry issue as resolved.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "resolve",
+      "fix",
+      "close"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_ignore_issue",
+    "description": "Ignore a Sentry issue so it stops appearing in the default view.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "ignore",
+      "mute",
+      "suppress"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_issue",
+    "description": "Permanently delete a Sentry issue.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_issue_events",
+    "description": "List events (individual occurrences) for a Sentry issue.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "events",
+      "occurrences",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_latest_event",
+    "description": "Get the most recent event for a Sentry issue, including full stack trace.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "event",
+      "latest",
+      "stack-trace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_bulk_update_issues",
+    "description": "Update multiple Sentry issues at once \u2014 e.g. resolve or ignore a batch of issues.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issues",
+      "bulk",
+      "update",
+      "resolve",
+      "batch"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "assignedTo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_ids"
+      ]
+    }
+  },
+  {
+    "name": "sentry_assign_issue",
+    "description": "Assign a Sentry issue to a specific user or team.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "assign",
+      "owner",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username or team:team-slug"
+        }
+      },
+      "required": [
+        "issue_id",
+        "username"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_issue_tags",
+    "description": "List all tags attached to a Sentry issue (browser, environment, user, etc.).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "tags",
+      "metadata",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_issue_tag_values",
+    "description": "Get all distinct values for a specific tag on a Sentry issue \u2014 e.g. all affected user emails.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "tag",
+      "values",
+      "users",
+      "affected"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "tag_key": {
+          "type": "string",
+          "description": "Tag key e.g. user, browser, environment"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "issue_id",
+        "tag_key"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_issue_hashes",
+    "description": "Get the event hashes used for deduplication of a Sentry issue.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issue",
+      "hashes",
+      "deduplication"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "issue_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_merge_issues",
+    "description": "Merge multiple Sentry issues into a single parent issue.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "issues",
+      "merge",
+      "deduplicate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "parent_issue_id": {
+          "type": "string"
+        },
+        "child_issue_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "parent_issue_id",
+        "child_issue_ids"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_project_events",
+    "description": "List raw events for a Sentry project with optional query filtering.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "events",
+      "list",
+      "project"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_event",
+    "description": "Get a specific event by its ID in a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "event",
+      "get",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_projects",
+    "description": "List all Sentry projects in the organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "projects",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_project",
+    "description": "Get details for a specific Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "get",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_project",
+    "description": "Create a new Sentry project under a team.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "create",
+      "new"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "team_slug": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "team_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_project",
+    "description": "Update a Sentry project's name, platform, or settings.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "resolve_age": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_delete_project",
+    "description": "Delete a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_project_stats",
+    "description": "Get event volume statistics for a Sentry project over a time range.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "stats",
+      "volume",
+      "errors"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "stat": {
+          "type": "string",
+          "description": "received, rejected, blacklisted, or generated"
+        },
+        "since": {
+          "type": "number"
+        },
+        "until": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_project_keys",
+    "description": "List DSN client keys for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "dsn",
+      "keys",
+      "list",
+      "client"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_project_key",
+    "description": "Create a new DSN client key for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "dsn",
+      "key",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_delete_project_key",
+    "description": "Delete a DSN client key from a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "project",
+      "dsn",
+      "key",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_teams",
+    "description": "List all teams in the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "teams",
+      "list",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_team",
+    "description": "Get details for a specific Sentry team.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "team",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_team",
+    "description": "Create a new team in the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "team",
+      "create",
+      "new"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_team",
+    "description": "Update a Sentry team's name.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "team",
+      "update",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_slug",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_team",
+    "description": "Delete a Sentry team.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "team",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_team_members",
+    "description": "List members of a Sentry team.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "team",
+      "members",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "team_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "team_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_members",
+    "description": "List all members of the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "members",
+      "list",
+      "users",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_member",
+    "description": "Get details for a specific organization member.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "member",
+      "get",
+      "user"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "member_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "member_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_releases",
+    "description": "List releases for the organization or a specific project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "releases",
+      "list",
+      "deploy",
+      "versions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_release",
+    "description": "Get details for a specific release version.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "get",
+      "version"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_release",
+    "description": "Create a new release in Sentry to associate errors with a specific version.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "create",
+      "deploy",
+      "version",
+      "ci-cd"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Release version e.g. '1.2.0' or a git SHA"
+        },
+        "project_slug": {
+          "type": "string"
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "refs": {
+          "type": "array",
+          "description": "Git commit refs"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_finalize_release",
+    "description": "Mark a release as finalized/deployed in Sentry.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "finalize",
+      "deploy",
+      "complete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_release",
+    "description": "Delete a release from Sentry.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_release_commits",
+    "description": "List commits associated with a Sentry release.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "commits",
+      "git",
+      "changelog"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_release_deploys",
+    "description": "List deployments for a Sentry release.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "deploys",
+      "environments",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_release_deploy",
+    "description": "Record a deployment event for a Sentry release in a specific environment.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "release",
+      "deploy",
+      "create",
+      "environment",
+      "production"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "environment"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_alert_rules",
+    "description": "List metric alert rules for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alerts",
+      "rules",
+      "list",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_alert_rule",
+    "description": "Get details for a specific Sentry metric alert rule.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "rule",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "alert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_alert_rule",
+    "description": "Delete a metric alert rule from a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "rule",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "alert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_issue_alert_rules",
+    "description": "List issue-based alert rules (notifications) for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alerts",
+      "issue",
+      "notifications",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_monitors",
+    "description": "List all cron job monitors in the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitors",
+      "cron",
+      "jobs",
+      "list",
+      "uptime"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_monitor",
+    "description": "Get details for a specific cron monitor.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitor",
+      "cron",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "monitor_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "monitor_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_monitor",
+    "description": "Create a new cron job monitor to track scheduled job health.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitor",
+      "cron",
+      "create",
+      "scheduled-job",
+      "health"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "object",
+          "description": "{type: 'crontab', value: '0 * * * *'}"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "checkin_margin": {
+          "type": "number"
+        },
+        "max_runtime": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "schedule"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_monitor",
+    "description": "Update a cron monitor's schedule or mute state.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitor",
+      "update",
+      "cron",
+      "mute"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "monitor_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "is_muted": {
+          "type": "boolean"
+        },
+        "schedule": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "monitor_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_monitor",
+    "description": "Delete a cron monitor.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitor",
+      "delete",
+      "cron"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "monitor_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "monitor_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_monitor_checkins",
+    "description": "List recent check-ins for a cron monitor to see health history.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "monitor",
+      "checkins",
+      "history",
+      "cron"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "monitor_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "monitor_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_org_stats",
+    "description": "Get organization-wide error/transaction volume stats grouped by outcome.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "stats",
+      "volume",
+      "errors",
+      "organization",
+      "usage"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "description": "error, transaction, or attachment"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_dashboards",
+    "description": "List all dashboards in the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "dashboards",
+      "list",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_dashboard",
+    "description": "Get a specific Sentry dashboard and its widgets.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "dashboard",
+      "get",
+      "widgets"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_debug_files",
+    "description": "List debug info files (dSYMs, PDB files, source maps) for a project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "debug",
+      "files",
+      "dsym",
+      "source-maps",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_source_map_archives",
+    "description": "List source map artifact bundles uploaded to a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "source-maps",
+      "artifacts",
+      "bundles",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_triage_errors",
+    "description": "SUPER TOOL: Get top unresolved errors sorted by user impact \u2014 issue ID, title, error count, users affected, and last seen \u2014 ready for triage.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "triage",
+      "errors",
+      "users",
+      "impact",
+      "super-tool",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "environment": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_production_health",
+    "description": "SUPER TOOL: Production health check \u2014 project count, top 5 recent unresolved issues, and error volume stats in one call.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "health",
+      "production",
+      "monitoring",
+      "super-tool",
+      "overview"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_deploy_release",
+    "description": "SUPER TOOL: Create a release in Sentry and immediately mark it as deployed to an environment \u2014 the standard CI/CD workflow in one call.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "deploy",
+      "release",
+      "ci-cd",
+      "production",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "project_slug": {
+          "type": "string"
+        },
+        "refs": {
+          "type": "array"
+        },
+        "projects": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "version",
+        "environment"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_issue_alert_rule",
+    "description": "Create an issue-based notification alert rule for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "issue",
+      "notification",
+      "rule",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Alert conditions array"
+        },
+        "actions": {
+          "type": "array",
+          "description": "Notification actions array"
+        },
+        "frequency": {
+          "type": "number",
+          "description": "Alert frequency in minutes"
+        }
+      },
+      "required": [
+        "name",
+        "conditions",
+        "actions"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_issue_alert_rule",
+    "description": "Update an existing issue notification alert rule in Sentry.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "issue",
+      "rule",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "array"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "frequency": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_issue_alert_rule",
+    "description": "Delete an issue notification alert rule from a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "issue",
+      "rule",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_metric_alert_rule",
+    "description": "Create a metric-based alert rule (e.g. alert when error rate > N in 60 min).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alert",
+      "metric",
+      "rule",
+      "create",
+      "threshold"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "aggregate": {
+          "type": "string",
+          "description": "e.g. count(), p95(transaction.duration)"
+        },
+        "alert_threshold": {
+          "type": "number"
+        },
+        "query": {
+          "type": "string"
+        },
+        "time_window": {
+          "type": "number",
+          "description": "Time window in minutes"
+        },
+        "dataset": {
+          "type": "string",
+          "description": "errors or transactions"
+        }
+      },
+      "required": [
+        "name",
+        "aggregate",
+        "alert_threshold"
+      ]
+    }
+  },
+  {
+    "name": "sentry_run_discover_query",
+    "description": "Run a Sentry Discover analytics query \u2014 event counts, error rates, latencies by any field.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "discover",
+      "analytics",
+      "query",
+      "events",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "e.g. ['title','count()','project','p95()']"
+        },
+        "query": {
+          "type": "string"
+        },
+        "orderby": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_environments",
+    "description": "List all environments configured in the Sentry organization or project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "environments",
+      "list",
+      "production",
+      "staging"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_project_tags",
+    "description": "List all tag keys tracked in a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "tags",
+      "list",
+      "project",
+      "metadata"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_tag_values",
+    "description": "Get all distinct values for a specific tag key in a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "tag",
+      "values",
+      "list",
+      "filter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "tag_key": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "tag_key"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_user_feedback",
+    "description": "List user-submitted feedback reports for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "user",
+      "feedback",
+      "list",
+      "reports"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "environment": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_uptime_subscriptions",
+    "description": "List uptime monitoring subscriptions for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "uptime",
+      "monitoring",
+      "list",
+      "availability"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_uptime_subscription",
+    "description": "Create an uptime monitor to check a URL's availability at regular intervals.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "uptime",
+      "monitoring",
+      "create",
+      "availability",
+      "ping"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "interval_seconds": {
+          "type": "number"
+        },
+        "timeout_ms": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_uptime_subscription",
+    "description": "Delete an uptime monitoring subscription from a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "uptime",
+      "monitoring",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "uptime_subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "uptime_subscription_id"
+      ]
+    }
+  }
 ]

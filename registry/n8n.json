@@ -1,49 +1,1364 @@
 [
-  {"name":"n8n_list_workflows","description":"List all n8n workflows with optional filters for active status, tags, or name.","namespace":"n8n","tags":["n8n","workflows","list","automation"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"active":{"type":"boolean"},"tags":{"type":"string"},"name":{"type":"string"},"cursor":{"type":"string"}},"required":[]}},
-  {"name":"n8n_get_workflow","description":"Get details for a specific n8n workflow by its ID.","namespace":"n8n","tags":["n8n","workflow","get","details"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"}},"required":["workflow_id"]}},
-  {"name":"n8n_create_workflow","description":"Create a new n8n workflow with nodes and connections.","namespace":"n8n","tags":["n8n","workflow","create","new","automation"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"nodes":{"type":"array"},"connections":{"type":"object"},"settings":{"type":"object"},"active":{"type":"boolean"},"tags":{"type":"array"}},"required":["name"]}},
-  {"name":"n8n_update_workflow","description":"Update an existing n8n workflow's name, nodes, connections, or active state.","namespace":"n8n","tags":["n8n","workflow","update","edit"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"},"name":{"type":"string"},"nodes":{"type":"array"},"connections":{"type":"object"},"active":{"type":"boolean"}},"required":["workflow_id"]}},
-  {"name":"n8n_delete_workflow","description":"Delete an n8n workflow permanently.","namespace":"n8n","tags":["n8n","workflow","delete"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"}},"required":["workflow_id"]}},
-  {"name":"n8n_activate_workflow","description":"Activate an n8n workflow so it responds to triggers.","namespace":"n8n","tags":["n8n","workflow","activate","enable","start"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"}},"required":["workflow_id"]}},
-  {"name":"n8n_deactivate_workflow","description":"Deactivate an n8n workflow so it stops responding to triggers.","namespace":"n8n","tags":["n8n","workflow","deactivate","disable","stop","pause"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"}},"required":["workflow_id"]}},
-  {"name":"n8n_get_workflow_tags","description":"Get all tags assigned to a specific n8n workflow.","namespace":"n8n","tags":["n8n","workflow","tags","list"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"}},"required":["workflow_id"]}},
-  {"name":"n8n_update_workflow_tags","description":"Update the tags on an n8n workflow.","namespace":"n8n","tags":["n8n","workflow","tags","update"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"},"tag_ids":{"type":"array","items":{"type":"string"}}},"required":["workflow_id","tag_ids"]}},
-  {"name":"n8n_transfer_workflow","description":"Transfer an n8n workflow to a different project.","namespace":"n8n","tags":["n8n","workflow","transfer","project","move"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"},"project_id":{"type":"string"}},"required":["workflow_id","project_id"]}},
-  {"name":"n8n_list_executions","description":"List n8n workflow executions with optional filters for workflow, status, or pagination.","namespace":"n8n","tags":["n8n","executions","list","history","runs"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"workflow_id":{"type":"string"},"status":{"type":"string","description":"success, error, or waiting"},"include_data":{"type":"boolean"},"cursor":{"type":"string"}},"required":[]}},
-  {"name":"n8n_get_execution","description":"Get details for a specific execution by its ID.","namespace":"n8n","tags":["n8n","execution","get","details","run"],"inputSchema":{"type":"object","properties":{"execution_id":{"type":"string"},"include_data":{"type":"boolean"}},"required":["execution_id"]}},
-  {"name":"n8n_delete_execution","description":"Delete a specific execution record.","namespace":"n8n","tags":["n8n","execution","delete"],"inputSchema":{"type":"object","properties":{"execution_id":{"type":"string"}},"required":["execution_id"]}},
-  {"name":"n8n_execute_workflow","description":"Trigger an n8n workflow to run immediately with optional payload data.","namespace":"n8n","tags":["n8n","workflow","execute","trigger","run","manual"],"inputSchema":{"type":"object","properties":{"workflow_id":{"type":"string"},"payload":{"type":"object","description":"Data to pass to the workflow's manual trigger"}},"required":["workflow_id"]}},
-  {"name":"n8n_stop_execution","description":"Stop a currently running n8n workflow execution.","namespace":"n8n","tags":["n8n","execution","stop","cancel","kill"],"inputSchema":{"type":"object","properties":{"execution_id":{"type":"string"}},"required":["execution_id"]}},
-  {"name":"n8n_retry_execution","description":"Retry a failed n8n workflow execution.","namespace":"n8n","tags":["n8n","execution","retry","rerun","failed"],"inputSchema":{"type":"object","properties":{"execution_id":{"type":"string"},"load_workflow":{"type":"boolean","description":"Load the current workflow definition (true) vs original (false)"}},"required":["execution_id"]}},
-  {"name":"n8n_delete_executions_bulk","description":"Delete multiple execution records by status, workflow, or age.","namespace":"n8n","tags":["n8n","executions","bulk","delete","cleanup","prune"],"inputSchema":{"type":"object","properties":{"status":{"type":"string"},"workflow_id":{"type":"string"},"before_date":{"type":"string","description":"ISO datetime — delete executions before this date"}},"required":[]}},
-  {"name":"n8n_list_credentials","description":"List all credentials stored in n8n.","namespace":"n8n","tags":["n8n","credentials","list","integrations"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"n8n_get_credential","description":"Get details for a specific n8n credential.","namespace":"n8n","tags":["n8n","credential","get"],"inputSchema":{"type":"object","properties":{"credential_id":{"type":"string"}},"required":["credential_id"]}},
-  {"name":"n8n_create_credential","description":"Create a new credential in n8n for connecting to external services.","namespace":"n8n","tags":["n8n","credential","create","integration","auth"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"type":{"type":"string","description":"Credential type e.g. httpBasicAuth, slackApi, postgresDb"},"data":{"type":"object","description":"Credential-specific fields"}},"required":["name","type"]}},
-  {"name":"n8n_update_credential","description":"Update an existing n8n credential's name or connection data.","namespace":"n8n","tags":["n8n","credential","update"],"inputSchema":{"type":"object","properties":{"credential_id":{"type":"string"},"name":{"type":"string"},"data":{"type":"object"}},"required":["credential_id"]}},
-  {"name":"n8n_delete_credential","description":"Delete an n8n credential.","namespace":"n8n","tags":["n8n","credential","delete"],"inputSchema":{"type":"object","properties":{"credential_id":{"type":"string"}},"required":["credential_id"]}},
-  {"name":"n8n_get_credential_schema","description":"Get the schema (required fields) for a specific credential type.","namespace":"n8n","tags":["n8n","credential","schema","type","fields"],"inputSchema":{"type":"object","properties":{"credential_type_name":{"type":"string","description":"e.g. postgresDb, slackApi, httpBasicAuth"}},"required":["credential_type_name"]}},
-  {"name":"n8n_list_variables","description":"List all environment variables (n8n Variables) in the instance.","namespace":"n8n","tags":["n8n","variables","list","environment","config"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"n8n_create_variable","description":"Create a new environment variable in n8n.","namespace":"n8n","tags":["n8n","variable","create","environment","config"],"inputSchema":{"type":"object","properties":{"key":{"type":"string"},"value":{"description":"Variable value (will be stringified)"}},"required":["key","value"]}},
-  {"name":"n8n_delete_variable","description":"Delete an environment variable from n8n.","namespace":"n8n","tags":["n8n","variable","delete","environment"],"inputSchema":{"type":"object","properties":{"variable_id":{"type":"string"}},"required":["variable_id"]}},
-  {"name":"n8n_list_tags","description":"List all tags in the n8n instance.","namespace":"n8n","tags":["n8n","tags","list","labels"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"n8n_get_tag","description":"Get details for a specific n8n tag.","namespace":"n8n","tags":["n8n","tag","get"],"inputSchema":{"type":"object","properties":{"tag_id":{"type":"string"}},"required":["tag_id"]}},
-  {"name":"n8n_create_tag","description":"Create a new tag for organizing n8n workflows.","namespace":"n8n","tags":["n8n","tag","create","label"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}},
-  {"name":"n8n_update_tag","description":"Rename an n8n tag.","namespace":"n8n","tags":["n8n","tag","update","rename"],"inputSchema":{"type":"object","properties":{"tag_id":{"type":"string"},"name":{"type":"string"}},"required":["tag_id","name"]}},
-  {"name":"n8n_delete_tag","description":"Delete an n8n tag.","namespace":"n8n","tags":["n8n","tag","delete"],"inputSchema":{"type":"object","properties":{"tag_id":{"type":"string"}},"required":["tag_id"]}},
-  {"name":"n8n_list_users","description":"List all users in the n8n instance.","namespace":"n8n","tags":["n8n","users","list","team"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"n8n_get_user","description":"Get details for a specific n8n user.","namespace":"n8n","tags":["n8n","user","get"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]}},
-  {"name":"n8n_create_users","description":"Invite one or more users to n8n by email.","namespace":"n8n","tags":["n8n","users","invite","create","team"],"inputSchema":{"type":"object","properties":{"emails":{"type":"array","items":{"type":"string"}},"role":{"type":"string","description":"member or admin"}},"required":["emails"]}},
-  {"name":"n8n_delete_user","description":"Delete a user from the n8n instance.","namespace":"n8n","tags":["n8n","user","delete","remove"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]}},
-  {"name":"n8n_change_user_role","description":"Change a user's role (member or admin) in n8n.","namespace":"n8n","tags":["n8n","user","role","change","promote","admin"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"},"role":{"type":"string","description":"member or admin"}},"required":["user_id","role"]}},
-  {"name":"n8n_list_projects","description":"List all projects in the n8n instance.","namespace":"n8n","tags":["n8n","projects","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"n8n_create_project","description":"Create a new project in n8n for organizing workflows.","namespace":"n8n","tags":["n8n","project","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}},
-  {"name":"n8n_update_project","description":"Rename an n8n project.","namespace":"n8n","tags":["n8n","project","update","rename"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"},"name":{"type":"string"}},"required":["project_id","name"]}},
-  {"name":"n8n_delete_project","description":"Delete an n8n project.","namespace":"n8n","tags":["n8n","project","delete"],"inputSchema":{"type":"object","properties":{"project_id":{"type":"string"}},"required":["project_id"]}},
-  {"name":"n8n_generate_audit","description":"Generate a security audit report of the n8n instance.","namespace":"n8n","tags":["n8n","audit","security","report"],"inputSchema":{"type":"object","properties":{"options":{"type":"object"}},"required":[]}},
-  {"name":"n8n_pull_from_source_control","description":"Pull workflow changes from the connected git repository.","namespace":"n8n","tags":["n8n","git","source-control","pull","sync"],"inputSchema":{"type":"object","properties":{"force":{"type":"boolean"}},"required":[]}},
-  {"name":"n8n_push_to_source_control","description":"Push workflow changes to the connected git repository.","namespace":"n8n","tags":["n8n","git","source-control","push","deploy"],"inputSchema":{"type":"object","properties":{"message":{"type":"string","description":"Git commit message"}},"required":[]}},
-  {"name":"n8n_get_instance_info","description":"Get n8n instance information including version.","namespace":"n8n","tags":["n8n","instance","info","version","health"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"n8n_health_check","description":"Check n8n connectivity and get instance version.","namespace":"n8n","tags":["n8n","health","ping","status","connection"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"n8n_bulk_set_workflow_active","description":"SUPER TOOL: Bulk activate or deactivate all workflows matching a tag or name pattern.","namespace":"n8n","tags":["n8n","workflows","bulk","activate","deactivate","super-tool"],"inputSchema":{"type":"object","properties":{"active":{"type":"boolean","description":"true to activate, false to deactivate"},"tag":{"type":"string","description":"Only affect workflows with this tag"},"name_contains":{"type":"string","description":"Only affect workflows whose name contains this string"}},"required":["active"]}},
-  {"name":"n8n_workflow_dashboard","description":"SUPER TOOL: Get a full automation health dashboard — workflow counts by status, recent failures, user count, and tags.","namespace":"n8n","tags":["n8n","dashboard","overview","health","monitoring","super-tool"],"inputSchema":{"type":"object","properties":{},"required":[]}}
+  {
+    "name": "n8n_list_workflows",
+    "description": "List all n8n workflows with optional filters for active status, tags, or name.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflows",
+      "list",
+      "automation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "tags": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_workflow",
+    "description": "Get details for a specific n8n workflow by its ID.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "get",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_create_workflow",
+    "description": "Create a new n8n workflow with nodes and connections.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "create",
+      "new",
+      "automation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "nodes": {
+          "type": "array"
+        },
+        "connections": {
+          "type": "object"
+        },
+        "settings": {
+          "type": "object"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "tags": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_workflow",
+    "description": "Update an existing n8n workflow's name, nodes, connections, or active state.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "update",
+      "edit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nodes": {
+          "type": "array"
+        },
+        "connections": {
+          "type": "object"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_workflow",
+    "description": "Delete an n8n workflow permanently.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_activate_workflow",
+    "description": "Activate an n8n workflow so it responds to triggers.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "activate",
+      "enable",
+      "start"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_deactivate_workflow",
+    "description": "Deactivate an n8n workflow so it stops responding to triggers.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "deactivate",
+      "disable",
+      "stop",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_workflow_tags",
+    "description": "Get all tags assigned to a specific n8n workflow.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "tags",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_workflow_tags",
+    "description": "Update the tags on an n8n workflow.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "tags",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "tag_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "workflow_id",
+        "tag_ids"
+      ]
+    }
+  },
+  {
+    "name": "n8n_transfer_workflow",
+    "description": "Transfer an n8n workflow to a different project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "transfer",
+      "project",
+      "move"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_executions",
+    "description": "List n8n workflow executions with optional filters for workflow, status, or pagination.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "executions",
+      "list",
+      "history",
+      "runs"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "workflow_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "success, error, or waiting"
+        },
+        "include_data": {
+          "type": "boolean"
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_execution",
+    "description": "Get details for a specific execution by its ID.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "get",
+      "details",
+      "run"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string"
+        },
+        "include_data": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "execution_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_execution",
+    "description": "Delete a specific execution record.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "execution_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_execute_workflow",
+    "description": "Trigger an n8n workflow to run immediately with optional payload data.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "execute",
+      "trigger",
+      "run",
+      "manual"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "description": "Data to pass to the workflow's manual trigger"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_stop_execution",
+    "description": "Stop a currently running n8n workflow execution.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "stop",
+      "cancel",
+      "kill"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "execution_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_retry_execution",
+    "description": "Retry a failed n8n workflow execution.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "retry",
+      "rerun",
+      "failed"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string"
+        },
+        "load_workflow": {
+          "type": "boolean",
+          "description": "Load the current workflow definition (true) vs original (false)"
+        }
+      },
+      "required": [
+        "execution_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_executions_bulk",
+    "description": "Delete multiple execution records by status, workflow, or age.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "executions",
+      "bulk",
+      "delete",
+      "cleanup",
+      "prune"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "workflow_id": {
+          "type": "string"
+        },
+        "before_date": {
+          "type": "string",
+          "description": "ISO datetime \u2014 delete executions before this date"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_list_credentials",
+    "description": "List all credentials stored in n8n.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credentials",
+      "list",
+      "integrations"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_credential",
+    "description": "Get details for a specific n8n credential.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credential_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_create_credential",
+    "description": "Create a new credential in n8n for connecting to external services.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "create",
+      "integration",
+      "auth"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "Credential type e.g. httpBasicAuth, slackApi, postgresDb"
+        },
+        "data": {
+          "type": "object",
+          "description": "Credential-specific fields"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_credential",
+    "description": "Update an existing n8n credential's name or connection data.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "credential_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_credential",
+    "description": "Delete an n8n credential.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credential_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_credential_schema",
+    "description": "Get the schema (required fields) for a specific credential type.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "schema",
+      "type",
+      "fields"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_type_name": {
+          "type": "string",
+          "description": "e.g. postgresDb, slackApi, httpBasicAuth"
+        }
+      },
+      "required": [
+        "credential_type_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_variables",
+    "description": "List all environment variables (n8n Variables) in the instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "variables",
+      "list",
+      "environment",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_create_variable",
+    "description": "Create a new environment variable in n8n.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "variable",
+      "create",
+      "environment",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "description": "Variable value (will be stringified)"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_variable",
+    "description": "Delete an environment variable from n8n.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "variable",
+      "delete",
+      "environment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "variable_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_tags",
+    "description": "List all tags in the n8n instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "tags",
+      "list",
+      "labels"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_tag",
+    "description": "Get details for a specific n8n tag.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "tag",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tag_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_create_tag",
+    "description": "Create a new tag for organizing n8n workflows.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "tag",
+      "create",
+      "label"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_tag",
+    "description": "Rename an n8n tag.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "tag",
+      "update",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tag_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_tag",
+    "description": "Delete an n8n tag.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "tag",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tag_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_users",
+    "description": "List all users in the n8n instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "users",
+      "list",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_user",
+    "description": "Get details for a specific n8n user.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "user",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_create_users",
+    "description": "Invite one or more users to n8n by email.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "users",
+      "invite",
+      "create",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "emails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "role": {
+          "type": "string",
+          "description": "member or admin"
+        }
+      },
+      "required": [
+        "emails"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_user",
+    "description": "Delete a user from the n8n instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "user",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_change_user_role",
+    "description": "Change a user's role (member or admin) in n8n.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "user",
+      "role",
+      "change",
+      "promote",
+      "admin"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "description": "member or admin"
+        }
+      },
+      "required": [
+        "user_id",
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_projects",
+    "description": "List all projects in the n8n instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "projects",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_create_project",
+    "description": "Create a new project in n8n for organizing workflows.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "project",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_project",
+    "description": "Rename an n8n project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "project",
+      "update",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_delete_project",
+    "description": "Delete an n8n project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "project",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_generate_audit",
+    "description": "Generate a security audit report of the n8n instance.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "audit",
+      "security",
+      "report"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "object"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_pull_from_source_control",
+    "description": "Pull workflow changes from the connected git repository.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "git",
+      "source-control",
+      "pull",
+      "sync"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "force": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_push_to_source_control",
+    "description": "Push workflow changes to the connected git repository.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "git",
+      "source-control",
+      "push",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Git commit message"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_instance_info",
+    "description": "Get n8n instance information including version.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "instance",
+      "info",
+      "version",
+      "health"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_health_check",
+    "description": "Check n8n connectivity and get instance version.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "health",
+      "ping",
+      "status",
+      "connection"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_bulk_set_workflow_active",
+    "description": "SUPER TOOL: Bulk activate or deactivate all workflows matching a tag or name pattern.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflows",
+      "bulk",
+      "activate",
+      "deactivate",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "description": "true to activate, false to deactivate"
+        },
+        "tag": {
+          "type": "string",
+          "description": "Only affect workflows with this tag"
+        },
+        "name_contains": {
+          "type": "string",
+          "description": "Only affect workflows whose name contains this string"
+        }
+      },
+      "required": [
+        "active"
+      ]
+    }
+  },
+  {
+    "name": "n8n_workflow_dashboard",
+    "description": "SUPER TOOL: Get a full automation health dashboard \u2014 workflow counts by status, recent failures, user count, and tags.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "dashboard",
+      "overview",
+      "health",
+      "monitoring",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_list_community_packages",
+    "description": "List all installed n8n community node packages.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "community",
+      "packages",
+      "nodes",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_install_community_package",
+    "description": "Install a community node package in n8n (e.g. n8n-nodes-baserow).",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "community",
+      "package",
+      "install",
+      "nodes"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "package_name": {
+          "type": "string",
+          "description": "npm package name e.g. n8n-nodes-baserow"
+        }
+      },
+      "required": [
+        "package_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_update_community_package",
+    "description": "Update an installed n8n community package to the latest version.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "community",
+      "package",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "package_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_remove_community_package",
+    "description": "Remove an installed n8n community node package.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "community",
+      "package",
+      "remove",
+      "uninstall"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "package_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_external_secrets_providers",
+    "description": "List all external secrets providers configured in n8n (Vault, AWS SSM, etc.).",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "secrets",
+      "providers",
+      "list",
+      "vault"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_list_external_secrets",
+    "description": "List all secret names from a specific external secrets provider.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "secrets",
+      "list",
+      "external",
+      "provider"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "provider_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_reload_external_secrets",
+    "description": "Reload/refresh secrets from an external secrets provider.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "secrets",
+      "reload",
+      "refresh",
+      "provider"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "provider_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_name"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_workflow_executions",
+    "description": "List all executions for a specific n8n workflow, optionally filtered by status.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "executions",
+      "history",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "success, error, or waiting"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "include_data": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_failed_executions",
+    "description": "List recent failed (error) executions across all workflows or for a specific workflow.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "executions",
+      "failed",
+      "errors",
+      "list",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_instance_settings",
+    "description": "Get n8n instance settings including timezone, LDAP config, and license info.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "instance",
+      "settings",
+      "config",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
 ]

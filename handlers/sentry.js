@@ -364,6 +364,90 @@ async function execute(tool, args) {
     return { version, environment, release_created: !!release?.id, deploy_id: deploy?.id, deployed_at: new Date().toISOString() };
   }
 
+
+  // ── ISSUE ALERT RULES (notification rules) ──────────────────────────────
+  if (tool === 'sentry_create_issue_alert_rule') {
+    const { project_slug, name, conditions, actions, frequency = 30 } = args;
+    if (!name || !conditions || !actions) throw new Error('name, conditions, and actions are required');
+    return await sentry('POST', `/projects/${ORG()}/${reqProj(project_slug)}/rules/`, { name, conditions, actions, frequency });
+  }
+  if (tool === 'sentry_update_issue_alert_rule') {
+    const { project_slug, rule_id, name, conditions, actions, frequency } = args;
+    if (!rule_id) throw new Error('rule_id is required');
+    const body = {};
+    if (name) body.name = name;
+    if (conditions) body.conditions = conditions;
+    if (actions) body.actions = actions;
+    if (frequency !== undefined) body.frequency = frequency;
+    return await sentry('PUT', `/projects/${ORG()}/${reqProj(project_slug)}/rules/${rule_id}/`, body);
+  }
+  if (tool === 'sentry_delete_issue_alert_rule') {
+    if (!args.rule_id) throw new Error('rule_id is required');
+    return await sentry('DELETE', `/projects/${ORG()}/${reqProj(project_slug)}/rules/${args.rule_id}/`);
+  }
+
+  // ── METRIC ALERT RULES (create) ───────────────────────────────────────────
+  if (tool === 'sentry_create_metric_alert_rule') {
+    const { project_slug, name, aggregate, query = '', time_window = 60, threshold_type = 0, resolve_threshold, alert_threshold, dataset = 'errors' } = args;
+    if (!name || !aggregate || alert_threshold === undefined) throw new Error('name, aggregate, and alert_threshold are required');
+    return await sentry('POST', `/projects/${ORG()}/${reqProj(project_slug)}/alert-rules/`, {
+      name, aggregate, query, timeWindow: time_window, thresholdType: threshold_type,
+      resolveThreshold: resolve_threshold, triggers: [{ label: 'critical', alertThreshold: alert_threshold, actions: [] }],
+      projects: [reqProj(project_slug)], dataset
+    });
+  }
+
+  // ── DISCOVER (analytics queries) ──────────────────────────────────────────
+  if (tool === 'sentry_run_discover_query') {
+    const { project_slug, fields, query = '', orderby, limit = 50, start, end } = args;
+    if (!fields?.length) throw new Error('fields array is required (e.g. ["title", "count()", "project"])');
+    const params = new URLSearchParams({ project: PROJ(project_slug) || '', field: fields, query, limit, sort: orderby || '-count' });
+    if (start) params.append('start', start);
+    if (end) params.append('end', end);
+    return await sentry('GET', `/organizations/${ORG()}/events/?${params.toString()}`);
+  }
+
+  // ── ENVIRONMENTS ──────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_environments') {
+    const { project_slug } = args;
+    const filter = project_slug ? `?project=${PROJ(project_slug)}` : '';
+    return await sentry('GET', `/organizations/${ORG()}/environments/${filter}`);
+  }
+
+  // ── TAGS ──────────────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_project_tags') {
+    return await sentry('GET', `/projects/${ORG()}/${reqProj(args.project_slug)}/tags/`);
+  }
+  if (tool === 'sentry_get_tag_values') {
+    const { project_slug, tag_key, query, limit = 20 } = args;
+    if (!tag_key) throw new Error('tag_key is required');
+    let path = `/projects/${ORG()}/${reqProj(project_slug)}/tags/${tag_key}/values/?limit=${limit}`;
+    if (query) path += `&query=${encodeURIComponent(query)}`;
+    return await sentry('GET', path);
+  }
+
+  // ── USER FEEDBACK ────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_user_feedback') {
+    const { project_slug, limit = 25, environment } = args;
+    let path = `/projects/${ORG()}/${reqProj(project_slug)}/user-feedback/?limit=${limit}`;
+    if (environment) path += `&environment=${environment}`;
+    return await sentry('GET', path);
+  }
+
+  // ── UPTIME MONITORS ──────────────────────────────────────────────────────
+  if (tool === 'sentry_list_uptime_subscriptions') {
+    return await sentry('GET', `/projects/${ORG()}/${reqProj(args.project_slug)}/uptime/`);
+  }
+  if (tool === 'sentry_create_uptime_subscription') {
+    const { project_slug, url, name, interval_seconds = 60, timeout_ms = 10000 } = args;
+    if (!url) throw new Error('url is required');
+    return await sentry('POST', `/projects/${ORG()}/${reqProj(project_slug)}/uptime/`, { url, name: name || url, intervalSeconds: interval_seconds, timeoutMs: timeout_ms });
+  }
+  if (tool === 'sentry_delete_uptime_subscription') {
+    if (!args.uptime_subscription_id) throw new Error('uptime_subscription_id is required');
+    return await sentry('DELETE', `/projects/${ORG()}/${reqProj(args.project_slug)}/uptime/${args.uptime_subscription_id}/`);
+  }
+
   throw new Error(`Unknown Sentry tool: ${tool}`);
 }
 

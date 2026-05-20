@@ -1,25 +1,1042 @@
 [
-  {"name":"compound_scaffold_feature","description":"SUPER TOOL: Set up a complete feature branch environment — GitHub branch + Neon DB branch + .env.local update + optional migration run — in one call.","namespace":"compound","tags":["compound","scaffold","feature","github","neon","branch","setup","super-tool"],"inputSchema":{"type":"object","properties":{"github_owner":{"type":"string"},"github_repo":{"type":"string"},"feature_name":{"type":"string"},"neon_project_id":{"type":"string"},"run_migrations":{"type":"boolean"},"migration_command":{"type":"string"},"env_file_path":{"type":"string"}},"required":["feature_name"]}},
-  {"name":"compound_safe_deploy","description":"SUPER TOOL: Git push + wait for Vercel deployment + verify status in one call.","namespace":"compound","tags":["compound","deploy","vercel","git","safe","super-tool"],"inputSchema":{"type":"object","properties":{"vercel_project_id":{"type":"string"},"git_push":{"type":"boolean"},"project_path":{"type":"string"}},"required":["vercel_project_id"]}},
-  {"name":"compound_onboard_saas_customer","description":"SUPER TOOL: Full SaaS customer onboarding — Stripe customer + subscription + Clerk org + welcome email in one call.","namespace":"compound","tags":["compound","onboard","customer","stripe","clerk","resend","saas","super-tool"],"inputSchema":{"type":"object","properties":{"customer_email":{"type":"string"},"customer_name":{"type":"string"},"company_name":{"type":"string"},"price_id":{"type":"string"},"send_welcome_email":{"type":"boolean"},"welcome_from":{"type":"string"},"welcome_subject":{"type":"string"},"welcome_html":{"type":"string"}},"required":["customer_email"]}},
-  {"name":"compound_incident_response","description":"SUPER TOOL: Pull together an incident context — Sentry errors + recent Vercel deployments — to guide root cause analysis.","namespace":"compound","tags":["compound","incident","response","sentry","vercel","debug","super-tool"],"inputSchema":{"type":"object","properties":{"sentry_project":{"type":"string"},"vercel_project_id":{"type":"string"},"last_n_deployments":{"type":"number"}},"required":[]}},
-  {"name":"compound_neon_safe_migration","description":"SUPER TOOL: Run a DB migration on a temp Neon branch first, verify it works, then report whether it's safe to apply to main.","namespace":"compound","tags":["compound","neon","migration","safe","database","branch","test","super-tool"],"inputSchema":{"type":"object","properties":{"neon_project_id":{"type":"string"},"migration_sql":{"type":"string"},"database":{"type":"string"},"verify_tables":{"type":"array","items":{"type":"string"}}},"required":["neon_project_id","migration_sql"]}},
-  {"name":"compound_git_commit_push","description":"SUPER TOOL: Stage, commit, and push in one call — git add + commit + push.","namespace":"compound","tags":["compound","git","commit","push","local","super-tool"],"inputSchema":{"type":"object","properties":{"message":{"type":"string"},"project_path":{"type":"string"},"files":{"type":"string"},"branch":{"type":"string"}},"required":["message"]}},
-  {"name":"compound_project_health_check","description":"SUPER TOOL: Cross-service project health — GitHub issues/PRs + Vercel deployments + Neon connection + Sentry errors.","namespace":"compound","tags":["compound","health","github","vercel","neon","sentry","check","super-tool"],"inputSchema":{"type":"object","properties":{"github_owner":{"type":"string"},"github_repo":{"type":"string"},"vercel_project_id":{"type":"string"},"neon_project_id":{"type":"string"},"sentry_project":{"type":"string"}},"required":[]}},
-  {"name":"compound_send_dispatch_notification","description":"SUPER TOOL: Send a driver SMS (Twilio) and customer email (Resend) for a service appointment in one call.","namespace":"compound","tags":["compound","dispatch","sms","email","twilio","resend","notification","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"driver_phone":{"type":"string"},"driver_message":{"type":"string"},"customer_email":{"type":"string"},"customer_subject":{"type":"string"},"customer_html":{"type":"string"},"from_email":{"type":"string"},"job_details":{"type":"object"}},"required":[]}},
-  {"name":"compound_generate_and_embed","description":"SUPER TOOL: Generate an OpenAI embedding for text and immediately store it in Qdrant as a vector point.","namespace":"compound","tags":["compound","embed","openai","qdrant","vector","store","ai","super-tool"],"inputSchema":{"type":"object","properties":{"text_to_embed":{"type":"string"},"collection_name":{"type":"string"},"point_id":{"description":"Qdrant point ID"},"metadata":{"type":"object"}},"required":["text_to_embed","collection_name","point_id"]}},
-  {"name":"compound_semantic_search","description":"SUPER TOOL: Convert a text query to an OpenAI embedding and search Qdrant — semantic search in one call.","namespace":"compound","tags":["compound","semantic","search","openai","qdrant","vector","ai","super-tool"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"collection_name":{"type":"string"},"limit":{"type":"number"},"score_threshold":{"type":"number"},"filter":{"type":"object"}},"required":["query","collection_name"]}},
-  {"name":"compound_analytics_snapshot","description":"SUPER TOOL: Pull key business metrics from Stripe — MRR, ARR, active subscriptions.","namespace":"compound","tags":["compound","analytics","stripe","mrr","arr","metrics","super-tool"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"compound_deploy_and_release","description":"SUPER TOOL: Git push + Vercel deploy + Sentry release creation in one call — the full CI/CD deployment workflow.","namespace":"compound","tags":["compound","deploy","release","git","vercel","sentry","ci-cd","super-tool"],"inputSchema":{"type":"object","properties":{"version":{"type":"string"},"project_path":{"type":"string"},"vercel_project_id":{"type":"string"},"sentry_project":{"type":"string"},"environment":{"type":"string"},"git_push":{"type":"boolean"}},"required":["version"]}},
-  {"name":"compound_customer_offboard","description":"SUPER TOOL: Cancel all Stripe subscriptions + Clerk offboard (revoke sessions + remove orgs + ban) + optional offboard email in one call.","namespace":"compound","tags":["compound","offboard","customer","stripe","clerk","cancel","super-tool","churn"],"inputSchema":{"type":"object","properties":{"stripe_customer_id":{"type":"string"},"clerk_user_id":{"type":"string"},"reason":{"type":"string"},"notify_email":{"type":"string"},"from_email":{"type":"string"},"app_name":{"type":"string"}},"required":[]}},
-  {"name":"compound_payment_failed_flow","description":"SUPER TOOL: Find all past-due Stripe subscriptions and send dunning reminder emails via Resend.","namespace":"compound","tags":["compound","dunning","stripe","resend","email","billing","recovery","super-tool"],"inputSchema":{"type":"object","properties":{"from_email":{"type":"string"},"subject":{"type":"string"},"app_name":{"type":"string"},"update_url":{"type":"string"}},"required":["from_email"]}},
-  {"name":"compound_customer_support_context","description":"SUPER TOOL: Pull together all context for a support ticket — Stripe billing history + Clerk profile + Sentry errors.","namespace":"compound","tags":["compound","support","context","stripe","clerk","sentry","ticket","super-tool"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"stripe_customer_id":{"type":"string"},"clerk_user_id":{"type":"string"},"sentry_project":{"type":"string"}},"required":[]}},
-  {"name":"compound_local_llm_rag","description":"SUPER TOOL: Local RAG pipeline — Ollama embed → Qdrant semantic search → Ollama generate answer with context. Zero API cost.","namespace":"compound","tags":["compound","rag","ollama","qdrant","local","llm","semantic","ai","super-tool"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"collection_name":{"type":"string"},"ollama_model":{"type":"string"},"system_instruction":{"type":"string"},"limit":{"type":"number"},"score_threshold":{"type":"number"}},"required":["query","collection_name"]}},
-  {"name":"compound_sync_users_to_audience","description":"SUPER TOOL: Fetch users from Clerk (or Neon SQL) and sync them to a Resend audience for email marketing.","namespace":"compound","tags":["compound","sync","users","clerk","neon","resend","audience","email","super-tool"],"inputSchema":{"type":"object","properties":{"audience_name":{"type":"string"},"source":{"type":"string","description":"clerk or neon"},"neon_project_id":{"type":"string"},"neon_sql":{"type":"string","description":"SQL returning email, first_name, last_name columns"},"limit":{"type":"number"}},"required":["audience_name"]}},
-  {"name":"compound_geocode_and_store","description":"SUPER TOOL: Mapbox geocode an address and store the coordinates in a Neon database record.","namespace":"compound","tags":["compound","geocode","mapbox","neon","store","coordinates","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"neon_project_id":{"type":"string"},"table_name":{"type":"string"},"record_id":{"description":"Record ID to update"},"schema":{"type":"string"},"lat_col":{"type":"string"},"lng_col":{"type":"string"},"address_col":{"type":"string"}},"required":["address"]}},
-  {"name":"compound_revenue_summary","description":"SUPER TOOL: Combined Stripe revenue dashboard — MRR + ARR + active subs + past-due customers in one call.","namespace":"compound","tags":["compound","revenue","stripe","mrr","dunning","summary","super-tool","billing"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"compound_validate_env_vars","description":"SUPER TOOL: Check that all required environment variables are set for a given list of service namespaces.","namespace":"compound","tags":["compound","env","validate","config","setup","diagnostic","super-tool"],"inputSchema":{"type":"object","properties":{"services":{"type":"array","items":{"type":"string"},"description":"Service names to check: stripe, clerk, neon, vercel, etc. Omit to check all."}},"required":[]}},
-  {"name":"compound_full_health_dashboard","description":"SUPER TOOL: Ping every configured service and return a unified health report — Ollama, Neon, Vercel, GitHub, Stripe, Sentry, Qdrant.","namespace":"compound","tags":["compound","health","dashboard","monitoring","all-services","super-tool","status"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"compound_batch_embed_documents","description":"SUPER TOOL: Embed and store a batch of documents in Qdrant using OpenAI or Ollama embeddings — bulk knowledge base ingestion in one call.","namespace":"compound","tags":["compound","batch","embed","qdrant","openai","ollama","documents","rag","ingest","super-tool"],"inputSchema":{"type":"object","properties":{"documents":{"type":"array","description":"Array of {id, text, ...metadata} objects"},"collection_name":{"type":"string"},"use_ollama":{"type":"boolean","description":"Use Ollama instead of OpenAI for embeddings"},"ollama_model":{"type":"string"}},"required":["documents","collection_name"]}},
-  {"name":"compound_rollback_transaction","description":"SUPER TOOL: Safety net — reads the Observability Ledger and reverses recent state-mutating tool calls in reverse order. Supports dry_run to preview the plan before executing. USE THIS WHEN a multi-step setup goes wrong or an agent hallucinated a destructive action.","namespace":"compound","tags":["compound","rollback","undo","ledger","transaction","safety","observability","super-tool"],"inputSchema":{"type":"object","properties":{"last_n":{"type":"number","description":"Roll back the most recent N reversible ledger entries"},"since":{"type":"string","description":"ISO timestamp — roll back everything after this time"},"transaction_id":{"type":"string","description":"Roll back a single ledger entry by ID"},"dry_run":{"type":"boolean","description":"Show what would be reversed without executing"}},"required":[]}}
+  {
+    "name": "compound_scaffold_feature",
+    "description": "SUPER TOOL: Set up a complete feature branch environment \u2014 GitHub branch + Neon DB branch + .env.local update + optional migration run \u2014 in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "scaffold",
+      "feature",
+      "github",
+      "neon",
+      "branch",
+      "setup",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "github_owner": {
+          "type": "string"
+        },
+        "github_repo": {
+          "type": "string"
+        },
+        "feature_name": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "run_migrations": {
+          "type": "boolean"
+        },
+        "migration_command": {
+          "type": "string"
+        },
+        "env_file_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_safe_deploy",
+    "description": "SUPER TOOL: Git push + wait for Vercel deployment + verify status in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "deploy",
+      "vercel",
+      "git",
+      "safe",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "git_push": {
+          "type": "boolean"
+        },
+        "project_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "vercel_project_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_onboard_saas_customer",
+    "description": "SUPER TOOL: Full SaaS customer onboarding \u2014 Stripe customer + subscription + Clerk org + welcome email in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "onboard",
+      "customer",
+      "stripe",
+      "clerk",
+      "resend",
+      "saas",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_email": {
+          "type": "string"
+        },
+        "customer_name": {
+          "type": "string"
+        },
+        "company_name": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string"
+        },
+        "send_welcome_email": {
+          "type": "boolean"
+        },
+        "welcome_from": {
+          "type": "string"
+        },
+        "welcome_subject": {
+          "type": "string"
+        },
+        "welcome_html": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_email"
+      ]
+    }
+  },
+  {
+    "name": "compound_incident_response",
+    "description": "SUPER TOOL: Pull together an incident context \u2014 Sentry errors + recent Vercel deployments \u2014 to guide root cause analysis.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "incident",
+      "response",
+      "sentry",
+      "vercel",
+      "debug",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sentry_project": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "last_n_deployments": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_neon_safe_migration",
+    "description": "SUPER TOOL: Run a DB migration on a temp Neon branch first, verify it works, then report whether it's safe to apply to main.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "neon",
+      "migration",
+      "safe",
+      "database",
+      "branch",
+      "test",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "neon_project_id": {
+          "type": "string"
+        },
+        "migration_sql": {
+          "type": "string"
+        },
+        "database": {
+          "type": "string"
+        },
+        "verify_tables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "neon_project_id",
+        "migration_sql"
+      ]
+    }
+  },
+  {
+    "name": "compound_git_commit_push",
+    "description": "SUPER TOOL: Stage, commit, and push in one call \u2014 git add + commit + push.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "git",
+      "commit",
+      "push",
+      "local",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "project_path": {
+          "type": "string"
+        },
+        "files": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "compound_project_health_check",
+    "description": "SUPER TOOL: Cross-service project health \u2014 GitHub issues/PRs + Vercel deployments + Neon connection + Sentry errors.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "health",
+      "github",
+      "vercel",
+      "neon",
+      "sentry",
+      "check",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "github_owner": {
+          "type": "string"
+        },
+        "github_repo": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_send_dispatch_notification",
+    "description": "SUPER TOOL: Send a driver SMS (Twilio) and customer email (Resend) for a service appointment in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "dispatch",
+      "sms",
+      "email",
+      "twilio",
+      "resend",
+      "notification",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "driver_phone": {
+          "type": "string"
+        },
+        "driver_message": {
+          "type": "string"
+        },
+        "customer_email": {
+          "type": "string"
+        },
+        "customer_subject": {
+          "type": "string"
+        },
+        "customer_html": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        },
+        "job_details": {
+          "type": "object"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_generate_and_embed",
+    "description": "SUPER TOOL: Generate an OpenAI embedding for text and immediately store it in Qdrant as a vector point.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "embed",
+      "openai",
+      "qdrant",
+      "vector",
+      "store",
+      "ai",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text_to_embed": {
+          "type": "string"
+        },
+        "collection_name": {
+          "type": "string"
+        },
+        "point_id": {
+          "description": "Qdrant point ID"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "text_to_embed",
+        "collection_name",
+        "point_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_semantic_search",
+    "description": "SUPER TOOL: Convert a text query to an OpenAI embedding and search Qdrant \u2014 semantic search in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "semantic",
+      "search",
+      "openai",
+      "qdrant",
+      "vector",
+      "ai",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "collection_name": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "score_threshold": {
+          "type": "number"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "query",
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_analytics_snapshot",
+    "description": "SUPER TOOL: Pull key business metrics from Stripe \u2014 MRR, ARR, active subscriptions.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "analytics",
+      "stripe",
+      "mrr",
+      "arr",
+      "metrics",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "compound_deploy_and_release",
+    "description": "SUPER TOOL: Git push + Vercel deploy + Sentry release creation in one call \u2014 the full CI/CD deployment workflow.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "deploy",
+      "release",
+      "git",
+      "vercel",
+      "sentry",
+      "ci-cd",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "project_path": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "git_push": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "compound_customer_offboard",
+    "description": "SUPER TOOL: Cancel all Stripe subscriptions + Clerk offboard (revoke sessions + remove orgs + ban) + optional offboard email in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "offboard",
+      "customer",
+      "stripe",
+      "clerk",
+      "cancel",
+      "super-tool",
+      "churn"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "stripe_customer_id": {
+          "type": "string"
+        },
+        "clerk_user_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "notify_email": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_payment_failed_flow",
+    "description": "SUPER TOOL: Find all past-due Stripe subscriptions and send dunning reminder emails via Resend.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "dunning",
+      "stripe",
+      "resend",
+      "email",
+      "billing",
+      "recovery",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "from_email": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "update_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_email"
+      ]
+    }
+  },
+  {
+    "name": "compound_customer_support_context",
+    "description": "SUPER TOOL: Pull together all context for a support ticket \u2014 Stripe billing history + Clerk profile + Sentry errors.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "support",
+      "context",
+      "stripe",
+      "clerk",
+      "sentry",
+      "ticket",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "stripe_customer_id": {
+          "type": "string"
+        },
+        "clerk_user_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_local_llm_rag",
+    "description": "SUPER TOOL: Local RAG pipeline \u2014 Ollama embed \u2192 Qdrant semantic search \u2192 Ollama generate answer with context. Zero API cost.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "rag",
+      "ollama",
+      "qdrant",
+      "local",
+      "llm",
+      "semantic",
+      "ai",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "collection_name": {
+          "type": "string"
+        },
+        "ollama_model": {
+          "type": "string"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "score_threshold": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "query",
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_sync_users_to_audience",
+    "description": "SUPER TOOL: Fetch users from Clerk (or Neon SQL) and sync them to a Resend audience for email marketing.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "sync",
+      "users",
+      "clerk",
+      "neon",
+      "resend",
+      "audience",
+      "email",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "audience_name": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "description": "clerk or neon"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "neon_sql": {
+          "type": "string",
+          "description": "SQL returning email, first_name, last_name columns"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "audience_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_geocode_and_store",
+    "description": "SUPER TOOL: Mapbox geocode an address and store the coordinates in a Neon database record.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "geocode",
+      "mapbox",
+      "neon",
+      "store",
+      "coordinates",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "table_name": {
+          "type": "string"
+        },
+        "record_id": {
+          "description": "Record ID to update"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "lat_col": {
+          "type": "string"
+        },
+        "lng_col": {
+          "type": "string"
+        },
+        "address_col": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ]
+    }
+  },
+  {
+    "name": "compound_revenue_summary",
+    "description": "SUPER TOOL: Combined Stripe revenue dashboard \u2014 MRR + ARR + active subs + past-due customers in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "revenue",
+      "stripe",
+      "mrr",
+      "dunning",
+      "summary",
+      "super-tool",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "compound_validate_env_vars",
+    "description": "SUPER TOOL: Check that all required environment variables are set for a given list of service namespaces.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "env",
+      "validate",
+      "config",
+      "setup",
+      "diagnostic",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Service names to check: stripe, clerk, neon, vercel, etc. Omit to check all."
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_full_health_dashboard",
+    "description": "SUPER TOOL: Ping every configured service and return a unified health report \u2014 Ollama, Neon, Vercel, GitHub, Stripe, Sentry, Qdrant.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "health",
+      "dashboard",
+      "monitoring",
+      "all-services",
+      "super-tool",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "compound_batch_embed_documents",
+    "description": "SUPER TOOL: Embed and store a batch of documents in Qdrant using OpenAI or Ollama embeddings \u2014 bulk knowledge base ingestion in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "batch",
+      "embed",
+      "qdrant",
+      "openai",
+      "ollama",
+      "documents",
+      "rag",
+      "ingest",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "array",
+          "description": "Array of {id, text, ...metadata} objects"
+        },
+        "collection_name": {
+          "type": "string"
+        },
+        "use_ollama": {
+          "type": "boolean",
+          "description": "Use Ollama instead of OpenAI for embeddings"
+        },
+        "ollama_model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documents",
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_rollback_transaction",
+    "description": "SUPER TOOL: Safety net \u2014 reads the Observability Ledger and reverses recent state-mutating tool calls in reverse order. Supports dry_run to preview the plan before executing. USE THIS WHEN a multi-step setup goes wrong or an agent hallucinated a destructive action.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "rollback",
+      "undo",
+      "ledger",
+      "transaction",
+      "safety",
+      "observability",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "last_n": {
+          "type": "number",
+          "description": "Roll back the most recent N reversible ledger entries"
+        },
+        "since": {
+          "type": "string",
+          "description": "ISO timestamp \u2014 roll back everything after this time"
+        },
+        "transaction_id": {
+          "type": "string",
+          "description": "Roll back a single ledger entry by ID"
+        },
+        "dry_run": {
+          "type": "boolean",
+          "description": "Show what would be reversed without executing"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_notify_team",
+    "description": "SUPER TOOL: Send a Slack alert AND create a Linear issue in one call \u2014 ideal for service alerts, outages, or anything that needs both immediate notification and tracking.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "slack",
+      "linear",
+      "notify",
+      "alert",
+      "issue",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "linear_team_id": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "number",
+          "description": "Linear priority 0-4"
+        },
+        "severity": {
+          "type": "string",
+          "description": "critical, error, warning, or info"
+        },
+        "slack_action_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "compound_incident_alert",
+    "description": "SUPER TOOL: Fetch a Sentry error + send a Slack critical alert + create a high-priority Linear issue \u2014 complete incident response in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "incident",
+      "sentry",
+      "slack",
+      "linear",
+      "alert",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sentry_issue_id": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "linear_team_id": {
+          "type": "string"
+        },
+        "additional_context": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sentry_issue_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_standup_summary",
+    "description": "SUPER TOOL: Pull your daily standup context \u2014 my Linear issues + recent Sentry errors + latest Vercel deploy \u2014 in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "standup",
+      "daily",
+      "linear",
+      "sentry",
+      "vercel",
+      "summary",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "linear_team_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "compound_bug_report_from_sentry",
+    "description": "SUPER TOOL: Fetch Sentry error context \u2192 create a linked Linear bug issue \u2192 notify Slack \u2014 complete bug reporting workflow in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "bug",
+      "sentry",
+      "linear",
+      "slack",
+      "report",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sentry_issue_id": {
+          "type": "string"
+        },
+        "linear_team_id": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "assignee_id": {
+          "type": "string",
+          "description": "Linear user ID to assign to"
+        }
+      },
+      "required": [
+        "sentry_issue_id",
+        "linear_team_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_deploy_and_announce",
+    "description": "SUPER TOOL: Deploy to Vercel + create Sentry release + post a Slack deployment announcement \u2014 the complete release workflow in one call.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "deploy",
+      "vercel",
+      "sentry",
+      "slack",
+      "announce",
+      "release",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "project_path": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_sprint_kickoff_announcement",
+    "description": "SUPER TOOL: Fetch the active Linear sprint and post its contents as a Slack announcement \u2014 kickoff message with issue counts, dates, and urgent items.",
+    "namespace": "compound",
+    "tags": [
+      "compound",
+      "sprint",
+      "linear",
+      "slack",
+      "kickoff",
+      "announcement",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "linear_team_id": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "linear_team_id"
+      ]
+    }
+  }
 ]
