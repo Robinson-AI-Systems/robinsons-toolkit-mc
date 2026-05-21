@@ -334,7 +334,7 @@
         },
         "where": {
           "type": "string",
-          "description": "WHERE clause (unsafe \u2014 sanitize inputs first)"
+          "description": "WHERE clause (unsafe — sanitize inputs first)"
         },
         "order_by": {
           "type": "string"
@@ -563,7 +563,7 @@
   },
   {
     "name": "postgres_get_index_usage",
-    "description": "Get index usage statistics \u2014 scans, tuples read, and tuples fetched for each index.",
+    "description": "Get index usage statistics — scans, tuples read, and tuples fetched for each index.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -584,7 +584,7 @@
   },
   {
     "name": "postgres_get_unused_indexes",
-    "description": "Find indexes that have never been used (idx_scan = 0) \u2014 candidates for removal.",
+    "description": "Find indexes that have never been used (idx_scan = 0) — candidates for removal.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -707,7 +707,7 @@
   },
   {
     "name": "postgres_get_replication_status",
-    "description": "Check PostgreSQL replication status \u2014 replica lag and sync state.",
+    "description": "Check PostgreSQL replication status — replica lag and sync state.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -1044,7 +1044,7 @@
   },
   {
     "name": "postgres_schema_audit",
-    "description": "SUPER TOOL: Complete schema audit \u2014 table list, index counts, bloated tables, largest tables, and installed extensions in one call.",
+    "description": "SUPER TOOL: Complete schema audit — table list, index counts, bloated tables, largest tables, and installed extensions in one call.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -1067,7 +1067,7 @@
   },
   {
     "name": "postgres_health_check",
-    "description": "SUPER TOOL: Database health snapshot \u2014 version, connection states, total database size, and tables needing vacuum.",
+    "description": "SUPER TOOL: Database health snapshot — version, connection states, total database size, and tables needing vacuum.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -1477,7 +1477,7 @@
   },
   {
     "name": "postgres_get_bgwriter_stats",
-    "description": "Get PostgreSQL background writer and checkpoint statistics \u2014 useful for tuning I/O performance.",
+    "description": "Get PostgreSQL background writer and checkpoint statistics — useful for tuning I/O performance.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -1495,7 +1495,7 @@
   },
   {
     "name": "postgres_advisory_lock",
-    "description": "Attempt to acquire a PostgreSQL advisory lock on an integer key (non-blocking). Returns acquired: true if the lock was obtained, false if it's held by another session. Use for distributed locking patterns \u2014 e.g. ensure only one worker processes a job at a time.",
+    "description": "Attempt to acquire a PostgreSQL advisory lock on an integer key (non-blocking). Returns acquired: true if the lock was obtained, false if it's held by another session. Use for distributed locking patterns — e.g. ensure only one worker processes a job at a time.",
     "namespace": "postgres",
     "tags": [
       "postgres",
@@ -1642,6 +1642,1263 @@
       "required": [
         "slot_name"
       ]
+    }
+  },
+  {
+    "name": "postgres_list_databases",
+    "description": "List all databases in the PostgreSQL cluster with size and encoding info.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "databases",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_create_database",
+    "description": "Create a new PostgreSQL database.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "database",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_database",
+    "description": "Drop a PostgreSQL database. Use force=true to disconnect active connections first.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "database",
+      "drop",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        },
+        "force": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "database_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_rename_database",
+    "description": "Rename a PostgreSQL database.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "database",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        },
+        "new_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_name",
+        "new_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_change_database_owner",
+    "description": "Change the owner of a PostgreSQL database.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "database",
+      "owner",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        },
+        "new_owner": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_name",
+        "new_owner"
+      ]
+    }
+  },
+  {
+    "name": "postgres_get_database_config",
+    "description": "Get non-default PostgreSQL configuration settings (from pg_settings).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "config",
+      "settings",
+      "configuration"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_create_role",
+    "description": "Create a PostgreSQL role (group role without login by default).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "role",
+      "create",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role_name": {
+          "type": "string"
+        },
+        "inherit": {
+          "type": "boolean"
+        },
+        "nologin": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "role_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_grant_role",
+    "description": "Grant a PostgreSQL role to a user or another role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "role",
+      "grant",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "grantee": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "grantee"
+      ]
+    }
+  },
+  {
+    "name": "postgres_revoke_role",
+    "description": "Revoke a PostgreSQL role from a user or another role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "role",
+      "revoke",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "revokee": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "revokee"
+      ]
+    }
+  },
+  {
+    "name": "postgres_revoke_privileges",
+    "description": "Revoke table privileges from a role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "privileges",
+      "revoke",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "table_name": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "table_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_grant_schema_privileges",
+    "description": "Grant schema-level privileges (USAGE, CREATE) to a role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "schema",
+      "privileges",
+      "grant"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "postgres_grant_all_tables",
+    "description": "Grant table privileges on all tables in a schema to a role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "tables",
+      "grant",
+      "all",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "postgres_set_default_privileges",
+    "description": "Set default privileges so future tables automatically grant access to a role.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "default-privileges",
+      "permissions",
+      "future"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "grantee": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "privileges": {
+          "type": "string"
+        },
+        "grantor": {
+          "type": "string"
+        },
+        "object_type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "grantee"
+      ]
+    }
+  },
+  {
+    "name": "postgres_alter_user",
+    "description": "Alter a PostgreSQL user/role options (e.g. SUPERUSER, CREATEDB, CONNECTION LIMIT).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "user",
+      "alter",
+      "role",
+      "permissions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "options": {
+          "type": "string",
+          "description": "e.g. NOSUPERUSER CREATEDB CONNECTION LIMIT 5"
+        }
+      },
+      "required": [
+        "username",
+        "options"
+      ]
+    }
+  },
+  {
+    "name": "postgres_list_role_members",
+    "description": "List all role memberships in the PostgreSQL cluster.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "roles",
+      "members",
+      "permissions",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_dump_schema",
+    "description": "Export a PostgreSQL schema as SQL using pg_dump (schema-only, no data).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "dump",
+      "backup",
+      "schema",
+      "export"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Absolute path to write the .sql file"
+        }
+      },
+      "required": [
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "postgres_dump_table",
+    "description": "Export a specific table using pg_dump (schema + data or custom format).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "dump",
+      "backup",
+      "table",
+      "export"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "description": "plain or custom"
+        }
+      },
+      "required": [
+        "table_name",
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "postgres_get_query_stats",
+    "description": "Get detailed query statistics from pg_stat_statements — calls, avg time, cache hit rate.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "performance",
+      "queries",
+      "statistics",
+      "slow"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_get_cache_hit_ratio",
+    "description": "Get the overall buffer cache hit ratio for the database (target: >99%).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "performance",
+      "cache",
+      "hit-ratio",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_get_index_bloat",
+    "description": "Identify over-sized or unused indexes that may be candidates for removal.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "indexes",
+      "bloat",
+      "cleanup",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_get_long_running_queries",
+    "description": "Find queries running longer than a threshold in seconds.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "queries",
+      "long-running",
+      "monitoring",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "min_seconds": {
+          "type": "number",
+          "description": "Minimum duration in seconds (default 5)"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_get_missing_indexes",
+    "description": "Find tables with high sequential scan counts that likely need indexes.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "indexes",
+      "missing",
+      "performance",
+      "recommendations"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_reset_statistics",
+    "description": "Reset all pg_stat statistics counters for the current database.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "statistics",
+      "reset",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_analyze_table",
+    "description": "Run ANALYZE on a table to update planner statistics.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "analyze",
+      "statistics",
+      "performance",
+      "planner"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "verbose": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "table_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_cluster_table",
+    "description": "Physically reorder a table's rows by an index to improve sequential scan performance.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "cluster",
+      "table",
+      "performance",
+      "reorder"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "index_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_list_available_extensions",
+    "description": "List all available PostgreSQL extensions (installed and not-yet-installed).",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "extensions",
+      "available",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_drop_extension",
+    "description": "Remove an installed PostgreSQL extension.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "extension",
+      "drop",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "extension_name": {
+          "type": "string"
+        },
+        "cascade": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "extension_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_get_extension_info",
+    "description": "Get version and description info for a specific PostgreSQL extension.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "extension",
+      "info",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "extension_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "extension_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_rename_table",
+    "description": "Rename a PostgreSQL table.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "table",
+      "rename",
+      "alter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "new_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "new_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_table",
+    "description": "Drop a PostgreSQL table. Use cascade=true to also drop dependent objects.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "table",
+      "drop",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "cascade": {
+          "type": "boolean"
+        },
+        "if_exists": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "table_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_rename_column",
+    "description": "Rename a column in a PostgreSQL table.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "column",
+      "rename",
+      "alter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "column_name": {
+          "type": "string"
+        },
+        "new_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "column_name",
+        "new_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_alter_column_type",
+    "description": "Change the data type of a column. Optionally provide a USING expression for conversion.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "column",
+      "type",
+      "alter",
+      "change"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "column_name": {
+          "type": "string"
+        },
+        "new_type": {
+          "type": "string"
+        },
+        "using_expression": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "column_name",
+        "new_type"
+      ]
+    }
+  },
+  {
+    "name": "postgres_set_column_not_null",
+    "description": "Set or remove the NOT NULL constraint on a column.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "column",
+      "not-null",
+      "constraint",
+      "alter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "column_name": {
+          "type": "string"
+        },
+        "not_null": {
+          "type": "boolean"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "column_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_set_column_default",
+    "description": "Set or remove the DEFAULT value on a column. Pass null to drop the default.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "column",
+      "default",
+      "alter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "column_name": {
+          "type": "string"
+        },
+        "default_value": {
+          "description": "SQL expression or null to drop"
+        }
+      },
+      "required": [
+        "table_name",
+        "column_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_add_primary_key",
+    "description": "Add a PRIMARY KEY constraint to a table.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "constraint",
+      "primary-key",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "columns": {
+          "description": "Column name or array of column names"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "constraint_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "columns"
+      ]
+    }
+  },
+  {
+    "name": "postgres_add_foreign_key",
+    "description": "Add a FOREIGN KEY constraint linking one table to another.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "constraint",
+      "foreign-key",
+      "add",
+      "relationship"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "column_name": {
+          "type": "string"
+        },
+        "ref_table": {
+          "type": "string"
+        },
+        "ref_column": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "on_delete": {
+          "type": "string"
+        },
+        "constraint_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "column_name",
+        "ref_table"
+      ]
+    }
+  },
+  {
+    "name": "postgres_add_unique_constraint",
+    "description": "Add a UNIQUE constraint to one or more columns.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "constraint",
+      "unique",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "columns": {
+          "description": "Column name or array of column names"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "constraint_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "columns"
+      ]
+    }
+  },
+  {
+    "name": "postgres_add_check_constraint",
+    "description": "Add a CHECK constraint to a table with a custom SQL expression.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "constraint",
+      "check",
+      "add",
+      "validation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "expression": {
+          "type": "string",
+          "description": "SQL boolean expression"
+        },
+        "constraint_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "table_name",
+        "expression",
+        "constraint_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_constraint",
+    "description": "Drop a constraint from a table by name.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "constraint",
+      "drop",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "table_name": {
+          "type": "string"
+        },
+        "constraint_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "cascade": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "table_name",
+        "constraint_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_create_view",
+    "description": "Create or replace a PostgreSQL view or materialized view.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "view",
+      "create",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "view_name": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "replace": {
+          "type": "boolean"
+        },
+        "materialized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "view_name",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_view",
+    "description": "Drop a PostgreSQL view or materialized view.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "view",
+      "drop",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "view_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "cascade": {
+          "type": "boolean"
+        },
+        "materialized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "view_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_refresh_materialized_view",
+    "description": "Refresh a materialized view to update it with the latest data.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "materialized-view",
+      "refresh",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "view_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "concurrently": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "view_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_get_function_definition",
+    "description": "Get the source code definition of a PostgreSQL function or stored procedure.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "function",
+      "definition",
+      "source",
+      "procedure"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "function_name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "function_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_function",
+    "description": "Drop a PostgreSQL function or stored procedure.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "function",
+      "drop",
+      "delete",
+      "procedure"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "function_name": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Argument types e.g. 'integer, text'"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "cascade": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "function_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_permissions_audit",
+    "description": "SUPER TOOL: Full permissions audit — all roles, table grants, role memberships, and schema privileges in one call.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "permissions",
+      "audit",
+      "roles",
+      "grants",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "postgres_performance_report",
+    "description": "SUPER TOOL: Full performance deep-dive — slow queries, missing indexes, unused indexes, cache hit ratio, vacuum status, and blocking locks.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "performance",
+      "report",
+      "slow-queries",
+      "indexes",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "type": "string"
+        }
+      },
+      "required": []
     }
   }
 ]

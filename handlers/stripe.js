@@ -785,6 +785,337 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Stripe tool: ${tool}`);
+
+  // ── TAX SETTINGS & CALCULATIONS ──────────────────────────────────────────
+  if (tool === 'stripe_get_tax_settings') {
+    return await stripe('GET', '/tax/settings', {});
+  }
+  if (tool === 'stripe_update_tax_settings') {
+    const { defaults, head_office } = args;
+    const body = {};
+    if (defaults) body.defaults = defaults;
+    if (head_office) body.head_office = head_office;
+    return await stripe('POST', '/tax/settings', body);
+  }
+  if (tool === 'stripe_calculate_tax') {
+    const { currency, line_items, customer_details } = args;
+    if (!currency || !line_items || !customer_details) throw new Error('currency, line_items, and customer_details are required');
+    const body = { currency };
+    line_items.forEach((item, i) => {
+      body[`line_items[${i}][amount]`] = item.amount;
+      body[`line_items[${i}][reference]`] = item.reference || `item_${i}`;
+      if (item.tax_code) body[`line_items[${i}][tax_code]`] = item.tax_code;
+    });
+    if (customer_details.address) {
+      Object.entries(customer_details.address).forEach(([k, v]) => {
+        body[`customer_details[address][${k}]`] = v;
+      });
+      body['customer_details[address_source]'] = 'billing';
+    }
+    if (customer_details.tax_ids) {
+      customer_details.tax_ids.forEach((t, i) => {
+        body[`customer_details[tax_ids][${i}][type]`] = t.type;
+        body[`customer_details[tax_ids][${i}][value]`] = t.value;
+      });
+    }
+    return await stripe('POST', '/tax/calculations', body);
+  }
+  if (tool === 'stripe_list_tax_transactions') {
+    return await stripe('GET', '/tax/transactions', { limit: args.limit || 10 });
+  }
+  if (tool === 'stripe_get_tax_transaction') {
+    return await stripe('GET', `/tax/transactions/${args.transaction_id}`);
+  }
+  if (tool === 'stripe_list_tax_codes') {
+    return await stripe('GET', '/tax_codes', { limit: args.limit || 20 });
+  }
+  if (tool === 'stripe_get_tax_code') {
+    return await stripe('GET', `/tax_codes/${args.tax_code_id}`);
+  }
+
+  // ── CUSTOMER TAX IDs ──────────────────────────────────────────────────────
+  if (tool === 'stripe_list_customer_tax_ids') {
+    return await stripe('GET', `/customers/${args.customer_id}/tax_ids`, { limit: args.limit || 10 });
+  }
+  if (tool === 'stripe_create_customer_tax_id') {
+    const { customer_id, type, value } = args;
+    if (!customer_id || !type || !value) throw new Error('customer_id, type, and value are required');
+    return await stripe('POST', `/customers/${customer_id}/tax_ids`, { type, value });
+  }
+  if (tool === 'stripe_delete_customer_tax_id') {
+    return await stripe('DELETE', `/customers/${args.customer_id}/tax_ids/${args.tax_id_id}`);
+  }
+
+  // ── ENTITLEMENTS / FEATURES ───────────────────────────────────────────────
+  if (tool === 'stripe_list_features') {
+    return await stripe('GET', '/entitlements/features', { limit: args.limit || 20 });
+  }
+  if (tool === 'stripe_create_feature') {
+    const { name, lookup_key, metadata } = args;
+    if (!name || !lookup_key) throw new Error('name and lookup_key are required');
+    const body = { name, lookup_key };
+    if (metadata) body.metadata = metadata;
+    return await stripe('POST', '/entitlements/features', body);
+  }
+  if (tool === 'stripe_list_product_features') {
+    return await stripe('GET', `/products/${args.product_id}/features`, { limit: args.limit || 20 });
+  }
+  if (tool === 'stripe_attach_feature_to_product') {
+    const { product_id, entitlement_feature } = args;
+    if (!product_id || !entitlement_feature) throw new Error('product_id and entitlement_feature are required');
+    return await stripe('POST', `/products/${product_id}/features`, { entitlement_feature });
+  }
+  if (tool === 'stripe_list_active_entitlements') {
+    const { customer_id } = args;
+    if (!customer_id) throw new Error('customer_id is required');
+    return await stripe('GET', '/entitlements/active_entitlements', { customer: customer_id, limit: args.limit || 20 });
+  }
+
+  // ── PAYOUT SCHEDULING & MANAGEMENT ────────────────────────────────────────
+  if (tool === 'stripe_create_payout') {
+    const { amount, currency = 'usd', description, statement_descriptor, method } = args;
+    if (!amount) throw new Error('amount is required');
+    const body = { amount, currency };
+    if (description) body.description = description;
+    if (statement_descriptor) body.statement_descriptor = statement_descriptor;
+    if (method) body.method = method;
+    return await stripe('POST', '/payouts', body);
+  }
+  if (tool === 'stripe_cancel_payout') {
+    return await stripe('POST', `/payouts/${args.payout_id}/cancel`, {});
+  }
+  if (tool === 'stripe_reverse_payout') {
+    const { payout_id, metadata } = args;
+    if (!payout_id) throw new Error('payout_id is required');
+    const body = {};
+    if (metadata) body.metadata = metadata;
+    return await stripe('POST', `/payouts/${payout_id}/reverse`, body);
+  }
+  if (tool === 'stripe_update_payout') {
+    const { payout_id, metadata } = args;
+    if (!payout_id) throw new Error('payout_id is required');
+    return await stripe('POST', `/payouts/${payout_id}`, { metadata });
+  }
+
+  // ── TOPUPS ────────────────────────────────────────────────────────────────
+  if (tool === 'stripe_create_topup') {
+    const { amount, currency = 'usd', description, statement_descriptor } = args;
+    if (!amount) throw new Error('amount is required');
+    const body = { amount, currency };
+    if (description) body.description = description;
+    if (statement_descriptor) body.statement_descriptor = statement_descriptor;
+    return await stripe('POST', '/topups', body);
+  }
+  if (tool === 'stripe_list_topups') {
+    return await stripe('GET', '/topups', { limit: args.limit || 10, status: args.status });
+  }
+  if (tool === 'stripe_get_topup') {
+    return await stripe('GET', `/topups/${args.topup_id}`);
+  }
+  if (tool === 'stripe_cancel_topup') {
+    return await stripe('POST', `/topups/${args.topup_id}/cancel`, {});
+  }
+
+  // ── BANK ACCOUNTS (External accounts on Connect) ─────────────────────────
+  if (tool === 'stripe_list_bank_accounts') {
+    return await stripe('GET', `/accounts/${args.account_id}/external_accounts`, {
+      object: 'bank_account', limit: args.limit || 10
+    });
+  }
+  if (tool === 'stripe_create_bank_account') {
+    const { account_id, external_account, default_for_currency } = args;
+    if (!account_id || !external_account) throw new Error('account_id and external_account (token or object) are required');
+    const body = { external_account };
+    if (default_for_currency !== undefined) body.default_for_currency = default_for_currency;
+    return await stripe('POST', `/accounts/${account_id}/external_accounts`, body);
+  }
+  if (tool === 'stripe_verify_bank_account') {
+    const { account_id, bank_account_id, amounts } = args;
+    if (!account_id || !bank_account_id || !amounts) throw new Error('account_id, bank_account_id, and amounts array required');
+    const body = {};
+    amounts.forEach((a, i) => body[`amounts[${i}]`] = a);
+    return await stripe('POST', `/accounts/${account_id}/external_accounts/${bank_account_id}/verify`, body);
+  }
+  if (tool === 'stripe_delete_bank_account') {
+    return await stripe('DELETE', `/accounts/${args.account_id}/external_accounts/${args.bank_account_id}`);
+  }
+
+  // ── RADAR (Fraud Rules) ───────────────────────────────────────────────────
+  if (tool === 'stripe_list_radar_rules') {
+    return await stripe('GET', '/radar/rules', { limit: args.limit || 20 });
+  }
+  if (tool === 'stripe_get_radar_rule') {
+    return await stripe('GET', `/radar/rules/${args.rule_id}`);
+  }
+  if (tool === 'stripe_create_radar_rule') {
+    const { predicate, action } = args;
+    if (!predicate || !action) throw new Error('predicate and action are required');
+    return await stripe('POST', '/radar/rules', { predicate, action });
+  }
+  if (tool === 'stripe_delete_radar_rule') {
+    return await stripe('DELETE', `/radar/rules/${args.rule_id}`);
+  }
+  if (tool === 'stripe_list_radar_value_lists') {
+    return await stripe('GET', '/radar/value_lists', { limit: args.limit || 20, alias: args.alias });
+  }
+  if (tool === 'stripe_create_radar_value_list') {
+    const { alias, name, item_type = 'card_fingerprint' } = args;
+    if (!alias || !name) throw new Error('alias and name are required');
+    return await stripe('POST', '/radar/value_lists', { alias, name, item_type });
+  }
+  if (tool === 'stripe_delete_radar_value_list') {
+    return await stripe('DELETE', `/radar/value_lists/${args.value_list_id}`);
+  }
+  if (tool === 'stripe_list_radar_value_list_items') {
+    return await stripe('GET', '/radar/value_list_items', { value_list: args.value_list_id, limit: args.limit || 20 });
+  }
+  if (tool === 'stripe_create_radar_value_list_item') {
+    const { value_list_id, value } = args;
+    if (!value_list_id || !value) throw new Error('value_list_id and value are required');
+    return await stripe('POST', '/radar/value_list_items', { value_list: value_list_id, value });
+  }
+  if (tool === 'stripe_delete_radar_value_list_item') {
+    return await stripe('DELETE', `/radar/value_list_items/${args.item_id}`);
+  }
+
+  // ── IDENTITY / VERIFICATION ───────────────────────────────────────────────
+  if (tool === 'stripe_list_verification_sessions') {
+    return await stripe('GET', '/identity/verification_sessions', { limit: args.limit || 10, status: args.status });
+  }
+  if (tool === 'stripe_get_verification_session') {
+    return await stripe('GET', `/identity/verification_sessions/${args.session_id}`);
+  }
+  if (tool === 'stripe_create_verification_session') {
+    const { type = 'document', options, metadata, return_url } = args;
+    const body = { type };
+    if (options) body.options = options;
+    if (metadata) body.metadata = metadata;
+    if (return_url) body.return_url = return_url;
+    return await stripe('POST', '/identity/verification_sessions', body);
+  }
+  if (tool === 'stripe_cancel_verification_session') {
+    return await stripe('POST', `/identity/verification_sessions/${args.session_id}/cancel`, {});
+  }
+  if (tool === 'stripe_redact_verification_session') {
+    return await stripe('POST', `/identity/verification_sessions/${args.session_id}/redact`, {});
+  }
+
+  // ── BILLING ALERTS ────────────────────────────────────────────────────────
+  if (tool === 'stripe_list_billing_alerts') {
+    return await stripe('GET', '/billing/alerts', { limit: args.limit || 10 });
+  }
+  if (tool === 'stripe_create_billing_alert') {
+    const { title, usage_threshold, customer_id, meter_id } = args;
+    if (!title || usage_threshold === undefined) throw new Error('title and usage_threshold are required');
+    const body = { title, 'usage_threshold[gte]': usage_threshold };
+    if (customer_id) body['filter[customer]'] = customer_id;
+    if (meter_id) body['filter[meter]'] = meter_id;
+    return await stripe('POST', '/billing/alerts', body);
+  }
+  if (tool === 'stripe_activate_billing_alert') {
+    return await stripe('POST', `/billing/alerts/${args.alert_id}/activate`, {});
+  }
+  if (tool === 'stripe_deactivate_billing_alert') {
+    return await stripe('POST', `/billing/alerts/${args.alert_id}/deactivate`, {});
+  }
+  if (tool === 'stripe_archive_billing_alert') {
+    return await stripe('POST', `/billing/alerts/${args.alert_id}/archive`, {});
+  }
+
+  // ── METERS (Usage-based billing v2) ───────────────────────────────────────
+  if (tool === 'stripe_list_meters') {
+    return await stripe('GET', '/billing/meters', { limit: args.limit || 20, status: args.status });
+  }
+  if (tool === 'stripe_get_meter') {
+    return await stripe('GET', `/billing/meters/${args.meter_id}`);
+  }
+  if (tool === 'stripe_create_meter') {
+    const { display_name, event_name, default_aggregation, customer_mapping, value_settings } = args;
+    if (!display_name || !event_name) throw new Error('display_name and event_name are required');
+    const body = { display_name, event_name };
+    if (default_aggregation) body.default_aggregation = default_aggregation;
+    if (customer_mapping) body.customer_mapping = customer_mapping;
+    if (value_settings) body.value_settings = value_settings;
+    return await stripe('POST', '/billing/meters', body);
+  }
+  if (tool === 'stripe_deactivate_meter') {
+    return await stripe('POST', `/billing/meters/${args.meter_id}/deactivate`, {});
+  }
+  if (tool === 'stripe_reactivate_meter') {
+    return await stripe('POST', `/billing/meters/${args.meter_id}/reactivate`, {});
+  }
+  if (tool === 'stripe_create_meter_event') {
+    const { event_name, payload, identifier, timestamp } = args;
+    if (!event_name || !payload) throw new Error('event_name and payload are required');
+    const body = { event_name, payload };
+    if (identifier) body.identifier = identifier;
+    if (timestamp) body.timestamp = timestamp;
+    return await stripe('POST', '/billing/meter_events', body);
+  }
+  if (tool === 'stripe_list_meter_event_summaries') {
+    const { meter_id, customer_id, start_time, end_time } = args;
+    if (!meter_id || !customer_id || !start_time || !end_time) throw new Error('meter_id, customer_id, start_time, and end_time are required');
+    return await stripe('GET', `/billing/meters/${meter_id}/event_summaries`, {
+      customer: customer_id, start_time, end_time, limit: args.limit || 10
+    });
+  }
+
+  // ── FORWARDING (Request forwarding) ───────────────────────────────────────
+  if (tool === 'stripe_list_forwarding_requests') {
+    return await stripe('GET', '/forwarding/requests', { limit: args.limit || 10 });
+  }
+  if (tool === 'stripe_get_forwarding_request') {
+    return await stripe('GET', `/forwarding/requests/${args.request_id}`);
+  }
+  if (tool === 'stripe_create_forwarding_request') {
+    const { payment_method, url, replacements } = args;
+    if (!payment_method || !url) throw new Error('payment_method and url are required');
+    const body = { payment_method, url };
+    if (replacements) replacements.forEach((r, i) => body[`replacements[${i}]`] = r);
+    return await stripe('POST', '/forwarding/requests', body);
+  }
+
+  // ── SUPER TOOL: Compliance snapshot ───────────────────────────────────────
+  if (tool === 'stripe_compliance_snapshot') {
+    const [account, disputes, taxSettings] = await Promise.all([
+      stripe('GET', '/account', {}),
+      stripe('GET', '/disputes', { limit: 10 }),
+      stripe('GET', '/tax/settings', {}).catch(() => null)
+    ]);
+    const openDisputes = disputes.data.filter(d => d.status !== 'won' && d.status !== 'lost');
+    return {
+      account: {
+        id: account.id,
+        business_name: account.business_profile?.name,
+        country: account.country,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled,
+        details_submitted: account.details_submitted
+      },
+      open_disputes: openDisputes.length,
+      dispute_details: openDisputes.map(d => ({ id: d.id, amount: d.amount / 100, currency: d.currency, reason: d.reason, status: d.status })),
+      tax_head_office_country: taxSettings?.head_office?.address?.country || 'not configured',
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Payout health check ───────────────────────────────────────
+  if (tool === 'stripe_payout_health') {
+    const [balance, pendingPayouts, recentPayouts] = await Promise.all([
+      stripe('GET', '/balance', {}),
+      stripe('GET', '/payouts', { limit: 10, status: 'pending' }),
+      stripe('GET', '/payouts', { limit: 5, status: 'paid' })
+    ]);
+    return {
+      available_balance: balance.available?.map(b => ({ amount: b.amount / 100, currency: b.currency })),
+      pending_balance: balance.pending?.map(b => ({ amount: b.amount / 100, currency: b.currency })),
+      pending_payouts: pendingPayouts.data.map(p => ({ id: p.id, amount: p.amount / 100, currency: p.currency, arrival_date: new Date(p.arrival_date * 1000).toISOString() })),
+      recent_paid_payouts: recentPayouts.data.map(p => ({ id: p.id, amount: p.amount / 100, currency: p.currency, arrival_date: new Date(p.arrival_date * 1000).toISOString() })),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Stripe tool: ${tool}`);
 }
 
 export default { execute };

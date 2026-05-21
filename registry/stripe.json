@@ -1,145 +1,5028 @@
 [
-  {"name":"stripe_list_customers","description":"List Stripe customers with optional email filter and pagination.","namespace":"stripe","tags":["stripe","customers","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"email":{"type":"string"},"starting_after":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_customer","description":"Get a Stripe customer by their customer ID.","namespace":"stripe","tags":["stripe","customer","get"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"}},"required":["customer_id"]}},
-  {"name":"stripe_create_customer","description":"Create a new Stripe customer with email, name, phone, and optional metadata.","namespace":"stripe","tags":["stripe","customer","create"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"name":{"type":"string"},"phone":{"type":"string"},"description":{"type":"string"},"metadata":{"type":"object"}},"required":["email"]}},
-  {"name":"stripe_update_customer","description":"Update a Stripe customer's details (email, name, phone, metadata, etc.).","namespace":"stripe","tags":["stripe","customer","update"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"email":{"type":"string"},"name":{"type":"string"},"metadata":{"type":"object"}},"required":["customer_id"]}},
-  {"name":"stripe_delete_customer","description":"Delete a Stripe customer and all associated subscriptions and payment methods.","namespace":"stripe","tags":["stripe","customer","delete"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"}},"required":["customer_id"]}},
-  {"name":"stripe_search_customers","description":"Search Stripe customers using a query string (e.g. email:'test@example.com').","namespace":"stripe","tags":["stripe","customers","search","find"],"inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"Stripe search query e.g. email:'test@example.com'"},"limit":{"type":"number"}},"required":["query"]}},
-  {"name":"stripe_list_customer_payment_methods","description":"List payment methods (cards, bank accounts) attached to a customer.","namespace":"stripe","tags":["stripe","customer","payment-methods","cards"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"type":{"type":"string"},"limit":{"type":"number"}},"required":["customer_id"]}},
-  {"name":"stripe_list_customer_balance_transactions","description":"List customer balance transactions (credits and debits applied to a customer's cash balance).","namespace":"stripe","tags":["stripe","customer","balance","transactions"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"limit":{"type":"number"}},"required":["customer_id"]}},
-  {"name":"stripe_create_customer_balance_transaction","description":"Apply a credit or debit to a customer's cash balance.","namespace":"stripe","tags":["stripe","customer","balance","credit","debit"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"amount":{"type":"number","description":"Amount in cents (negative = credit, positive = debit)"},"currency":{"type":"string"},"description":{"type":"string"}},"required":["customer_id","amount"]}},
-  {"name":"stripe_list_charges","description":"List Stripe charges, optionally filtered by customer or payment intent.","namespace":"stripe","tags":["stripe","charges","list","payments"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"},"payment_intent_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_charge","description":"Get a specific Stripe charge by its charge ID.","namespace":"stripe","tags":["stripe","charge","get"],"inputSchema":{"type":"object","properties":{"charge_id":{"type":"string"}},"required":["charge_id"]}},
-  {"name":"stripe_update_charge","description":"Update a charge's description, metadata, or receipt email.","namespace":"stripe","tags":["stripe","charge","update"],"inputSchema":{"type":"object","properties":{"charge_id":{"type":"string"},"description":{"type":"string"},"metadata":{"type":"object"},"receipt_email":{"type":"string"}},"required":["charge_id"]}},
-  {"name":"stripe_capture_charge","description":"Capture a previously authorized but uncaptured charge.","namespace":"stripe","tags":["stripe","charge","capture","authorize"],"inputSchema":{"type":"object","properties":{"charge_id":{"type":"string"},"amount":{"type":"number","description":"Amount to capture (partial capture if less than authorized)"}},"required":["charge_id"]}},
-  {"name":"stripe_list_products","description":"List Stripe products with optional active filter.","namespace":"stripe","tags":["stripe","products","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"active":{"type":"boolean"}},"required":[]}},
-  {"name":"stripe_get_product","description":"Get a Stripe product by its product ID.","namespace":"stripe","tags":["stripe","product","get"],"inputSchema":{"type":"object","properties":{"product_id":{"type":"string"}},"required":["product_id"]}},
-  {"name":"stripe_create_product","description":"Create a new Stripe product for use in pricing and subscriptions.","namespace":"stripe","tags":["stripe","product","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"description":{"type":"string"},"metadata":{"type":"object"}},"required":["name"]}},
-  {"name":"stripe_update_product","description":"Update a Stripe product's name, description, or metadata.","namespace":"stripe","tags":["stripe","product","update"],"inputSchema":{"type":"object","properties":{"product_id":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"active":{"type":"boolean"}},"required":["product_id"]}},
-  {"name":"stripe_archive_product","description":"Archive (deactivate) a Stripe product so it no longer appears in checkout.","namespace":"stripe","tags":["stripe","product","archive","deactivate"],"inputSchema":{"type":"object","properties":{"product_id":{"type":"string"}},"required":["product_id"]}},
-  {"name":"stripe_list_prices","description":"List Stripe prices, optionally filtered by product or active status.","namespace":"stripe","tags":["stripe","prices","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"product_id":{"type":"string"},"active":{"type":"boolean"}},"required":[]}},
-  {"name":"stripe_get_price","description":"Get a Stripe price by its price ID.","namespace":"stripe","tags":["stripe","price","get"],"inputSchema":{"type":"object","properties":{"price_id":{"type":"string"}},"required":["price_id"]}},
-  {"name":"stripe_create_price","description":"Create a new Stripe price for a product — one-time or recurring.","namespace":"stripe","tags":["stripe","price","create","recurring"],"inputSchema":{"type":"object","properties":{"product_id":{"type":"string"},"unit_amount":{"type":"number","description":"Amount in cents"},"currency":{"type":"string"},"recurring":{"type":"object","description":"{interval: month|year|week, interval_count: 1}"},"nickname":{"type":"string"}},"required":["product_id","unit_amount"]}},
-  {"name":"stripe_update_price","description":"Update a Stripe price's nickname, active status, or metadata.","namespace":"stripe","tags":["stripe","price","update"],"inputSchema":{"type":"object","properties":{"price_id":{"type":"string"},"nickname":{"type":"string"},"active":{"type":"boolean"},"metadata":{"type":"object"}},"required":["price_id"]}},
-  {"name":"stripe_list_subscriptions","description":"List Stripe subscriptions with optional customer, status, and price filters.","namespace":"stripe","tags":["stripe","subscriptions","list","billing"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"},"status":{"type":"string"},"price_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_subscription","description":"Get a Stripe subscription by its subscription ID.","namespace":"stripe","tags":["stripe","subscription","get"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"}},"required":["subscription_id"]}},
-  {"name":"stripe_create_subscription","description":"Create a new Stripe subscription for a customer with a price or items array.","namespace":"stripe","tags":["stripe","subscription","create","billing"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"price_id":{"type":"string"},"trial_period_days":{"type":"number"},"coupon":{"type":"string"},"metadata":{"type":"object"}},"required":["customer_id"]}},
-  {"name":"stripe_update_subscription","description":"Update a Stripe subscription's items, billing, or metadata.","namespace":"stripe","tags":["stripe","subscription","update"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"}},"required":["subscription_id"]}},
-  {"name":"stripe_cancel_subscription","description":"Cancel a Stripe subscription immediately or at the end of the current billing period.","namespace":"stripe","tags":["stripe","subscription","cancel"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"},"at_period_end":{"type":"boolean"}},"required":["subscription_id"]}},
-  {"name":"stripe_pause_subscription","description":"Pause a Stripe subscription's collection without canceling it.","namespace":"stripe","tags":["stripe","subscription","pause"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"},"behavior":{"type":"string"}},"required":["subscription_id"]}},
-  {"name":"stripe_resume_subscription","description":"Resume a paused Stripe subscription.","namespace":"stripe","tags":["stripe","subscription","resume"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"}},"required":["subscription_id"]}},
-  {"name":"stripe_list_subscription_items","description":"List all items in a Stripe subscription.","namespace":"stripe","tags":["stripe","subscription","items","list"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"}},"required":["subscription_id"]}},
-  {"name":"stripe_update_subscription_item","description":"Update a subscription item's price, quantity, or metadata.","namespace":"stripe","tags":["stripe","subscription","item","update","upgrade"],"inputSchema":{"type":"object","properties":{"subscription_item_id":{"type":"string"},"price_id":{"type":"string"},"quantity":{"type":"number"}},"required":["subscription_item_id"]}},
-  {"name":"stripe_create_subscription_schedule","description":"Create a subscription schedule to automate future subscription changes (upgrades, cancellations, trials).","namespace":"stripe","tags":["stripe","subscription","schedule","future","automate"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"start_date":{"type":"number"},"end_behavior":{"type":"string"},"phases":{"type":"array"}},"required":["customer_id"]}},
-  {"name":"stripe_get_subscription_schedule","description":"Get a subscription schedule by its ID.","namespace":"stripe","tags":["stripe","subscription","schedule","get"],"inputSchema":{"type":"object","properties":{"schedule_id":{"type":"string"}},"required":["schedule_id"]}},
-  {"name":"stripe_update_subscription_schedule","description":"Update a subscription schedule's phases or end behavior.","namespace":"stripe","tags":["stripe","subscription","schedule","update"],"inputSchema":{"type":"object","properties":{"schedule_id":{"type":"string"},"phases":{"type":"array"}},"required":["schedule_id"]}},
-  {"name":"stripe_release_subscription_schedule","description":"Release a subscription schedule — the subscription continues unmanaged after the schedule ends.","namespace":"stripe","tags":["stripe","subscription","schedule","release"],"inputSchema":{"type":"object","properties":{"schedule_id":{"type":"string"}},"required":["schedule_id"]}},
-  {"name":"stripe_cancel_subscription_schedule","description":"Cancel a subscription schedule and optionally cancel the underlying subscription immediately.","namespace":"stripe","tags":["stripe","subscription","schedule","cancel"],"inputSchema":{"type":"object","properties":{"schedule_id":{"type":"string"},"invoice_now":{"type":"boolean"},"prorate":{"type":"boolean"}},"required":["schedule_id"]}},
-  {"name":"stripe_list_subscription_schedules","description":"List subscription schedules for a customer.","namespace":"stripe","tags":["stripe","subscription","schedules","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_list_invoices","description":"List Stripe invoices filtered by customer, subscription, or status.","namespace":"stripe","tags":["stripe","invoices","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"},"subscription_id":{"type":"string"},"status":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_invoice","description":"Get a Stripe invoice by its invoice ID.","namespace":"stripe","tags":["stripe","invoice","get"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_create_invoice","description":"Create a new Stripe invoice for a customer.","namespace":"stripe","tags":["stripe","invoice","create"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"subscription_id":{"type":"string"},"description":{"type":"string"},"days_until_due":{"type":"number"}},"required":["customer_id"]}},
-  {"name":"stripe_finalize_invoice","description":"Finalize a draft invoice to make it ready for payment.","namespace":"stripe","tags":["stripe","invoice","finalize"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_pay_invoice","description":"Attempt to pay an open Stripe invoice using the customer's default payment method.","namespace":"stripe","tags":["stripe","invoice","pay","collect"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_void_invoice","description":"Void a finalized Stripe invoice (cannot be paid or edited after voiding).","namespace":"stripe","tags":["stripe","invoice","void","cancel"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_send_invoice","description":"Send a Stripe invoice to the customer via email.","namespace":"stripe","tags":["stripe","invoice","send","email"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_create_invoice_item","description":"Add a line item to a pending invoice or create a standalone invoice item.","namespace":"stripe","tags":["stripe","invoice","item","add","line-item"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"amount":{"type":"number"},"currency":{"type":"string"},"description":{"type":"string"},"invoice_id":{"type":"string"}},"required":["customer_id"]}},
-  {"name":"stripe_get_upcoming_invoice","description":"Preview the upcoming invoice for a customer or subscription before it's generated.","namespace":"stripe","tags":["stripe","invoice","upcoming","preview"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"subscription_id":{"type":"string"}},"required":["customer_id"]}},
-  {"name":"stripe_list_credit_notes","description":"List credit notes issued for an invoice.","namespace":"stripe","tags":["stripe","credit-notes","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"invoice_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_credit_note","description":"Get a credit note by its ID.","namespace":"stripe","tags":["stripe","credit-note","get"],"inputSchema":{"type":"object","properties":{"credit_note_id":{"type":"string"}},"required":["credit_note_id"]}},
-  {"name":"stripe_create_credit_note","description":"Issue a credit note to partially or fully credit a finalized invoice.","namespace":"stripe","tags":["stripe","credit-note","create","refund","adjustment"],"inputSchema":{"type":"object","properties":{"invoice_id":{"type":"string"},"amount":{"type":"number"},"reason":{"type":"string"},"memo":{"type":"string"}},"required":["invoice_id"]}},
-  {"name":"stripe_void_credit_note","description":"Void a credit note, reversing its effect on the invoice balance.","namespace":"stripe","tags":["stripe","credit-note","void"],"inputSchema":{"type":"object","properties":{"credit_note_id":{"type":"string"}},"required":["credit_note_id"]}},
-  {"name":"stripe_list_payment_intents","description":"List Stripe payment intents, optionally filtered by customer.","namespace":"stripe","tags":["stripe","payment-intents","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_payment_intent","description":"Get a Stripe payment intent by its ID.","namespace":"stripe","tags":["stripe","payment-intent","get"],"inputSchema":{"type":"object","properties":{"payment_intent_id":{"type":"string"}},"required":["payment_intent_id"]}},
-  {"name":"stripe_create_payment_intent","description":"Create a Stripe payment intent for a one-time charge.","namespace":"stripe","tags":["stripe","payment-intent","create","charge"],"inputSchema":{"type":"object","properties":{"amount":{"type":"number","description":"Amount in cents"},"currency":{"type":"string"},"customer_id":{"type":"string"},"description":{"type":"string"}},"required":["amount"]}},
-  {"name":"stripe_confirm_payment_intent","description":"Confirm a payment intent to attempt to collect payment.","namespace":"stripe","tags":["stripe","payment-intent","confirm"],"inputSchema":{"type":"object","properties":{"payment_intent_id":{"type":"string"},"payment_method":{"type":"string"}},"required":["payment_intent_id"]}},
-  {"name":"stripe_capture_payment_intent","description":"Capture an authorized (but uncaptured) payment intent.","namespace":"stripe","tags":["stripe","payment-intent","capture"],"inputSchema":{"type":"object","properties":{"payment_intent_id":{"type":"string"},"amount":{"type":"number"}},"required":["payment_intent_id"]}},
-  {"name":"stripe_cancel_payment_intent","description":"Cancel a payment intent that has not yet been captured.","namespace":"stripe","tags":["stripe","payment-intent","cancel"],"inputSchema":{"type":"object","properties":{"payment_intent_id":{"type":"string"}},"required":["payment_intent_id"]}},
-  {"name":"stripe_create_setup_intent","description":"Create a setup intent to securely save a customer's payment method for future off-session payments.","namespace":"stripe","tags":["stripe","setup-intent","create","save-card","off-session"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"payment_method_types":{"type":"array","items":{"type":"string"}},"usage":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_setup_intent","description":"Get a setup intent by its ID.","namespace":"stripe","tags":["stripe","setup-intent","get"],"inputSchema":{"type":"object","properties":{"setup_intent_id":{"type":"string"}},"required":["setup_intent_id"]}},
-  {"name":"stripe_confirm_setup_intent","description":"Confirm a setup intent with a payment method to complete the save.","namespace":"stripe","tags":["stripe","setup-intent","confirm"],"inputSchema":{"type":"object","properties":{"setup_intent_id":{"type":"string"},"payment_method":{"type":"string"}},"required":["setup_intent_id"]}},
-  {"name":"stripe_cancel_setup_intent","description":"Cancel a setup intent that is no longer needed.","namespace":"stripe","tags":["stripe","setup-intent","cancel"],"inputSchema":{"type":"object","properties":{"setup_intent_id":{"type":"string"}},"required":["setup_intent_id"]}},
-  {"name":"stripe_list_setup_intents","description":"List setup intents, optionally filtered by customer.","namespace":"stripe","tags":["stripe","setup-intents","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_create_refund","description":"Refund a charge or payment intent, fully or partially.","namespace":"stripe","tags":["stripe","refund","create"],"inputSchema":{"type":"object","properties":{"payment_intent_id":{"type":"string"},"charge_id":{"type":"string"},"amount":{"type":"number"},"reason":{"type":"string"}},"required":[]}},
-  {"name":"stripe_list_refunds","description":"List refunds, optionally filtered by payment intent or charge.","namespace":"stripe","tags":["stripe","refunds","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"payment_intent_id":{"type":"string"},"charge_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_refund","description":"Get a refund by its ID.","namespace":"stripe","tags":["stripe","refund","get"],"inputSchema":{"type":"object","properties":{"refund_id":{"type":"string"}},"required":["refund_id"]}},
-  {"name":"stripe_get_payment_method","description":"Get details about a specific payment method (card info, billing details, etc.).","namespace":"stripe","tags":["stripe","payment-method","get","card"],"inputSchema":{"type":"object","properties":{"payment_method_id":{"type":"string"}},"required":["payment_method_id"]}},
-  {"name":"stripe_attach_payment_method","description":"Attach a payment method to a customer so it can be reused for future payments.","namespace":"stripe","tags":["stripe","payment-method","attach","customer"],"inputSchema":{"type":"object","properties":{"payment_method_id":{"type":"string"},"customer_id":{"type":"string"}},"required":["payment_method_id","customer_id"]}},
-  {"name":"stripe_detach_payment_method","description":"Detach a payment method from its customer.","namespace":"stripe","tags":["stripe","payment-method","detach","remove"],"inputSchema":{"type":"object","properties":{"payment_method_id":{"type":"string"}},"required":["payment_method_id"]}},
-  {"name":"stripe_create_checkout_session","description":"Create a Stripe Checkout session for one-time payments or subscription setup.","namespace":"stripe","tags":["stripe","checkout","session","payment-link","hosted"],"inputSchema":{"type":"object","properties":{"price_id":{"type":"string"},"mode":{"type":"string"},"success_url":{"type":"string"},"cancel_url":{"type":"string"},"customer_id":{"type":"string"},"quantity":{"type":"number"}},"required":["price_id","success_url","cancel_url"]}},
-  {"name":"stripe_get_checkout_session","description":"Get a Checkout session by its session ID.","namespace":"stripe","tags":["stripe","checkout","session","get"],"inputSchema":{"type":"object","properties":{"session_id":{"type":"string"}},"required":["session_id"]}},
-  {"name":"stripe_list_checkout_sessions","description":"List Stripe Checkout sessions with optional customer filter.","namespace":"stripe","tags":["stripe","checkout","sessions","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_expire_checkout_session","description":"Expire an active Checkout session so it can no longer be completed.","namespace":"stripe","tags":["stripe","checkout","session","expire","cancel"],"inputSchema":{"type":"object","properties":{"session_id":{"type":"string"}},"required":["session_id"]}},
-  {"name":"stripe_create_payment_link","description":"Create a shareable Stripe Payment Link from a price — no code required.","namespace":"stripe","tags":["stripe","payment-link","create","no-code","shareable"],"inputSchema":{"type":"object","properties":{"price_id":{"type":"string"},"quantity":{"type":"number"},"allow_promotion_codes":{"type":"boolean"}},"required":["price_id"]}},
-  {"name":"stripe_get_payment_link","description":"Get a payment link by its ID.","namespace":"stripe","tags":["stripe","payment-link","get"],"inputSchema":{"type":"object","properties":{"payment_link_id":{"type":"string"}},"required":["payment_link_id"]}},
-  {"name":"stripe_update_payment_link","description":"Update a payment link's active status or metadata.","namespace":"stripe","tags":["stripe","payment-link","update"],"inputSchema":{"type":"object","properties":{"payment_link_id":{"type":"string"},"active":{"type":"boolean"}},"required":["payment_link_id"]}},
-  {"name":"stripe_list_payment_links","description":"List all payment links in the account.","namespace":"stripe","tags":["stripe","payment-links","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"active":{"type":"boolean"}},"required":[]}},
-  {"name":"stripe_deactivate_payment_link","description":"Deactivate a Stripe payment link so it stops accepting payments.","namespace":"stripe","tags":["stripe","payment-link","deactivate","disable"],"inputSchema":{"type":"object","properties":{"payment_link_id":{"type":"string"}},"required":["payment_link_id"]}},
-  {"name":"stripe_create_billing_portal_session","description":"Create a Stripe billing portal session URL so a customer can manage their subscriptions and payment methods.","namespace":"stripe","tags":["stripe","billing-portal","customer","self-service"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"return_url":{"type":"string"}},"required":["customer_id","return_url"]}},
-  {"name":"stripe_get_billing_portal_configuration","description":"Get the current billing portal configuration settings.","namespace":"stripe","tags":["stripe","billing-portal","configuration","settings"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_create_usage_record","description":"Report metered usage for a subscription item (for usage-based billing).","namespace":"stripe","tags":["stripe","usage","metered","billing","record"],"inputSchema":{"type":"object","properties":{"subscription_item_id":{"type":"string"},"quantity":{"type":"number"},"timestamp":{"type":"number"},"action":{"type":"string"}},"required":["subscription_item_id","quantity"]}},
-  {"name":"stripe_list_usage_record_summaries","description":"List usage record summaries for a subscription item in a metered billing plan.","namespace":"stripe","tags":["stripe","usage","metered","summaries","list"],"inputSchema":{"type":"object","properties":{"subscription_item_id":{"type":"string"},"limit":{"type":"number"}},"required":["subscription_item_id"]}},
-  {"name":"stripe_list_tax_rates","description":"List Stripe tax rates with optional active/inclusive filter.","namespace":"stripe","tags":["stripe","tax","rates","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"active":{"type":"boolean"}},"required":[]}},
-  {"name":"stripe_get_tax_rate","description":"Get a tax rate by its ID.","namespace":"stripe","tags":["stripe","tax","rate","get"],"inputSchema":{"type":"object","properties":{"tax_rate_id":{"type":"string"}},"required":["tax_rate_id"]}},
-  {"name":"stripe_create_tax_rate","description":"Create a new Stripe tax rate (e.g. VAT, GST, sales tax).","namespace":"stripe","tags":["stripe","tax","rate","create","vat","gst"],"inputSchema":{"type":"object","properties":{"display_name":{"type":"string"},"percentage":{"type":"number"},"inclusive":{"type":"boolean"},"country":{"type":"string"},"state":{"type":"string"}},"required":["display_name","percentage"]}},
-  {"name":"stripe_update_tax_rate","description":"Update a tax rate's active status or description.","namespace":"stripe","tags":["stripe","tax","rate","update"],"inputSchema":{"type":"object","properties":{"tax_rate_id":{"type":"string"},"active":{"type":"boolean"},"description":{"type":"string"}},"required":["tax_rate_id"]}},
-  {"name":"stripe_create_quote","description":"Create a Stripe quote — a proposal for a customer before creating a subscription.","namespace":"stripe","tags":["stripe","quote","create","proposal"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"line_items":{"type":"array"},"expires_at":{"type":"number"},"description":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_quote","description":"Get a Stripe quote by its ID.","namespace":"stripe","tags":["stripe","quote","get"],"inputSchema":{"type":"object","properties":{"quote_id":{"type":"string"}},"required":["quote_id"]}},
-  {"name":"stripe_update_quote","description":"Update a draft quote's line items, expiration, or metadata.","namespace":"stripe","tags":["stripe","quote","update"],"inputSchema":{"type":"object","properties":{"quote_id":{"type":"string"}},"required":["quote_id"]}},
-  {"name":"stripe_finalize_quote","description":"Finalize a draft quote, making it ready to share with the customer.","namespace":"stripe","tags":["stripe","quote","finalize"],"inputSchema":{"type":"object","properties":{"quote_id":{"type":"string"}},"required":["quote_id"]}},
-  {"name":"stripe_accept_quote","description":"Accept a finalized quote to automatically create the subscription.","namespace":"stripe","tags":["stripe","quote","accept","convert"],"inputSchema":{"type":"object","properties":{"quote_id":{"type":"string"}},"required":["quote_id"]}},
-  {"name":"stripe_cancel_quote","description":"Cancel an open quote.","namespace":"stripe","tags":["stripe","quote","cancel"],"inputSchema":{"type":"object","properties":{"quote_id":{"type":"string"}},"required":["quote_id"]}},
-  {"name":"stripe_list_quotes","description":"List quotes with optional customer or status filter.","namespace":"stripe","tags":["stripe","quotes","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"customer_id":{"type":"string"},"status":{"type":"string"}},"required":[]}},
-  {"name":"stripe_list_coupons","description":"List all Stripe coupons.","namespace":"stripe","tags":["stripe","coupons","list","discounts"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"stripe_get_coupon","description":"Get a Stripe coupon by its ID.","namespace":"stripe","tags":["stripe","coupon","get"],"inputSchema":{"type":"object","properties":{"coupon_id":{"type":"string"}},"required":["coupon_id"]}},
-  {"name":"stripe_create_coupon","description":"Create a Stripe coupon for percentage or fixed-amount discounts.","namespace":"stripe","tags":["stripe","coupon","create","discount"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"percent_off":{"type":"number"},"amount_off":{"type":"number"},"duration":{"type":"string"},"max_redemptions":{"type":"number"}},"required":[]}},
-  {"name":"stripe_delete_coupon","description":"Delete a Stripe coupon.","namespace":"stripe","tags":["stripe","coupon","delete"],"inputSchema":{"type":"object","properties":{"coupon_id":{"type":"string"}},"required":["coupon_id"]}},
-  {"name":"stripe_list_promotion_codes","description":"List promotion codes, optionally filtered by coupon or active status.","namespace":"stripe","tags":["stripe","promotion-codes","list","discount"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"coupon_id":{"type":"string"},"active":{"type":"boolean"}},"required":[]}},
-  {"name":"stripe_get_promotion_code","description":"Get a promotion code by its ID.","namespace":"stripe","tags":["stripe","promotion-code","get"],"inputSchema":{"type":"object","properties":{"promotion_code_id":{"type":"string"}},"required":["promotion_code_id"]}},
-  {"name":"stripe_create_promotion_code","description":"Create a promotion code (human-readable coupon code) for a coupon.","namespace":"stripe","tags":["stripe","promotion-code","create","discount-code"],"inputSchema":{"type":"object","properties":{"coupon_id":{"type":"string"},"code":{"type":"string"},"max_redemptions":{"type":"number"},"expires_at":{"type":"number"}},"required":["coupon_id"]}},
-  {"name":"stripe_update_promotion_code","description":"Update a promotion code's active status or metadata.","namespace":"stripe","tags":["stripe","promotion-code","update"],"inputSchema":{"type":"object","properties":{"promotion_code_id":{"type":"string"},"active":{"type":"boolean"}},"required":["promotion_code_id"]}},
-  {"name":"stripe_list_webhooks","description":"List all Stripe webhook endpoints.","namespace":"stripe","tags":["stripe","webhooks","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"stripe_get_webhook","description":"Get a Stripe webhook endpoint by its ID.","namespace":"stripe","tags":["stripe","webhook","get"],"inputSchema":{"type":"object","properties":{"webhook_id":{"type":"string"}},"required":["webhook_id"]}},
-  {"name":"stripe_create_webhook","description":"Create a Stripe webhook endpoint to receive events at a URL.","namespace":"stripe","tags":["stripe","webhook","create","events"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"events":{"type":"array","items":{"type":"string"}},"description":{"type":"string"}},"required":["url","events"]}},
-  {"name":"stripe_update_webhook","description":"Update a webhook endpoint's URL or subscribed events.","namespace":"stripe","tags":["stripe","webhook","update"],"inputSchema":{"type":"object","properties":{"webhook_id":{"type":"string"},"url":{"type":"string"},"events":{"type":"array","items":{"type":"string"}}},"required":["webhook_id"]}},
-  {"name":"stripe_delete_webhook","description":"Delete a Stripe webhook endpoint.","namespace":"stripe","tags":["stripe","webhook","delete"],"inputSchema":{"type":"object","properties":{"webhook_id":{"type":"string"}},"required":["webhook_id"]}},
-  {"name":"stripe_list_events","description":"List recent Stripe events — the audit log of what happened in your account.","namespace":"stripe","tags":["stripe","events","list","log","audit"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"type":{"type":"string","description":"Filter by event type e.g. customer.created"}},"required":[]}},
-  {"name":"stripe_get_event","description":"Get a specific Stripe event by its ID.","namespace":"stripe","tags":["stripe","event","get"],"inputSchema":{"type":"object","properties":{"event_id":{"type":"string"}},"required":["event_id"]}},
-  {"name":"stripe_list_files","description":"List files uploaded to Stripe (dispute evidence, identity docs, etc.).","namespace":"stripe","tags":["stripe","files","list","uploads"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"purpose":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_file","description":"Get a Stripe file by its ID.","namespace":"stripe","tags":["stripe","file","get"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]}},
-  {"name":"stripe_create_file_link","description":"Create a short-lived URL link to a Stripe file for sharing or download.","namespace":"stripe","tags":["stripe","file","link","download","url"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"},"expires_at":{"type":"number"}},"required":["file_id"]}},
-  {"name":"stripe_list_disputes","description":"List all Stripe disputes on the account.","namespace":"stripe","tags":["stripe","disputes","list","chargebacks"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"stripe_get_dispute","description":"Get a Stripe dispute by its ID.","namespace":"stripe","tags":["stripe","dispute","get"],"inputSchema":{"type":"object","properties":{"dispute_id":{"type":"string"}},"required":["dispute_id"]}},
-  {"name":"stripe_update_dispute","description":"Submit evidence to counter a Stripe dispute.","namespace":"stripe","tags":["stripe","dispute","evidence","update","fight"],"inputSchema":{"type":"object","properties":{"dispute_id":{"type":"string"},"evidence":{"type":"object"},"submit":{"type":"boolean"}},"required":["dispute_id"]}},
-  {"name":"stripe_close_dispute","description":"Close a Stripe dispute, accepting the chargeback (surrendering the funds).","namespace":"stripe","tags":["stripe","dispute","close","accept"],"inputSchema":{"type":"object","properties":{"dispute_id":{"type":"string"}},"required":["dispute_id"]}},
-  {"name":"stripe_get_balance","description":"Get the current Stripe account balance (available and pending funds).","namespace":"stripe","tags":["stripe","balance","funds","available"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_list_balance_transactions","description":"List all balance transactions (charges, refunds, payouts, fees).","namespace":"stripe","tags":["stripe","balance","transactions","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"type":{"type":"string"},"currency":{"type":"string"}},"required":[]}},
-  {"name":"stripe_list_payouts","description":"List payouts sent to your bank account.","namespace":"stripe","tags":["stripe","payouts","list","bank"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"status":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_payout","description":"Get a specific payout by its ID.","namespace":"stripe","tags":["stripe","payout","get"],"inputSchema":{"type":"object","properties":{"payout_id":{"type":"string"}},"required":["payout_id"]}},
-  {"name":"stripe_get_account","description":"Retrieve your own Stripe account details (business info, capabilities, settings).","namespace":"stripe","tags":["stripe","account","info","settings"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_update_account","description":"Update your Stripe account's business profile or settings.","namespace":"stripe","tags":["stripe","account","update","settings"],"inputSchema":{"type":"object","properties":{"business_type":{"type":"string"},"business_profile":{"type":"object"}},"required":[]}},
-  {"name":"stripe_create_connect_account","description":"Create a Stripe Connect account for a platform user (merchant/seller).","namespace":"stripe","tags":["stripe","connect","account","create","marketplace"],"inputSchema":{"type":"object","properties":{"type":{"type":"string"},"email":{"type":"string"},"country":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_connect_account","description":"Get a Stripe Connect account by its account ID.","namespace":"stripe","tags":["stripe","connect","account","get"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"}},"required":["account_id"]}},
-  {"name":"stripe_update_connect_account","description":"Update a Stripe Connect account's settings.","namespace":"stripe","tags":["stripe","connect","account","update"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"}},"required":["account_id"]}},
-  {"name":"stripe_list_connect_accounts","description":"List all Stripe Connect accounts on the platform.","namespace":"stripe","tags":["stripe","connect","accounts","list","marketplace"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"stripe_delete_connect_account","description":"Delete a Stripe Connect account.","namespace":"stripe","tags":["stripe","connect","account","delete"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"}},"required":["account_id"]}},
-  {"name":"stripe_create_account_link","description":"Create an account link URL for a Connect account to complete onboarding.","namespace":"stripe","tags":["stripe","connect","onboarding","account-link","kyc"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"},"return_url":{"type":"string"},"refresh_url":{"type":"string"},"type":{"type":"string"}},"required":["account_id","return_url","refresh_url"]}},
-  {"name":"stripe_create_login_link","description":"Generate a temporary Stripe dashboard login link for a connected account.","namespace":"stripe","tags":["stripe","connect","login","dashboard","link"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"}},"required":["account_id"]}},
-  {"name":"stripe_list_account_capabilities","description":"List the capabilities (card payments, transfers, etc.) of a Connect account.","namespace":"stripe","tags":["stripe","connect","capabilities","list"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"}},"required":["account_id"]}},
-  {"name":"stripe_update_account_capability","description":"Request or disable a capability on a Connect account.","namespace":"stripe","tags":["stripe","connect","capability","update","request"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string"},"capability_id":{"type":"string"},"requested":{"type":"boolean"}},"required":["account_id","capability_id","requested"]}},
-  {"name":"stripe_create_transfer","description":"Transfer funds from your Stripe balance to a connected account.","namespace":"stripe","tags":["stripe","transfer","connect","funds","marketplace"],"inputSchema":{"type":"object","properties":{"amount":{"type":"number"},"currency":{"type":"string"},"destination_account_id":{"type":"string"},"description":{"type":"string"}},"required":["amount","destination_account_id"]}},
-  {"name":"stripe_list_transfers","description":"List transfers to connected accounts.","namespace":"stripe","tags":["stripe","transfers","list","connect"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"account_id":{"type":"string"}},"required":[]}},
-  {"name":"stripe_get_transfer","description":"Get a transfer by its ID.","namespace":"stripe","tags":["stripe","transfer","get"],"inputSchema":{"type":"object","properties":{"transfer_id":{"type":"string"}},"required":["transfer_id"]}},
-  {"name":"stripe_reverse_transfer","description":"Reverse a transfer (pull funds back from a connected account).","namespace":"stripe","tags":["stripe","transfer","reverse","refund","connect"],"inputSchema":{"type":"object","properties":{"transfer_id":{"type":"string"},"amount":{"type":"number"}},"required":["transfer_id"]}},
-  {"name":"stripe_list_report_types","description":"List available Stripe financial report types (balance, payout reconciliation, etc.).","namespace":"stripe","tags":["stripe","reporting","report-types","list"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_create_report_run","description":"Generate a Stripe financial report for a date range.","namespace":"stripe","tags":["stripe","reporting","report","run","financial"],"inputSchema":{"type":"object","properties":{"report_type":{"type":"string"},"interval_start":{"type":"number"},"interval_end":{"type":"number"}},"required":["report_type","interval_start","interval_end"]}},
-  {"name":"stripe_get_report_run","description":"Get the status and download URL of a report run.","namespace":"stripe","tags":["stripe","reporting","report","get"],"inputSchema":{"type":"object","properties":{"report_run_id":{"type":"string"}},"required":["report_run_id"]}},
-  {"name":"stripe_list_report_runs","description":"List past report runs.","namespace":"stripe","tags":["stripe","reporting","report-runs","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"stripe_get_mrr_summary","description":"Calculate approximate MRR and ARR from active subscriptions.","namespace":"stripe","tags":["stripe","mrr","arr","revenue","reporting"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_revenue_summary","description":"SUPER TOOL: Full revenue dashboard — MRR, ARR, active subscriptions, past-due count, revenue last 30 days, and account balance in one call.","namespace":"stripe","tags":["stripe","revenue","mrr","arr","dashboard","super-tool","reporting"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_dunning_check","description":"SUPER TOOL: Find all past-due subscriptions with full customer details — email, name, amount, period end — ready for dunning campaigns.","namespace":"stripe","tags":["stripe","dunning","past-due","subscriptions","collections","super-tool"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"stripe_onboard_customer","description":"SUPER TOOL: Create a Stripe customer and setup intent in one call — returns the client_secret for collecting a payment method via Stripe.js.","namespace":"stripe","tags":["stripe","onboard","customer","setup","payment-method","super-tool"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"name":{"type":"string"},"price_id":{"type":"string"},"trial_days":{"type":"number"}},"required":["email","price_id"]}},
-  {"name":"stripe_upgrade_subscription","description":"SUPER TOOL: Upgrade or downgrade a subscription to a new price — optionally previews proration before applying.","namespace":"stripe","tags":["stripe","upgrade","downgrade","subscription","proration","super-tool"],"inputSchema":{"type":"object","properties":{"subscription_id":{"type":"string"},"new_price_id":{"type":"string"},"proration_behavior":{"type":"string"},"preview_only":{"type":"boolean"}},"required":["subscription_id","new_price_id"]}},
-  {"name":"stripe_cancel_and_refund_customer","description":"SUPER TOOL: Cancel a customer's subscription and issue a refund on their last charge in one operation.","namespace":"stripe","tags":["stripe","cancel","refund","customer","offboard","super-tool"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"},"subscription_id":{"type":"string"},"refund_amount":{"type":"number"},"cancel_at_period_end":{"type":"boolean"}},"required":["customer_id"]}},
-  {"name":"stripe_customer_billing_summary","description":"SUPER TOOL: Get complete billing history for a customer — subscriptions, invoices, charges, payment methods, and total lifetime spend in one call.","namespace":"stripe","tags":["stripe","customer","billing","history","summary","super-tool","lifetime-value"],"inputSchema":{"type":"object","properties":{"customer_id":{"type":"string"}},"required":["customer_id"]}}
+  {
+    "name": "stripe_list_customers",
+    "description": "List Stripe customers with optional email filter and pagination.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "email": {
+          "type": "string"
+        },
+        "starting_after": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_customer",
+    "description": "Get a Stripe customer by their customer ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_customer",
+    "description": "Create a new Stripe customer with email, name, phone, and optional metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_customer",
+    "description": "Update a Stripe customer's details (email, name, phone, metadata, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_customer",
+    "description": "Delete a Stripe customer and all associated subscriptions and payment methods.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_search_customers",
+    "description": "Search Stripe customers using a query string (e.g. email:'test@example.com').",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customers",
+      "search",
+      "find"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Stripe search query e.g. email:'test@example.com'"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_customer_payment_methods",
+    "description": "List payment methods (cards, bank accounts) attached to a customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "payment-methods",
+      "cards"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_customer_balance_transactions",
+    "description": "List customer balance transactions (credits and debits applied to a customer's cash balance).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "balance",
+      "transactions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_customer_balance_transaction",
+    "description": "Apply a credit or debit to a customer's cash balance.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "balance",
+      "credit",
+      "debit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount in cents (negative = credit, positive = debit)"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_charges",
+    "description": "List Stripe charges, optionally filtered by customer or payment intent.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "charges",
+      "list",
+      "payments"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "payment_intent_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_charge",
+    "description": "Get a specific Stripe charge by its charge ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "charge",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "charge_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "charge_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_charge",
+    "description": "Update a charge's description, metadata, or receipt email.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "charge",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "charge_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        },
+        "receipt_email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "charge_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_capture_charge",
+    "description": "Capture a previously authorized but uncaptured charge.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "charge",
+      "capture",
+      "authorize"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "charge_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount to capture (partial capture if less than authorized)"
+        }
+      },
+      "required": [
+        "charge_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_products",
+    "description": "List Stripe products with optional active filter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "products",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_product",
+    "description": "Get a Stripe product by its product ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_product",
+    "description": "Create a new Stripe product for use in pricing and subscriptions.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_product",
+    "description": "Update a Stripe product's name, description, or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "product_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_archive_product",
+    "description": "Archive (deactivate) a Stripe product so it no longer appears in checkout.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "archive",
+      "deactivate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_prices",
+    "description": "List Stripe prices, optionally filtered by product or active status.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "prices",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "product_id": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_price",
+    "description": "Get a Stripe price by its price ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "price",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "price_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "price_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_price",
+    "description": "Create a new Stripe price for a product — one-time or recurring.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "price",
+      "create",
+      "recurring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "unit_amount": {
+          "type": "number",
+          "description": "Amount in cents"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "recurring": {
+          "type": "object",
+          "description": "{interval: month|year|week, interval_count: 1}"
+        },
+        "nickname": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "product_id",
+        "unit_amount"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_price",
+    "description": "Update a Stripe price's nickname, active status, or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "price",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "price_id": {
+          "type": "string"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "price_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_subscriptions",
+    "description": "List Stripe subscriptions with optional customer, status, and price filters.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscriptions",
+      "list",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_subscription",
+    "description": "Get a Stripe subscription by its subscription ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_subscription",
+    "description": "Create a new Stripe subscription for a customer with a price or items array.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "create",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string"
+        },
+        "trial_period_days": {
+          "type": "number"
+        },
+        "coupon": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_subscription",
+    "description": "Update a Stripe subscription's items, billing, or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_subscription",
+    "description": "Cancel a Stripe subscription immediately or at the end of the current billing period.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        },
+        "at_period_end": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_pause_subscription",
+    "description": "Pause a Stripe subscription's collection without canceling it.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        },
+        "behavior": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_resume_subscription",
+    "description": "Resume a paused Stripe subscription.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "resume"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_subscription_items",
+    "description": "List all items in a Stripe subscription.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "items",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_subscription_item",
+    "description": "Update a subscription item's price, quantity, or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "item",
+      "update",
+      "upgrade"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_item_id": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "subscription_item_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_subscription_schedule",
+    "description": "Create a subscription schedule to automate future subscription changes (upgrades, cancellations, trials).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedule",
+      "future",
+      "automate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "number"
+        },
+        "end_behavior": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_subscription_schedule",
+    "description": "Get a subscription schedule by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedule",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_subscription_schedule",
+    "description": "Update a subscription schedule's phases or end behavior.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedule",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        },
+        "phases": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_release_subscription_schedule",
+    "description": "Release a subscription schedule — the subscription continues unmanaged after the schedule ends.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedule",
+      "release"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_subscription_schedule",
+    "description": "Cancel a subscription schedule and optionally cancel the underlying subscription immediately.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedule",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        },
+        "invoice_now": {
+          "type": "boolean"
+        },
+        "prorate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_subscription_schedules",
+    "description": "List subscription schedules for a customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "subscription",
+      "schedules",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_list_invoices",
+    "description": "List Stripe invoices filtered by customer, subscription, or status.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoices",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "subscription_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_invoice",
+    "description": "Get a Stripe invoice by its invoice ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_invoice",
+    "description": "Create a new Stripe invoice for a customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "subscription_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "days_until_due": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_finalize_invoice",
+    "description": "Finalize a draft invoice to make it ready for payment.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "finalize"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_pay_invoice",
+    "description": "Attempt to pay an open Stripe invoice using the customer's default payment method.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "pay",
+      "collect"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_void_invoice",
+    "description": "Void a finalized Stripe invoice (cannot be paid or edited after voiding).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "void",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_send_invoice",
+    "description": "Send a Stripe invoice to the customer via email.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "send",
+      "email"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_invoice_item",
+    "description": "Add a line item to a pending invoice or create a standalone invoice item.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "item",
+      "add",
+      "line-item"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_upcoming_invoice",
+    "description": "Preview the upcoming invoice for a customer or subscription before it's generated.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "invoice",
+      "upcoming",
+      "preview"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "subscription_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_credit_notes",
+    "description": "List credit notes issued for an invoice.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "credit-notes",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_credit_note",
+    "description": "Get a credit note by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "credit-note",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credit_note_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credit_note_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_credit_note",
+    "description": "Issue a credit note to partially or fully credit a finalized invoice.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "credit-note",
+      "create",
+      "refund",
+      "adjustment"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "memo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_void_credit_note",
+    "description": "Void a credit note, reversing its effect on the invoice balance.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "credit-note",
+      "void"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credit_note_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credit_note_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_payment_intents",
+    "description": "List Stripe payment intents, optionally filtered by customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intents",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_payment_intent",
+    "description": "Get a Stripe payment intent by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intent",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_intent_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_payment_intent",
+    "description": "Create a Stripe payment intent for a one-time charge.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intent",
+      "create",
+      "charge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "description": "Amount in cents"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "stripe_confirm_payment_intent",
+    "description": "Confirm a payment intent to attempt to collect payment.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intent",
+      "confirm"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_intent_id": {
+          "type": "string"
+        },
+        "payment_method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_capture_payment_intent",
+    "description": "Capture an authorized (but uncaptured) payment intent.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intent",
+      "capture"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_intent_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "payment_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_payment_intent",
+    "description": "Cancel a payment intent that has not yet been captured.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-intent",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_intent_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_setup_intent",
+    "description": "Create a setup intent to securely save a customer's payment method for future off-session payments.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "setup-intent",
+      "create",
+      "save-card",
+      "off-session"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "payment_method_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_setup_intent",
+    "description": "Get a setup intent by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "setup-intent",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "setup_intent_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "setup_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_confirm_setup_intent",
+    "description": "Confirm a setup intent with a payment method to complete the save.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "setup-intent",
+      "confirm"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "setup_intent_id": {
+          "type": "string"
+        },
+        "payment_method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "setup_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_setup_intent",
+    "description": "Cancel a setup intent that is no longer needed.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "setup-intent",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "setup_intent_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "setup_intent_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_setup_intents",
+    "description": "List setup intents, optionally filtered by customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "setup-intents",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_refund",
+    "description": "Refund a charge or payment intent, fully or partially.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "refund",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_intent_id": {
+          "type": "string"
+        },
+        "charge_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_list_refunds",
+    "description": "List refunds, optionally filtered by payment intent or charge.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "refunds",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "payment_intent_id": {
+          "type": "string"
+        },
+        "charge_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_refund",
+    "description": "Get a refund by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "refund",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "refund_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "refund_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_payment_method",
+    "description": "Get details about a specific payment method (card info, billing details, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-method",
+      "get",
+      "card"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_method_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_method_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_attach_payment_method",
+    "description": "Attach a payment method to a customer so it can be reused for future payments.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-method",
+      "attach",
+      "customer"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_method_id": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_method_id",
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_detach_payment_method",
+    "description": "Detach a payment method from its customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-method",
+      "detach",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_method_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_method_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_checkout_session",
+    "description": "Create a Stripe Checkout session for one-time payments or subscription setup.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "checkout",
+      "session",
+      "payment-link",
+      "hosted"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "price_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "success_url": {
+          "type": "string"
+        },
+        "cancel_url": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "price_id",
+        "success_url",
+        "cancel_url"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_checkout_session",
+    "description": "Get a Checkout session by its session ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "checkout",
+      "session",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_checkout_sessions",
+    "description": "List Stripe Checkout sessions with optional customer filter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "checkout",
+      "sessions",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_expire_checkout_session",
+    "description": "Expire an active Checkout session so it can no longer be completed.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "checkout",
+      "session",
+      "expire",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_payment_link",
+    "description": "Create a shareable Stripe Payment Link from a price — no code required.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-link",
+      "create",
+      "no-code",
+      "shareable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "price_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "allow_promotion_codes": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "price_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_payment_link",
+    "description": "Get a payment link by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-link",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_link_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_link_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_payment_link",
+    "description": "Update a payment link's active status or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-link",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_link_id": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "payment_link_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_payment_links",
+    "description": "List all payment links in the account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-links",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_deactivate_payment_link",
+    "description": "Deactivate a Stripe payment link so it stops accepting payments.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payment-link",
+      "deactivate",
+      "disable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_link_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payment_link_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_billing_portal_session",
+    "description": "Create a Stripe billing portal session URL so a customer can manage their subscriptions and payment methods.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing-portal",
+      "customer",
+      "self-service"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "return_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "return_url"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_billing_portal_configuration",
+    "description": "Get the current billing portal configuration settings.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing-portal",
+      "configuration",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_usage_record",
+    "description": "Report metered usage for a subscription item (for usage-based billing).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "usage",
+      "metered",
+      "billing",
+      "record"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_item_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "action": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subscription_item_id",
+        "quantity"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_usage_record_summaries",
+    "description": "List usage record summaries for a subscription item in a metered billing plan.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "usage",
+      "metered",
+      "summaries",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_item_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "subscription_item_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_tax_rates",
+    "description": "List Stripe tax rates with optional active/inclusive filter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "rates",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_tax_rate",
+    "description": "Get a tax rate by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "rate",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tax_rate_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tax_rate_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_tax_rate",
+    "description": "Create a new Stripe tax rate (e.g. VAT, GST, sales tax).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "rate",
+      "create",
+      "vat",
+      "gst"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "display_name": {
+          "type": "string"
+        },
+        "percentage": {
+          "type": "number"
+        },
+        "inclusive": {
+          "type": "boolean"
+        },
+        "country": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "display_name",
+        "percentage"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_tax_rate",
+    "description": "Update a tax rate's active status or description.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "rate",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tax_rate_id": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tax_rate_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_quote",
+    "description": "Create a Stripe quote — a proposal for a customer before creating a subscription.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "create",
+      "proposal"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "line_items": {
+          "type": "array"
+        },
+        "expires_at": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_quote",
+    "description": "Get a Stripe quote by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_quote",
+    "description": "Update a draft quote's line items, expiration, or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_finalize_quote",
+    "description": "Finalize a draft quote, making it ready to share with the customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "finalize"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_accept_quote",
+    "description": "Accept a finalized quote to automatically create the subscription.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "accept",
+      "convert"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_quote",
+    "description": "Cancel an open quote.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quote",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "quote_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "quote_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_quotes",
+    "description": "List quotes with optional customer or status filter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "quotes",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_list_coupons",
+    "description": "List all Stripe coupons.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "coupons",
+      "list",
+      "discounts"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_coupon",
+    "description": "Get a Stripe coupon by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "coupon",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "coupon_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "coupon_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_coupon",
+    "description": "Create a Stripe coupon for percentage or fixed-amount discounts.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "coupon",
+      "create",
+      "discount"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "percent_off": {
+          "type": "number"
+        },
+        "amount_off": {
+          "type": "number"
+        },
+        "duration": {
+          "type": "string"
+        },
+        "max_redemptions": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_delete_coupon",
+    "description": "Delete a Stripe coupon.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "coupon",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "coupon_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "coupon_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_promotion_codes",
+    "description": "List promotion codes, optionally filtered by coupon or active status.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "promotion-codes",
+      "list",
+      "discount"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "coupon_id": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_promotion_code",
+    "description": "Get a promotion code by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "promotion-code",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "promotion_code_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "promotion_code_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_promotion_code",
+    "description": "Create a promotion code (human-readable coupon code) for a coupon.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "promotion-code",
+      "create",
+      "discount-code"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "coupon_id": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "max_redemptions": {
+          "type": "number"
+        },
+        "expires_at": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "coupon_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_promotion_code",
+    "description": "Update a promotion code's active status or metadata.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "promotion-code",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "promotion_code_id": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "promotion_code_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_webhooks",
+    "description": "List all Stripe webhook endpoints.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "webhooks",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_webhook",
+    "description": "Get a Stripe webhook endpoint by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "webhook",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhook_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "webhook_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_webhook",
+    "description": "Create a Stripe webhook endpoint to receive events at a URL.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "webhook",
+      "create",
+      "events"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "events"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_webhook",
+    "description": "Update a webhook endpoint's URL or subscribed events.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "webhook",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhook_id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "webhook_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_webhook",
+    "description": "Delete a Stripe webhook endpoint.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "webhook",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "webhook_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "webhook_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_events",
+    "description": "List recent Stripe events — the audit log of what happened in your account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "events",
+      "list",
+      "log",
+      "audit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string",
+          "description": "Filter by event type e.g. customer.created"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_event",
+    "description": "Get a specific Stripe event by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "event",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "event_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_files",
+    "description": "List files uploaded to Stripe (dispute evidence, identity docs, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "files",
+      "list",
+      "uploads"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "purpose": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_file",
+    "description": "Get a Stripe file by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "file",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_file_link",
+    "description": "Create a short-lived URL link to a Stripe file for sharing or download.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "file",
+      "link",
+      "download",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        },
+        "expires_at": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_disputes",
+    "description": "List all Stripe disputes on the account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "disputes",
+      "list",
+      "chargebacks"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_dispute",
+    "description": "Get a Stripe dispute by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "dispute",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dispute_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dispute_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_dispute",
+    "description": "Submit evidence to counter a Stripe dispute.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "dispute",
+      "evidence",
+      "update",
+      "fight"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dispute_id": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "object"
+        },
+        "submit": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dispute_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_close_dispute",
+    "description": "Close a Stripe dispute, accepting the chargeback (surrendering the funds).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "dispute",
+      "close",
+      "accept"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dispute_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dispute_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_balance",
+    "description": "Get the current Stripe account balance (available and pending funds).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "balance",
+      "funds",
+      "available"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_list_balance_transactions",
+    "description": "List all balance transactions (charges, refunds, payouts, fees).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "balance",
+      "transactions",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_list_payouts",
+    "description": "List payouts sent to your bank account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payouts",
+      "list",
+      "bank"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_payout",
+    "description": "Get a specific payout by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payout_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payout_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_account",
+    "description": "Retrieve your own Stripe account details (business info, capabilities, settings).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "account",
+      "info",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_update_account",
+    "description": "Update your Stripe account's business profile or settings.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "account",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "business_type": {
+          "type": "string"
+        },
+        "business_profile": {
+          "type": "object"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_connect_account",
+    "description": "Create a Stripe Connect account for a platform user (merchant/seller).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "account",
+      "create",
+      "marketplace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_connect_account",
+    "description": "Get a Stripe Connect account by its account ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "account",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_connect_account",
+    "description": "Update a Stripe Connect account's settings.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "account",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_connect_accounts",
+    "description": "List all Stripe Connect accounts on the platform.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "accounts",
+      "list",
+      "marketplace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_delete_connect_account",
+    "description": "Delete a Stripe Connect account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "account",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_account_link",
+    "description": "Create an account link URL for a Connect account to complete onboarding.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "onboarding",
+      "account-link",
+      "kyc"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "return_url": {
+          "type": "string"
+        },
+        "refresh_url": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id",
+        "return_url",
+        "refresh_url"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_login_link",
+    "description": "Generate a temporary Stripe dashboard login link for a connected account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "login",
+      "dashboard",
+      "link"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_account_capabilities",
+    "description": "List the capabilities (card payments, transfers, etc.) of a Connect account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "capabilities",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_account_capability",
+    "description": "Request or disable a capability on a Connect account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "capability",
+      "update",
+      "request"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "capability_id": {
+          "type": "string"
+        },
+        "requested": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "account_id",
+        "capability_id",
+        "requested"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_transfer",
+    "description": "Transfer funds from your Stripe balance to a connected account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "transfer",
+      "connect",
+      "funds",
+      "marketplace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "destination_account_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "destination_account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_transfers",
+    "description": "List transfers to connected accounts.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "transfers",
+      "list",
+      "connect"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "account_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_transfer",
+    "description": "Get a transfer by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "transfer",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "transfer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transfer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_reverse_transfer",
+    "description": "Reverse a transfer (pull funds back from a connected account).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "transfer",
+      "reverse",
+      "refund",
+      "connect"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "transfer_id": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "transfer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_report_types",
+    "description": "List available Stripe financial report types (balance, payout reconciliation, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "reporting",
+      "report-types",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_report_run",
+    "description": "Generate a Stripe financial report for a date range.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "reporting",
+      "report",
+      "run",
+      "financial"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "report_type": {
+          "type": "string"
+        },
+        "interval_start": {
+          "type": "number"
+        },
+        "interval_end": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "report_type",
+        "interval_start",
+        "interval_end"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_report_run",
+    "description": "Get the status and download URL of a report run.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "reporting",
+      "report",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "report_run_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "report_run_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_report_runs",
+    "description": "List past report runs.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "reporting",
+      "report-runs",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_mrr_summary",
+    "description": "Calculate approximate MRR and ARR from active subscriptions.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "mrr",
+      "arr",
+      "revenue",
+      "reporting"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_revenue_summary",
+    "description": "SUPER TOOL: Full revenue dashboard — MRR, ARR, active subscriptions, past-due count, revenue last 30 days, and account balance in one call.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "revenue",
+      "mrr",
+      "arr",
+      "dashboard",
+      "super-tool",
+      "reporting"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_dunning_check",
+    "description": "SUPER TOOL: Find all past-due subscriptions with full customer details — email, name, amount, period end — ready for dunning campaigns.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "dunning",
+      "past-due",
+      "subscriptions",
+      "collections",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_onboard_customer",
+    "description": "SUPER TOOL: Create a Stripe customer and setup intent in one call — returns the client_secret for collecting a payment method via Stripe.js.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "onboard",
+      "customer",
+      "setup",
+      "payment-method",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string"
+        },
+        "trial_days": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "email",
+        "price_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_upgrade_subscription",
+    "description": "SUPER TOOL: Upgrade or downgrade a subscription to a new price — optionally previews proration before applying.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "upgrade",
+      "downgrade",
+      "subscription",
+      "proration",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subscription_id": {
+          "type": "string"
+        },
+        "new_price_id": {
+          "type": "string"
+        },
+        "proration_behavior": {
+          "type": "string"
+        },
+        "preview_only": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "subscription_id",
+        "new_price_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_and_refund_customer",
+    "description": "SUPER TOOL: Cancel a customer's subscription and issue a refund on their last charge in one operation.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "cancel",
+      "refund",
+      "customer",
+      "offboard",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "subscription_id": {
+          "type": "string"
+        },
+        "refund_amount": {
+          "type": "number"
+        },
+        "cancel_at_period_end": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_customer_billing_summary",
+    "description": "SUPER TOOL: Get complete billing history for a customer — subscriptions, invoices, charges, payment methods, and total lifetime spend in one call.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "billing",
+      "history",
+      "summary",
+      "super-tool",
+      "lifetime-value"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_get_tax_settings",
+    "description": "Get Stripe Tax settings including head office address and default tax codes.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_update_tax_settings",
+    "description": "Update Stripe Tax settings — head office address and default tax codes for automatic tax calculation.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "settings",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "defaults": {
+          "type": "object"
+        },
+        "head_office": {
+          "type": "object",
+          "description": "head_office.address object"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_calculate_tax",
+    "description": "Calculate tax for a transaction using Stripe Tax — returns tax amounts by jurisdiction.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "calculate",
+      "vat",
+      "sales-tax"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string"
+        },
+        "line_items": {
+          "type": "array",
+          "description": "[{amount, reference, tax_code}]"
+        },
+        "customer_details": {
+          "type": "object",
+          "description": "{address:{line1,city,state,postal_code,country}, tax_ids:[{type,value}]}"
+        }
+      },
+      "required": [
+        "currency",
+        "line_items",
+        "customer_details"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_tax_transactions",
+    "description": "List Stripe Tax transactions (committed tax calculations).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "transactions",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_tax_transaction",
+    "description": "Get a specific Stripe Tax transaction by ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "transaction",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "transaction_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_tax_codes",
+    "description": "List available Stripe Tax codes for products and services.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "codes",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_tax_code",
+    "description": "Get a Stripe Tax code by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "tax",
+      "code",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tax_code_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tax_code_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_customer_tax_ids",
+    "description": "List tax IDs (VAT numbers, EINs, etc.) on a customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "tax-id",
+      "vat",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_customer_tax_id",
+    "description": "Add a tax ID (VAT number, ABN, EIN, etc.) to a Stripe customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "tax-id",
+      "vat",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "e.g. eu_vat, gb_vat, us_ein, au_abn"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "type",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_customer_tax_id",
+    "description": "Remove a tax ID from a Stripe customer.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "customer",
+      "tax-id",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "tax_id_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "customer_id",
+        "tax_id_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_features",
+    "description": "List entitlement features defined in the Stripe account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "entitlements",
+      "features",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_feature",
+    "description": "Create an entitlement feature that can be attached to products.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "entitlements",
+      "feature",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "lookup_key": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "lookup_key"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_product_features",
+    "description": "List entitlement features attached to a product.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "features",
+      "entitlements",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "product_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_attach_feature_to_product",
+    "description": "Attach an entitlement feature to a Stripe product.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "product",
+      "feature",
+      "attach",
+      "entitlements"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "product_id": {
+          "type": "string"
+        },
+        "entitlement_feature": {
+          "type": "string",
+          "description": "Feature ID"
+        }
+      },
+      "required": [
+        "product_id",
+        "entitlement_feature"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_active_entitlements",
+    "description": "List active entitlements for a customer — which features they currently have access to.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "entitlements",
+      "active",
+      "customer",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "customer_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_payout",
+    "description": "Manually create a payout to your bank account from available Stripe balance.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "create",
+      "bank"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "description": "Amount in cents"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string",
+          "description": "instant or standard"
+        }
+      },
+      "required": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_payout",
+    "description": "Cancel a pending payout before it reaches the bank.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payout_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payout_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_reverse_payout",
+    "description": "Reverse a previously paid-out payout (creates a debit on your bank account).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "reverse",
+      "bank"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payout_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "payout_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_update_payout",
+    "description": "Update metadata on a payout.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payout_id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "payout_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_topup",
+    "description": "Top up your Stripe balance from a connected bank account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "topup",
+      "balance",
+      "funding"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_topups",
+    "description": "List top-ups to your Stripe balance.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "topups",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_topup",
+    "description": "Get a specific top-up by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "topup",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topup_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topup_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_cancel_topup",
+    "description": "Cancel a pending top-up.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "topup",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topup_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topup_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_bank_accounts",
+    "description": "List bank accounts attached to a Connect account as external payout destinations.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "bank-accounts",
+      "list",
+      "external"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_bank_account",
+    "description": "Attach a bank account to a Connect account as a payout destination.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "bank-account",
+      "create",
+      "external"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "external_account": {
+          "type": "string",
+          "description": "Bank account token or object"
+        },
+        "default_for_currency": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "account_id",
+        "external_account"
+      ]
+    }
+  },
+  {
+    "name": "stripe_verify_bank_account",
+    "description": "Verify a bank account via micro-deposit amounts (for US bank accounts).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "bank-account",
+      "verify",
+      "micro-deposit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "bank_account_id": {
+          "type": "string"
+        },
+        "amounts": {
+          "type": "array",
+          "description": "Two micro-deposit amounts in cents",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "account_id",
+        "bank_account_id",
+        "amounts"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_bank_account",
+    "description": "Remove a bank account from a Connect account.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "connect",
+      "bank-account",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string"
+        },
+        "bank_account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_id",
+        "bank_account_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_radar_rules",
+    "description": "List Stripe Radar fraud prevention rules.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "fraud",
+      "rules",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_radar_rule",
+    "description": "Get a specific Radar fraud rule by its ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "rule",
+      "get",
+      "fraud"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_radar_rule",
+    "description": "Create a Radar fraud prevention rule (e.g. block payments from certain countries).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "rule",
+      "create",
+      "fraud",
+      "block"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "predicate": {
+          "type": "string",
+          "description": "Rule condition e.g. :country: = 'NG'"
+        },
+        "action": {
+          "type": "string",
+          "description": "block, review, or allow"
+        }
+      },
+      "required": [
+        "predicate",
+        "action"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_radar_rule",
+    "description": "Delete a Stripe Radar fraud rule.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "rule",
+      "delete",
+      "fraud"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_radar_value_lists",
+    "description": "List Radar value lists used in fraud rules (blocked card fingerprints, IPs, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "blocklist",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "alias": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_radar_value_list",
+    "description": "Create a Radar value list for use in fraud rules (card fingerprints, IPs, email addresses, etc.).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "blocklist",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alias": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "item_type": {
+          "type": "string",
+          "description": "card_fingerprint, ip_address, email, or string"
+        }
+      },
+      "required": [
+        "alias",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_radar_value_list",
+    "description": "Delete a Radar value list.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "value_list_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value_list_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_radar_value_list_items",
+    "description": "List items in a Radar value list (e.g. blocked card fingerprints).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "items",
+      "list",
+      "blocklist"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "value_list_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "value_list_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_radar_value_list_item",
+    "description": "Add an item to a Radar value list (e.g. add a card fingerprint to the block list).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "item",
+      "add",
+      "block"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "value_list_id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "description": "The value to add (fingerprint, IP, email, etc.)"
+        }
+      },
+      "required": [
+        "value_list_id",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "stripe_delete_radar_value_list_item",
+    "description": "Remove an item from a Radar value list.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "radar",
+      "value-list",
+      "item",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_verification_sessions",
+    "description": "List Stripe Identity verification sessions.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "identity",
+      "kyc",
+      "verification",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_verification_session",
+    "description": "Get a Stripe Identity verification session by ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "identity",
+      "kyc",
+      "verification",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_verification_session",
+    "description": "Create a Stripe Identity verification session for KYC — returns a URL to redirect the customer to.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "identity",
+      "kyc",
+      "verification",
+      "create",
+      "id-check"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "document or id_number"
+        },
+        "return_url": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_cancel_verification_session",
+    "description": "Cancel a Stripe Identity verification session.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "identity",
+      "verification",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_redact_verification_session",
+    "description": "Redact PII from a Stripe Identity verification session (GDPR compliance).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "identity",
+      "verification",
+      "redact",
+      "gdpr",
+      "pii"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "session_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_billing_alerts",
+    "description": "List Stripe billing alerts for usage thresholds.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "alerts",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_create_billing_alert",
+    "description": "Create a billing alert that fires when a customer's usage crosses a threshold.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "alert",
+      "create",
+      "threshold",
+      "usage"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "usage_threshold": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "meter_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "usage_threshold"
+      ]
+    }
+  },
+  {
+    "name": "stripe_activate_billing_alert",
+    "description": "Activate a billing alert so it starts monitoring usage.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "alert",
+      "activate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_deactivate_billing_alert",
+    "description": "Deactivate a billing alert without deleting it.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "alert",
+      "deactivate",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_archive_billing_alert",
+    "description": "Archive a billing alert permanently.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "alert",
+      "archive",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alert_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alert_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_meters",
+    "description": "List Stripe billing meters for usage-based billing (v2 metering API).",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meters",
+      "usage",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_meter",
+    "description": "Get a specific billing meter by ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "get",
+      "usage"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "meter_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "meter_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_meter",
+    "description": "Create a billing meter to track usage events for usage-based billing.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "create",
+      "usage",
+      "metered"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "display_name": {
+          "type": "string"
+        },
+        "event_name": {
+          "type": "string"
+        },
+        "default_aggregation": {
+          "type": "object",
+          "description": "{formula: sum|count|max}"
+        },
+        "customer_mapping": {
+          "type": "object"
+        },
+        "value_settings": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "display_name",
+        "event_name"
+      ]
+    }
+  },
+  {
+    "name": "stripe_deactivate_meter",
+    "description": "Deactivate a billing meter so it stops recording events.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "deactivate",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "meter_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "meter_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_reactivate_meter",
+    "description": "Reactivate a deactivated billing meter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "reactivate",
+      "resume"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "meter_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "meter_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_meter_event",
+    "description": "Report a metered usage event to a billing meter.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "event",
+      "usage",
+      "report"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "event_name": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "description": "Event payload — must contain stripe_customer_id and the value field"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Idempotency key"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "event_name",
+        "payload"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_meter_event_summaries",
+    "description": "List aggregated meter event summaries for a customer in a time range.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "billing",
+      "meter",
+      "summaries",
+      "usage",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "meter_id": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "meter_id",
+        "customer_id",
+        "start_time",
+        "end_time"
+      ]
+    }
+  },
+  {
+    "name": "stripe_list_forwarding_requests",
+    "description": "List Stripe request forwarding entries.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "forwarding",
+      "requests",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_get_forwarding_request",
+    "description": "Get a specific forwarding request by ID.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "forwarding",
+      "request",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "request_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id"
+      ]
+    }
+  },
+  {
+    "name": "stripe_create_forwarding_request",
+    "description": "Forward a payment method to a third-party API endpoint without exposing raw card data.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "forwarding",
+      "payment-method",
+      "vault",
+      "third-party"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "payment_method": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "replacements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "payment_method",
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "stripe_compliance_snapshot",
+    "description": "SUPER TOOL: Full compliance snapshot — account capabilities, open disputes, tax configuration status in one call.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "compliance",
+      "disputes",
+      "tax",
+      "account",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "stripe_payout_health",
+    "description": "SUPER TOOL: Payout health dashboard — available balance, pending payouts with arrival dates, and recent paid payouts.",
+    "namespace": "stripe",
+    "tags": [
+      "stripe",
+      "payout",
+      "balance",
+      "health",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
 ]

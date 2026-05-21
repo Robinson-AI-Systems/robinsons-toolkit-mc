@@ -427,6 +427,316 @@ async function execute(tool, args) {
 
 
     throw new Error(`Unknown Postgres tool: ${tool}`);
+
+  // ── DATABASE MANAGEMENT ──────────────────────────────────────────────────
+  if (tool === 'postgres_list_databases') {
+    return await pg(`SELECT datname AS database, pg_encoding_to_char(encoding) AS encoding, datcollate AS collation, pg_size_pretty(pg_database_size(datname)) AS size FROM pg_database WHERE datistemplate = false ORDER BY datname`);
+  }
+  if (tool === 'postgres_create_database') {
+    const { database_name, owner, encoding = 'UTF8', template } = args;
+    if (!database_name) throw new Error('database_name is required');
+    let sql = `CREATE DATABASE "${database_name}"`;
+    if (owner) sql += ` OWNER ${owner}`;
+    if (encoding) sql += ` ENCODING '${encoding}'`;
+    if (template) sql += ` TEMPLATE ${template}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_database') {
+    const { database_name, force = false } = args;
+    if (!database_name) throw new Error('database_name is required');
+    const sql = `DROP DATABASE IF EXISTS "${database_name}"${force ? ' WITH (FORCE)' : ''}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_rename_database') {
+    const { database_name, new_name } = args;
+    if (!database_name || !new_name) throw new Error('database_name and new_name are required');
+    return await pg(`ALTER DATABASE "${database_name}" RENAME TO "${new_name}"`);
+  }
+  if (tool === 'postgres_change_database_owner') {
+    const { database_name, new_owner } = args;
+    if (!database_name || !new_owner) throw new Error('database_name and new_owner are required');
+    return await pg(`ALTER DATABASE "${database_name}" OWNER TO ${new_owner}`);
+  }
+  if (tool === 'postgres_get_database_config') {
+    const { database_name } = args;
+    if (!database_name) throw new Error('database_name is required');
+    return await pg(`SELECT name, setting, unit, context, source FROM pg_settings WHERE source != 'default' ORDER BY name`);
+  }
+
+  // ── ADVANCED USER / ROLE MANAGEMENT ──────────────────────────────────────
+  if (tool === 'postgres_create_role') {
+    const { role_name, inherit = true, nologin = true } = args;
+    if (!role_name) throw new Error('role_name is required');
+    const opts = [nologin ? 'NOLOGIN' : 'LOGIN', inherit ? 'INHERIT' : 'NOINHERIT'];
+    return await pg(`CREATE ROLE ${role_name} ${opts.join(' ')}`);
+  }
+  if (tool === 'postgres_grant_role') {
+    const { role, grantee } = args;
+    if (!role || !grantee) throw new Error('role and grantee are required');
+    return await pg(`GRANT ${role} TO ${grantee}`);
+  }
+  if (tool === 'postgres_revoke_role') {
+    const { role, revokee } = args;
+    if (!role || !revokee) throw new Error('role and revokee are required');
+    return await pg(`REVOKE ${role} FROM ${revokee}`);
+  }
+  if (tool === 'postgres_revoke_privileges') {
+    const { role, table_name, privileges = 'ALL', schema = 'public' } = args;
+    if (!role || !table_name) throw new Error('role and table_name are required');
+    return await pg(`REVOKE ${privileges} ON ${schema}.${table_name} FROM ${role}`);
+  }
+  if (tool === 'postgres_grant_schema_privileges') {
+    const { role, schema = 'public', privileges = 'USAGE' } = args;
+    if (!role) throw new Error('role is required');
+    return await pg(`GRANT ${privileges} ON SCHEMA ${schema} TO ${role}`);
+  }
+  if (tool === 'postgres_grant_all_tables') {
+    const { role, schema = 'public', privileges = 'SELECT' } = args;
+    if (!role) throw new Error('role is required');
+    return await pg(`GRANT ${privileges} ON ALL TABLES IN SCHEMA ${schema} TO ${role}`);
+  }
+  if (tool === 'postgres_set_default_privileges') {
+    const { grantor, grantee, schema = 'public', privileges = 'SELECT', object_type = 'TABLES' } = args;
+    if (!grantee) throw new Error('grantee is required');
+    let sql = `ALTER DEFAULT PRIVILEGES`;
+    if (grantor) sql += ` FOR ROLE ${grantor}`;
+    sql += ` IN SCHEMA ${schema} GRANT ${privileges} ON ${object_type} TO ${grantee}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_alter_user') {
+    const { username, options } = args;
+    if (!username || !options) throw new Error('username and options string required');
+    return await pg(`ALTER ROLE ${username} ${options}`);
+  }
+  if (tool === 'postgres_list_role_members') {
+    return await pg(`SELECT r.rolname AS role, m.rolname AS member FROM pg_roles r JOIN pg_auth_members am ON r.oid = am.roleid JOIN pg_roles m ON am.member = m.oid ORDER BY r.rolname, m.rolname`);
+  }
+
+  // ── BACKUP & DUMP (via pg_dump shell) ─────────────────────────────────────
+  if (tool === 'postgres_dump_schema') {
+    const connStr = process.env.POSTGRES_CONNECTION_STRING;
+    if (!connStr) throw new Error('POSTGRES_CONNECTION_STRING not set in .env');
+    const { schema = 'public', output_path } = args;
+    if (!output_path) throw new Error('output_path is required');
+    const { execSync } = await import('child_process');
+    try {
+      execSync(`pg_dump "${connStr}" --schema="${schema}" --schema-only -f "${output_path}"`, { stdio: 'pipe' });
+      return { success: true, schema, output_path, message: `Schema dumped to ${output_path}` };
+    } catch (e) {
+      throw new Error(`pg_dump failed: ${e.message}`);
+    }
+  }
+  if (tool === 'postgres_dump_table') {
+    const connStr = process.env.POSTGRES_CONNECTION_STRING;
+    if (!connStr) throw new Error('POSTGRES_CONNECTION_STRING not set in .env');
+    const { table_name, schema = 'public', output_path, format = 'plain' } = args;
+    if (!table_name || !output_path) throw new Error('table_name and output_path are required');
+    const { execSync } = await import('child_process');
+    try {
+      const fmtFlag = format === 'custom' ? '-Fc' : '';
+      execSync(`pg_dump "${connStr}" --table="${schema}.${table_name}" ${fmtFlag} -f "${output_path}"`, { stdio: 'pipe' });
+      return { success: true, table: `${schema}.${table_name}`, output_path, format };
+    } catch (e) {
+      throw new Error(`pg_dump failed: ${e.message}`);
+    }
+  }
+
+  // ── ADVANCED PERFORMANCE ──────────────────────────────────────────────────
+  if (tool === 'postgres_get_query_stats') {
+    const result = await pg(`SELECT query, calls, total_exec_time, mean_exec_time, stddev_exec_time, rows, shared_blks_hit, shared_blks_read, (shared_blks_hit::float / NULLIF(shared_blks_hit + shared_blks_read, 0) * 100)::int AS cache_hit_pct FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT ${args.limit || 20}`);
+    return result;
+  }
+  if (tool === 'postgres_get_cache_hit_ratio') {
+    const result = await pg(`SELECT sum(heap_blks_read) AS heap_read, sum(heap_blks_hit) AS heap_hit, (sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0))::numeric(5,4) AS cache_ratio FROM pg_statio_user_tables`);
+    return result[0];
+  }
+  if (tool === 'postgres_get_index_bloat') {
+    const result = await pg(`SELECT schemaname, tablename, indexname, pg_size_pretty(pg_relation_size(indexrelid)) AS index_size, idx_scan, CASE WHEN idx_scan = 0 AND pg_relation_size(indexrelid) > 1024*1024 THEN 'candidate for removal' ELSE 'ok' END AS status FROM pg_stat_user_indexes WHERE schemaname = $1 ORDER BY pg_relation_size(indexrelid) DESC LIMIT ${args.limit || 20}`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_get_long_running_queries') {
+    const threshold = args.min_seconds || 5;
+    const result = await pg(`SELECT pid, now() - query_start AS duration, state, wait_event_type, wait_event, LEFT(query, 200) AS query FROM pg_stat_activity WHERE state != 'idle' AND query_start IS NOT NULL AND now() - query_start > interval '${threshold} seconds' ORDER BY duration DESC`);
+    return result;
+  }
+  if (tool === 'postgres_get_missing_indexes') {
+    const result = await pg(`SELECT schemaname, tablename, seq_scan, seq_tup_read, idx_scan, seq_tup_read / NULLIF(seq_scan, 0) AS avg_rows_per_scan FROM pg_stat_user_tables WHERE seq_scan > 50 AND (idx_scan IS NULL OR idx_scan = 0) AND schemaname = $1 ORDER BY seq_tup_read DESC LIMIT 20`, [args.schema || 'public']);
+    return result;
+  }
+  if (tool === 'postgres_reset_statistics') {
+    return await pg(`SELECT pg_stat_reset()`);
+  }
+  if (tool === 'postgres_analyze_table') {
+    const { table_name, schema = 'public', verbose = false } = args;
+    if (!table_name) throw new Error('table_name is required');
+    return await pg(`ANALYZE ${verbose ? 'VERBOSE' : ''} ${schema}.${table_name}`);
+  }
+  if (tool === 'postgres_cluster_table') {
+    const { table_name, index_name, schema = 'public' } = args;
+    if (!table_name) throw new Error('table_name is required');
+    if (index_name) {
+      return await pg(`CLUSTER ${schema}.${table_name} USING ${index_name}`);
+    }
+    return await pg(`CLUSTER ${schema}.${table_name}`);
+  }
+
+  // ── EXTENSIONS MANAGEMENT ─────────────────────────────────────────────────
+  if (tool === 'postgres_list_available_extensions') {
+    const result = await pg(`SELECT name, default_version, installed_version, comment FROM pg_available_extensions ORDER BY name`);
+    return result;
+  }
+  if (tool === 'postgres_drop_extension') {
+    const { extension_name, cascade = false } = args;
+    if (!extension_name) throw new Error('extension_name is required');
+    return await pg(`DROP EXTENSION IF EXISTS "${extension_name}" ${cascade ? 'CASCADE' : 'RESTRICT'}`);
+  }
+  if (tool === 'postgres_get_extension_info') {
+    const result = await pg(`SELECT name, default_version, installed_version, comment FROM pg_available_extensions WHERE name = $1`, [args.extension_name]);
+    return result[0] || { error: 'Extension not found' };
+  }
+
+  // ── TABLE & COLUMN OPERATIONS ─────────────────────────────────────────────
+  if (tool === 'postgres_rename_table') {
+    const { table_name, new_name, schema = 'public' } = args;
+    if (!table_name || !new_name) throw new Error('table_name and new_name are required');
+    return await pg(`ALTER TABLE ${schema}.${table_name} RENAME TO ${new_name}`);
+  }
+  if (tool === 'postgres_drop_table') {
+    const { table_name, schema = 'public', cascade = false, if_exists = true } = args;
+    if (!table_name) throw new Error('table_name is required');
+    return await pg(`DROP TABLE ${if_exists ? 'IF EXISTS' : ''} ${schema}.${table_name} ${cascade ? 'CASCADE' : 'RESTRICT'}`);
+  }
+  if (tool === 'postgres_rename_column') {
+    const { table_name, column_name, new_name, schema = 'public' } = args;
+    if (!table_name || !column_name || !new_name) throw new Error('table_name, column_name, and new_name are required');
+    return await pg(`ALTER TABLE ${schema}.${table_name} RENAME COLUMN ${column_name} TO ${new_name}`);
+  }
+  if (tool === 'postgres_alter_column_type') {
+    const { table_name, column_name, new_type, using_expression, schema = 'public' } = args;
+    if (!table_name || !column_name || !new_type) throw new Error('table_name, column_name, and new_type are required');
+    let sql = `ALTER TABLE ${schema}.${table_name} ALTER COLUMN ${column_name} TYPE ${new_type}`;
+    if (using_expression) sql += ` USING ${using_expression}`;
+    return await pg(sql);
+  }
+  if (tool === 'postgres_set_column_not_null') {
+    const { table_name, column_name, not_null = true, schema = 'public' } = args;
+    if (!table_name || !column_name) throw new Error('table_name and column_name are required');
+    const action = not_null ? 'SET NOT NULL' : 'DROP NOT NULL';
+    return await pg(`ALTER TABLE ${schema}.${table_name} ALTER COLUMN ${column_name} ${action}`);
+  }
+  if (tool === 'postgres_set_column_default') {
+    const { table_name, column_name, default_value, schema = 'public' } = args;
+    if (!table_name || !column_name) throw new Error('table_name and column_name are required');
+    if (default_value === null || default_value === undefined) {
+      return await pg(`ALTER TABLE ${schema}.${table_name} ALTER COLUMN ${column_name} DROP DEFAULT`);
+    }
+    return await pg(`ALTER TABLE ${schema}.${table_name} ALTER COLUMN ${column_name} SET DEFAULT ${default_value}`);
+  }
+
+  // ── CONSTRAINT MANAGEMENT ─────────────────────────────────────────────────
+  if (tool === 'postgres_add_primary_key') {
+    const { table_name, columns, schema = 'public', constraint_name } = args;
+    if (!table_name || !columns) throw new Error('table_name and columns are required');
+    const name = constraint_name || `${table_name}_pkey`;
+    const cols = Array.isArray(columns) ? columns.join(', ') : columns;
+    return await pg(`ALTER TABLE ${schema}.${table_name} ADD CONSTRAINT ${name} PRIMARY KEY (${cols})`);
+  }
+  if (tool === 'postgres_add_foreign_key') {
+    const { table_name, column_name, ref_table, ref_column = 'id', schema = 'public', on_delete = 'NO ACTION', constraint_name } = args;
+    if (!table_name || !column_name || !ref_table) throw new Error('table_name, column_name, and ref_table are required');
+    const name = constraint_name || `${table_name}_${column_name}_fkey`;
+    return await pg(`ALTER TABLE ${schema}.${table_name} ADD CONSTRAINT ${name} FOREIGN KEY (${column_name}) REFERENCES ${schema}.${ref_table}(${ref_column}) ON DELETE ${on_delete}`);
+  }
+  if (tool === 'postgres_add_unique_constraint') {
+    const { table_name, columns, schema = 'public', constraint_name } = args;
+    if (!table_name || !columns) throw new Error('table_name and columns are required');
+    const name = constraint_name || `${table_name}_${Array.isArray(columns) ? columns.join('_') : columns}_key`;
+    const cols = Array.isArray(columns) ? columns.join(', ') : columns;
+    return await pg(`ALTER TABLE ${schema}.${table_name} ADD CONSTRAINT ${name} UNIQUE (${cols})`);
+  }
+  if (tool === 'postgres_add_check_constraint') {
+    const { table_name, expression, constraint_name, schema = 'public' } = args;
+    if (!table_name || !expression || !constraint_name) throw new Error('table_name, expression, and constraint_name are required');
+    return await pg(`ALTER TABLE ${schema}.${table_name} ADD CONSTRAINT ${constraint_name} CHECK (${expression})`);
+  }
+  if (tool === 'postgres_drop_constraint') {
+    const { table_name, constraint_name, schema = 'public', cascade = false } = args;
+    if (!table_name || !constraint_name) throw new Error('table_name and constraint_name are required');
+    return await pg(`ALTER TABLE ${schema}.${table_name} DROP CONSTRAINT IF EXISTS ${constraint_name} ${cascade ? 'CASCADE' : ''}`);
+  }
+
+  // ── VIEW MANAGEMENT ───────────────────────────────────────────────────────
+  if (tool === 'postgres_create_view') {
+    const { view_name, query, schema = 'public', replace = true, materialized = false } = args;
+    if (!view_name || !query) throw new Error('view_name and query are required');
+    let sql;
+    if (materialized) {
+      sql = `CREATE MATERIALIZED VIEW IF NOT EXISTS ${schema}.${view_name} AS ${query}`;
+    } else {
+      sql = `CREATE ${replace ? 'OR REPLACE ' : ''}VIEW ${schema}.${view_name} AS ${query}`;
+    }
+    return await pg(sql);
+  }
+  if (tool === 'postgres_drop_view') {
+    const { view_name, schema = 'public', cascade = false, materialized = false } = args;
+    if (!view_name) throw new Error('view_name is required');
+    const type = materialized ? 'MATERIALIZED VIEW' : 'VIEW';
+    return await pg(`DROP ${type} IF EXISTS ${schema}.${view_name} ${cascade ? 'CASCADE' : ''}`);
+  }
+  if (tool === 'postgres_refresh_materialized_view') {
+    const { view_name, schema = 'public', concurrently = false } = args;
+    if (!view_name) throw new Error('view_name is required');
+    return await pg(`REFRESH MATERIALIZED VIEW ${concurrently ? 'CONCURRENTLY' : ''} ${schema}.${view_name}`);
+  }
+
+  // ── FUNCTION & PROCEDURE MANAGEMENT ──────────────────────────────────────
+  if (tool === 'postgres_get_function_definition') {
+    const result = await pg(`SELECT pg_get_functiondef(oid) AS definition FROM pg_proc WHERE proname = $1 AND pronamespace = (SELECT oid FROM pg_namespace WHERE nspname = $2)`, [args.function_name, args.schema || 'public']);
+    return result[0] || { error: 'Function not found' };
+  }
+  if (tool === 'postgres_drop_function') {
+    const { function_name, signature, schema = 'public', cascade = false } = args;
+    if (!function_name) throw new Error('function_name is required');
+    const fullName = signature ? `${schema}.${function_name}(${signature})` : `${schema}.${function_name}`;
+    return await pg(`DROP FUNCTION IF EXISTS ${fullName} ${cascade ? 'CASCADE' : ''}`);
+  }
+
+  // ── SUPER TOOL: Full permissions audit ────────────────────────────────────
+  if (tool === 'postgres_permissions_audit') {
+    const schema = args.schema || 'public';
+    const [roles, grants, roleMembers, schemaGrants] = await Promise.all([
+      pg(`SELECT rolname, rolsuper, rolcreatedb, rolcreaterole, rolcanlogin FROM pg_roles ORDER BY rolname`),
+      pg(`SELECT grantee, table_name, string_agg(privilege_type, ', ' ORDER BY privilege_type) AS privileges FROM information_schema.role_table_grants WHERE table_schema = $1 GROUP BY grantee, table_name ORDER BY grantee, table_name`, [schema]),
+      pg(`SELECT r.rolname AS role, m.rolname AS member FROM pg_roles r JOIN pg_auth_members am ON r.oid = am.roleid JOIN pg_roles m ON am.member = m.oid ORDER BY r.rolname`),
+      pg(`SELECT grantee, privilege_type FROM information_schema.role_schema_grants WHERE schema_name = $1`, [schema])
+    ]);
+    return { schema, roles, table_grants: grants, role_memberships: roleMembers, schema_grants: schemaGrants, generated_at: new Date().toISOString() };
+  }
+
+  // ── SUPER TOOL: Performance deep-dive ────────────────────────────────────
+  if (tool === 'postgres_performance_report') {
+    const schema = args.schema || 'public';
+    const [slowQueries, missingIndexes, indexBloat, cacheHit, tableStats, lockInfo] = await Promise.all([
+      pg(`SELECT LEFT(query, 150) AS query, calls, round(mean_exec_time::numeric, 2) AS avg_ms, round(total_exec_time::numeric, 2) AS total_ms FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10`).catch(() => []),
+      pg(`SELECT tablename, seq_scan, idx_scan FROM pg_stat_user_tables WHERE seq_scan > 20 AND (idx_scan IS NULL OR idx_scan < seq_scan / 2) AND schemaname = $1 ORDER BY seq_scan DESC LIMIT 10`, [schema]),
+      pg(`SELECT indexname, tablename, idx_scan, pg_size_pretty(pg_relation_size(indexrelid)) AS size FROM pg_stat_user_indexes WHERE idx_scan = 0 AND schemaname = $1 ORDER BY pg_relation_size(indexrelid) DESC LIMIT 10`, [schema]),
+      pg(`SELECT round((sum(heap_blks_hit) / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0) * 100)::numeric, 2) AS cache_hit_pct FROM pg_statio_user_tables`),
+      pg(`SELECT tablename, n_live_tup, n_dead_tup, last_vacuum, last_autovacuum, last_analyze FROM pg_stat_user_tables WHERE schemaname = $1 ORDER BY n_dead_tup DESC LIMIT 10`, [schema]),
+      pg(`SELECT count(*) AS blocking_locks FROM pg_locks WHERE NOT granted`)
+    ]);
+    return {
+      schema,
+      cache_hit_pct: cacheHit[0]?.cache_hit_pct,
+      blocking_locks: parseInt(lockInfo[0]?.blocking_locks || 0),
+      top_slow_queries: slowQueries,
+      tables_needing_indexes: missingIndexes,
+      unused_indexes: indexBloat,
+      table_vacuum_status: tableStats,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Postgres tool: ${tool}`);
 }
 
 export default { execute };
