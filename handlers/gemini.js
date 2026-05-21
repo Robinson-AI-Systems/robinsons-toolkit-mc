@@ -657,7 +657,133 @@ async function execute(tool, args) {
     };
   }
 
-  throw new Error(`Unknown gemini tool: ${tool}`);
+
+  // ── 28. VIDEO TRANSCRIPTION (via Files API) ───────────────────────────────
+  // Transcribe or analyze a video file using Gemini's multimodal capabilities
+  if (tool === 'gemini_transcribe_video') {
+    const { prompt, mime_type = 'video/mp4', model = DEFAULT_MODEL, display_name } = args;
+    if (!mime_type) throw new Error('mime_type is required (e.g. video/mp4, video/webm)');
+    const buf = bufferFromArgs(args);
+    const file = await uploadFile(buf, mime_type, display_name || 'video');
+    // Poll until file is ACTIVE (video processing can take time)
+    let fileState = file;
+    let attempts = 0;
+    while (fileState.state === 'PROCESSING' && attempts < 20) {
+      await new Promise(r => setTimeout(r, 3000));
+      fileState = await gem('GET', `/v1beta/${file.name}`);
+      attempts++;
+    }
+    if (fileState.state !== 'ACTIVE') throw new Error(`File processing timed out or failed: ${fileState.state}`);
+    const body = {
+      contents: [{ role: 'user', parts: [
+        { fileData: { fileUri: fileState.uri, mimeType: mime_type } },
+        { text: prompt || 'Transcribe this video. Format as a transcript with timestamps.' }
+      ]}]
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    return {
+      transcript: data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('
+'),
+      file_uri: fileState.uri,
+      file_name: file.name,
+      usage: data.usageMetadata,
+      model
+    };
+  }
+
+  // ── 29. MULTI-SPEAKER TTS ─────────────────────────────────────────────────
+  // Generate speech with multiple speakers/voices in one audio output
+  if (tool === 'gemini_multi_speaker_tts') {
+    const { turns, output_path, model = 'gemini-2.5-flash-preview-tts' } = args;
+    if (!turns?.length || !output_path) throw new Error('turns array and output_path are required');
+    // turns: [{speaker: 'Speaker1', text: '...'}, ...]
+    const text = turns.map(t => `${t.speaker}: ${t.text}`).join('
+');
+    const body = {
+      contents: [{ parts: [{ text }] }],
+      generationConfig: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          multiSpeakerVoiceConfig: {
+            speakerVoiceConfigs: [...new Set(turns.map(t => t.speaker))].map((speaker, i) => ({
+              speaker,
+              voiceConfig: { prebuiltVoiceConfig: { voiceName: turns.find(t => t.speaker === speaker)?.voice || ['Kore','Charon','Fenrir','Aoede'][i % 4] } }
+            }))
+          }
+        }
+      }
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!part) throw new Error('No audio data returned');
+    const { writeFileSync } = await import('fs');
+    writeFileSync(output_path, Buffer.from(part.inlineData.data, 'base64'));
+    return { saved: output_path, mime_type: part.inlineData.mimeType, speakers: [...new Set(turns.map(t => t.speaker))], model };
+  }
+
+  // ── 30. DOCUMENT OCR ──────────────────────────────────────────────────────
+  // Extract text from a scanned document or PDF using Gemini vision
+  if (tool === 'gemini_document_ocr') {
+    const { mime_type = 'image/png', model = DEFAULT_MODEL, output_format = 'text', display_name } = args;
+    const buf = bufferFromArgs(args);
+    const isLarge = buf.length > 20 * 1024 * 1024; // 20MB threshold — use Files API
+    let contentPart;
+    let fileName = null;
+    if (isLarge) {
+      const file = await uploadFile(buf, mime_type, display_name || 'document');
+      contentPart = { fileData: { fileUri: file.uri, mimeType: mime_type } };
+      fileName = file.name;
+    } else {
+      contentPart = { inlineData: { mimeType: mime_type, data: buf.toString('base64') } };
+    }
+    const formatInstruction = output_format === 'markdown'
+      ? 'Extract all text from this document and format it as clean Markdown, preserving headings and structure.'
+      : output_format === 'json'
+      ? 'Extract all text from this document and return a JSON object with fields: title, sections (array of {heading, content}), and raw_text.'
+      : 'Extract all text from this document exactly as it appears, preserving line breaks and layout.';
+    const body = {
+      contents: [{ role: 'user', parts: [contentPart, { text: formatInstruction }] }],
+      ...(output_format === 'json' ? { generationConfig: { responseMimeType: 'application/json' } } : {})
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    const raw = data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('
+');
+    let parsed = null;
+    if (output_format === 'json') { try { parsed = JSON.parse(raw); } catch {} }
+    return { text: raw, parsed, output_format, file_name: fileName, usage: data.usageMetadata, model };
+  }
+
+  // ── 31. COMPARE DOCUMENTS ─────────────────────────────────────────────────
+  // Upload two documents and ask Gemini to compare, diff, or analyze differences
+  if (tool === 'gemini_compare_documents') {
+    const { file_a_path, file_a_base64, file_b_path, file_b_base64, mime_type_a = 'application/pdf', mime_type_b = 'application/pdf', prompt, model = 'gemini-2.5-flash' } = args;
+    const bufA = file_a_base64 ? Buffer.from(file_a_base64, 'base64') : (file_a_path ? (await import('fs')).readFileSync(file_a_path) : null);
+    const bufB = file_b_base64 ? Buffer.from(file_b_base64, 'base64') : (file_b_path ? (await import('fs')).readFileSync(file_b_path) : null);
+    if (!bufA || !bufB) throw new Error('Both documents are required (file_a_path/file_a_base64 and file_b_path/file_b_base64)');
+    const [fileA, fileB] = await Promise.all([
+      uploadFile(bufA, mime_type_a, 'document_a'),
+      uploadFile(bufB, mime_type_b, 'document_b')
+    ]);
+    const body = {
+      contents: [{ role: 'user', parts: [
+        { fileData: { fileUri: fileA.uri, mimeType: mime_type_a } },
+        { fileData: { fileUri: fileB.uri, mimeType: mime_type_b } },
+        { text: prompt || 'Compare these two documents. Identify key differences, similarities, and any important changes between them.' }
+      ]}]
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    return {
+      comparison: data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('
+'),
+      file_a: fileA.name,
+      file_b: fileB.name,
+      usage: data.usageMetadata,
+      model
+    };
+  }
+
+
+    throw new Error(`Unknown gemini tool: ${tool}`);
 }
 
 export default { execute };

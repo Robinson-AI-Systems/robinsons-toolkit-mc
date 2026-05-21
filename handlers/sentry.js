@@ -448,7 +448,157 @@ async function execute(tool, args) {
     return await sentry('DELETE', `/projects/${ORG()}/${reqProj(args.project_slug)}/uptime/${args.uptime_subscription_id}/`);
   }
 
-  throw new Error(`Unknown Sentry tool: ${tool}`);
+
+  // ── PERFORMANCE (Discover-based tracing queries) ───────────────────────────
+  if (tool === 'sentry_get_performance_summary') {
+    // Query performance metrics: p50/p75/p95 latency, error rate, throughput
+    const { project_slug, transaction, environment, start, end } = args;
+    const proj = PROJ(project_slug);
+    const fields = ['transaction','count()','p50(transaction.duration)','p75(transaction.duration)','p95(transaction.duration)','failure_rate()'];
+    const params = new URLSearchParams({
+      field: fields,
+      sort: '-count()',
+      limit: '25',
+      query: transaction ? `transaction:${transaction}` : 'event.type:transaction',
+      ...(proj ? { project: proj } : {}),
+      ...(environment ? { environment } : {}),
+      ...(start ? { start } : {}),
+      ...(end ? { end } : {})
+    });
+    return await sentry('GET', `/organizations/${ORG()}/events/?${params.toString()}`);
+  }
+
+  if (tool === 'sentry_list_transactions') {
+    // List slowest transactions by p95 latency
+    const { project_slug, limit = 20, environment, query = '' } = args;
+    const proj = PROJ(project_slug);
+    const params = new URLSearchParams({
+      field: ['transaction','count()','p95(transaction.duration)','failure_rate()'],
+      sort: '-p95(transaction.duration)',
+      limit: String(limit),
+      query: `event.type:transaction ${query}`.trim(),
+      ...(proj ? { project: proj } : {}),
+      ...(environment ? { environment } : {})
+    });
+    return await sentry('GET', `/organizations/${ORG()}/events/?${params.toString()}`);
+  }
+
+  if (tool === 'sentry_get_span_samples') {
+    // Get sample spans for a specific transaction to diagnose slow spans
+    const { project_slug, transaction, environment } = args;
+    if (!transaction) throw new Error('transaction is required');
+    const proj = reqProj(project_slug);
+    const params = new URLSearchParams({
+      field: ['id','timestamp','trace','transaction.duration','spans.db','spans.http'],
+      query: `transaction:${transaction} event.type:transaction`,
+      limit: '10',
+      project: proj,
+      ...(environment ? { environment } : {})
+    });
+    return await sentry('GET', `/organizations/${ORG()}/events/?${params.toString()}`);
+  }
+
+  // ── SAVED SEARCHES ────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_saved_searches') {
+    const { project_slug } = args;
+    const proj = PROJ(project_slug);
+    const path = proj
+      ? `/projects/${ORG()}/${proj}/searches/`
+      : `/organizations/${ORG()}/searches/`;
+    return await sentry('GET', path);
+  }
+
+  if (tool === 'sentry_create_saved_search') {
+    const { name, query, project_slug, is_global = false } = args;
+    if (!name || !query) throw new Error('name and query are required');
+    const proj = PROJ(project_slug);
+    const path = proj
+      ? `/projects/${ORG()}/${proj}/searches/`
+      : `/organizations/${ORG()}/searches/`;
+    return await sentry('POST', path, { name, query, isGlobal: is_global });
+  }
+
+  if (tool === 'sentry_delete_saved_search') {
+    const { search_id, project_slug } = args;
+    if (!search_id) throw new Error('search_id is required');
+    const proj = PROJ(project_slug);
+    const path = proj
+      ? `/projects/${ORG()}/${proj}/searches/${search_id}/`
+      : `/organizations/${ORG()}/searches/${search_id}/`;
+    return await sentry('DELETE', path);
+  }
+
+  // ── SESSION REPLAYS ────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_replays') {
+    const { project_slug, limit = 25, query, environment, sort = '-started_at' } = args;
+    const proj = PROJ(project_slug);
+    const params = new URLSearchParams({ limit: String(limit), sort });
+    if (proj) params.set('project', proj);
+    if (query) params.set('query', query);
+    if (environment) params.set('environment', environment);
+    const data = await sentry('GET', `/organizations/${ORG()}/replays/?${params.toString()}`);
+    return {
+      replays: (data.data || []).map(r => ({
+        id: r.id,
+        project_id: r.project_id,
+        started_at: r.started_at,
+        finished_at: r.finished_at,
+        duration: r.duration,
+        error_ids: r.error_ids?.length || 0,
+        urls: r.urls?.slice(0, 3),
+        user: r.user ? { email: r.user.email, id: r.user.id } : null,
+        sdk: r.sdk?.name
+      })),
+      count: data.data?.length || 0
+    };
+  }
+
+  if (tool === 'sentry_get_replay') {
+    const { replay_id, project_slug } = args;
+    if (!replay_id) throw new Error('replay_id is required');
+    const proj = reqProj(project_slug);
+    const data = await sentry('GET', `/projects/${ORG()}/${proj}/replays/${replay_id}/`);
+    return data.data || data;
+  }
+
+  // ── SPIKE PROTECTION ──────────────────────────────────────────────────────
+  if (tool === 'sentry_list_spike_protections') {
+    const proj = reqProj(args.project_slug);
+    return await sentry('GET', `/projects/${ORG()}/${proj}/spike-protections/`);
+  }
+
+  if (tool === 'sentry_enable_spike_protection') {
+    const { project_slug, enabled = true } = args;
+    const proj = reqProj(project_slug);
+    return await sentry('POST', `/projects/${ORG()}/${proj}/spike-protections/`, { enabled });
+  }
+
+  // ── SUPER: PERFORMANCE HEALTH ─────────────────────────────────────────────
+  // p95 latency + error rate + slowest transactions + recent replays with errors in one call
+  if (tool === 'sentry_performance_health') {
+    const { project_slug, environment } = args;
+    const results = {};
+    const proj = PROJ(project_slug);
+    const perfParams = new URLSearchParams({
+      field: ['transaction','count()','p95(transaction.duration)','failure_rate()'],
+      sort: '-p95(transaction.duration)', limit: '5', query: 'event.type:transaction',
+      ...(proj ? { project: proj } : {}),
+      ...(environment ? { environment } : {})
+    });
+    await Promise.all([
+      sentry('GET', `/organizations/${ORG()}/events/?${perfParams.toString()}`)
+        .then(d => { results.slowest_transactions = d.data?.slice(0, 5); })
+        .catch(e => { results.perf_error = e.message; }),
+      sentry('GET', `/organizations/${ORG()}/issues/?limit=5&query=${encodeURIComponent('is:unresolved level:error')}&sort=date${proj ? `&project=${proj}` : ''}`)
+        .then(d => { results.recent_errors = Array.isArray(d) ? d.map(i => ({ id: i.id, title: i.title, count: i.count, lastSeen: i.lastSeen })) : []; })
+        .catch(e => { results.errors_error = e.message; }),
+    ]);
+    results.checked_at = new Date().toISOString();
+    return results;
+  }
+
+
+    throw new Error(`Unknown Sentry tool: ${tool}`);
 }
 
 export default { execute };

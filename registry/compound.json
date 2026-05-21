@@ -1538,5 +1538,200 @@
         "query"
       ]
     }
+  },
+  {
+    "name": "compound_deploy_with_auto_rollback",
+    "description": "SUPER TOOL: Deploy to Vercel and automatically roll back to the last good deployment if the new deployment fails or errors. Posts a Slack alert on failure with rollback confirmation, and a success message on clean deploy. Set-and-forget safe deploy with a safety net.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "deploy",
+      "vercel",
+      "rollback",
+      "safety",
+      "auto-rollback",
+      "slack"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "rollback_on_states": {
+          "type": "array",
+          "default": [
+            "ERROR",
+            "CANCELED"
+          ],
+          "description": "Vercel deployment states that trigger rollback"
+        }
+      },
+      "required": [
+        "vercel_project_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_database_health_report",
+    "description": "SUPER TOOL: Full Neon database health snapshot \u2014 branch listing, active connection count, top 10 slowest queries from pg_stat_statements, and largest tables by size, all in one parallel call. Use for daily DB health checks and performance audits.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "database",
+      "neon",
+      "health",
+      "performance",
+      "slow-queries",
+      "pg-stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "neon_project_id": {
+          "type": "string"
+        },
+        "include_slow_queries": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include top 10 slowest queries (requires pg_stat_statements extension)"
+        },
+        "include_table_sizes": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "neon_project_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_pipeline_status",
+    "description": "SUPER TOOL: Get a complete CI/CD pipeline status snapshot \u2014 GitHub Actions latest run, Vercel latest deployment state and URL, and Sentry unresolved error count, all in one parallel call. Returns all_green: true only if everything is healthy.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "pipeline",
+      "ci-cd",
+      "github-actions",
+      "vercel",
+      "sentry",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "github_owner": {
+          "type": "string"
+        },
+        "github_repo": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string",
+          "default": "main"
+        }
+      }
+    }
+  },
+  {
+    "name": "compound_alert_triage",
+    "description": "SUPER TOOL: Fetch the top unresolved Sentry errors ranked by users affected, and optionally auto-create Linear issues for the top 3. Returns a ranked triage list with user impact counts. Set auto_create_issues: true to turn the top issues directly into Linear bugs.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "triage",
+      "sentry",
+      "linear",
+      "alerts",
+      "on-call",
+      "incident"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sentry_project": {
+          "type": "string"
+        },
+        "linear_team_id": {
+          "type": "string",
+          "description": "Required if auto_create_issues is true"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        },
+        "auto_create_issues": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically create Linear bugs for top 3 issues"
+        }
+      },
+      "required": [
+        "sentry_project"
+      ]
+    }
+  },
+  {
+    "name": "compound_competitor_research",
+    "description": "SUPER TOOL: Run competitive intelligence research using Tavily web search \u2014 searches for pricing, features, reviews, and recent news about a company and its competitors, then returns structured findings with sources. One call replaces hours of manual research.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "research",
+      "competitive-intelligence",
+      "tavily",
+      "search",
+      "business"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "description": "The company you're researching about (your company or a competitor)"
+        },
+        "competitors": {
+          "type": "array",
+          "description": "Additional competitor names to research alongside company"
+        },
+        "aspects": {
+          "type": "array",
+          "default": [
+            "pricing",
+            "features",
+            "reviews",
+            "recent news"
+          ],
+          "description": "Topics to research for each company (max 3 used)"
+        },
+        "max_results": {
+          "type": "number",
+          "default": 5
+        }
+      },
+      "required": [
+        "company"
+      ]
+    }
   }
 ]

@@ -1878,5 +1878,310 @@
         "uptime_subscription_id"
       ]
     }
+  },
+  {
+    "name": "sentry_get_performance_summary",
+    "description": "Query performance metrics for transactions using Sentry Discover \u2014 returns p50/p75/p95 latency, error rate, and throughput. Filter by transaction name, environment, or date range. Requires Sentry performance monitoring to be enabled.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "performance",
+      "p95",
+      "latency",
+      "tracing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "transaction": {
+          "type": "string",
+          "description": "Filter to a specific transaction name"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string",
+          "description": "ISO start date"
+        },
+        "end": {
+          "type": "string",
+          "description": "ISO end date"
+        }
+      }
+    }
+  },
+  {
+    "name": "sentry_list_transactions",
+    "description": "List the slowest transactions in a Sentry project ranked by p95 latency. Helps identify which endpoints or background jobs are causing the most latency for users.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "transactions",
+      "performance",
+      "latency",
+      "slow"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        },
+        "environment": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string",
+          "description": "Additional Discover query filter"
+        }
+      }
+    }
+  },
+  {
+    "name": "sentry_get_span_samples",
+    "description": "Get sample spans for a specific transaction to identify which database queries, HTTP calls, or other sub-operations are causing slowness. Returns span durations broken down by type.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "spans",
+      "tracing",
+      "performance",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "type": "string"
+        },
+        "project_slug": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_saved_searches",
+    "description": "List saved issue searches for a project or organization. Saved searches are reusable filters like 'assigned to me' or 'critical errors in production' that appear in the Sentry sidebar.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "saved-searches",
+      "filters",
+      "issues"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string",
+          "description": "Omit for org-wide saved searches"
+        }
+      }
+    }
+  },
+  {
+    "name": "sentry_create_saved_search",
+    "description": "Create a saved search filter for a Sentry project or organization. Saved searches appear in the sidebar and can be shared across the team. Examples: 'is:unresolved assigned:me', 'is:unresolved level:fatal'.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "saved-searches",
+      "create",
+      "filters"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string",
+          "description": "Sentry issue search query, e.g. 'is:unresolved level:fatal'"
+        },
+        "project_slug": {
+          "type": "string"
+        },
+        "is_global": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "name",
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_saved_search",
+    "description": "Delete a saved search by its ID. Use sentry_list_saved_searches first to find the search ID.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "saved-searches",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "search_id": {
+          "type": "string"
+        },
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "search_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_replays",
+    "description": "List session replays in a Sentry project. Returns replay metadata including duration, error count, page URLs visited, and user info. Replays let you watch exactly what a user did before an error occurred.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "replays",
+      "session-replay",
+      "debugging",
+      "ux"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 25
+        },
+        "query": {
+          "type": "string",
+          "description": "Filter query, e.g. 'error_ids:abc123' or 'user.email:user@example.com'"
+        },
+        "environment": {
+          "type": "string"
+        },
+        "sort": {
+          "type": "string",
+          "default": "-started_at",
+          "description": "Sort field: -started_at, -duration, -error_count"
+        }
+      }
+    }
+  },
+  {
+    "name": "sentry_get_replay",
+    "description": "Get detailed metadata for a specific session replay by ID. Returns full replay info including all page URLs, error IDs encountered, device info, and SDK details. Use sentry_list_replays to find replay IDs.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "replays",
+      "session-replay",
+      "detail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "replay_id": {
+          "type": "string"
+        },
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "replay_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_spike_protections",
+    "description": "List spike protection settings for a Sentry project. Spike protection automatically drops events when your error volume spikes unexpectedly, protecting your quota from a runaway error.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "spike-protection",
+      "quota",
+      "rate-limiting"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_enable_spike_protection",
+    "description": "Enable or disable spike protection for a Sentry project. When enabled, Sentry automatically drops events during abnormal traffic spikes to protect your monthly quota.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "spike-protection",
+      "quota",
+      "enable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "project_slug"
+      ]
+    }
+  },
+  {
+    "name": "sentry_performance_health",
+    "description": "SUPER TOOL: Get a full performance health snapshot \u2014 the 5 slowest transactions by p95 latency plus the most recent unresolved errors, all in one parallel call. Use for morning health checks and post-deploy performance verification.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "performance",
+      "health",
+      "super-tool",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        }
+      }
+    }
   }
 ]

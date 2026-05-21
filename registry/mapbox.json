@@ -1,47 +1,1506 @@
 [
-  {"name":"mapbox_geocode","description":"Forward geocode an address to coordinates using Mapbox. Returns results with relevance scores.","namespace":"mapbox","tags":["mapbox","geocode","address","coordinates","location"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"country":{"type":"string","description":"ISO country code (default: us)"},"limit":{"type":"number"},"proximity":{"type":"string","description":"lng,lat to bias results near a location"}},"required":["address"]}},
-  {"name":"mapbox_reverse_geocode","description":"Reverse geocode coordinates to an address using Mapbox.","namespace":"mapbox","tags":["mapbox","reverse-geocode","coordinates","address","location"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"types":{"type":"string","description":"Filter by place type: address, poi, neighborhood, etc."}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_batch_geocode","description":"Geocode multiple addresses in one call. Returns coordinates and found/not-found status for each.","namespace":"mapbox","tags":["mapbox","geocode","batch","bulk","addresses"],"inputSchema":{"type":"object","properties":{"addresses":{"type":"array","items":{"type":"string"}},"country":{"type":"string"}},"required":["addresses"]}},
-  {"name":"mapbox_geocode_address_only","description":"Forward geocode filtered to address results only — excludes POIs, cities, and regions.","namespace":"mapbox","tags":["mapbox","geocode","address","strict","filter"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"country":{"type":"string"},"limit":{"type":"number"}},"required":["address"]}},
-  {"name":"mapbox_search_places","description":"Search for places or POIs by name/category, optionally near given coordinates.","namespace":"mapbox","tags":["mapbox","search","places","poi","nearby","category"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"longitude":{"type":"number"},"latitude":{"type":"number"},"limit":{"type":"number"},"country":{"type":"string"}},"required":["query"]}},
-  {"name":"mapbox_validate_address","description":"Validate an address using Mapbox geocoding — returns whether it's valid, normalized form, and confidence score.","namespace":"mapbox","tags":["mapbox","validate","address","verify","normalize"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"country":{"type":"string"}},"required":["address"]}},
-  {"name":"mapbox_address_to_coordinates","description":"Simplified geocoding — returns just longitude and latitude for an address.","namespace":"mapbox","tags":["mapbox","geocode","address","coordinates","simple","lng","lat"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"country":{"type":"string"}},"required":["address"]}},
-  {"name":"mapbox_coordinates_to_address","description":"Simplified reverse geocoding — returns just the address string for coordinates.","namespace":"mapbox","tags":["mapbox","reverse-geocode","address","simple","coordinates"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_get_directions","description":"Get driving (or other profile) directions between waypoints including distance, duration, and geometry.","namespace":"mapbox","tags":["mapbox","directions","routing","driving","navigation","waypoints"],"inputSchema":{"type":"object","properties":{"waypoints":{"type":"array","description":"Array of {longitude, latitude} objects (min 2)"},"profile":{"type":"string","description":"driving, walking, cycling, or driving-traffic"},"alternatives":{"type":"boolean"},"steps":{"type":"boolean","description":"Include turn-by-turn steps"},"exclude":{"type":"string","description":"Exclude tolls, motorway, ferry, etc."}},"required":["waypoints"]}},
-  {"name":"mapbox_get_walking_directions","description":"Get walking directions between waypoints including distance and turn-by-turn steps.","namespace":"mapbox","tags":["mapbox","walking","directions","pedestrian","navigation"],"inputSchema":{"type":"object","properties":{"waypoints":{"type":"array","description":"Array of {longitude, latitude}"},"steps":{"type":"boolean"}},"required":["waypoints"]}},
-  {"name":"mapbox_get_cycling_directions","description":"Get cycling directions between waypoints.","namespace":"mapbox","tags":["mapbox","cycling","directions","bike","navigation"],"inputSchema":{"type":"object","properties":{"waypoints":{"type":"array"},"steps":{"type":"boolean"}},"required":["waypoints"]}},
-  {"name":"mapbox_get_turn_by_turn","description":"Get detailed turn-by-turn navigation instructions for a route.","namespace":"mapbox","tags":["mapbox","directions","turn-by-turn","navigation","instructions","steps"],"inputSchema":{"type":"object","properties":{"waypoints":{"type":"array"},"profile":{"type":"string"}},"required":["waypoints"]}},
-  {"name":"mapbox_optimize_route","description":"Solve the Traveling Salesman Problem — find the optimal order for multiple stops to minimize total travel time.","namespace":"mapbox","tags":["mapbox","optimize","route","tsp","stops","order","efficient"],"inputSchema":{"type":"object","properties":{"waypoints":{"type":"array","description":"Array of {longitude, latitude} (min 3, first=start, last=end)"},"profile":{"type":"string"},"roundtrip":{"type":"boolean"}},"required":["waypoints"]}},
-  {"name":"mapbox_get_map_matching","description":"Snap a GPS trace to the road network — corrects noisy GPS coordinates to actual roads.","namespace":"mapbox","tags":["mapbox","map-matching","gps","snap","roads","trace"],"inputSchema":{"type":"object","properties":{"coordinates":{"type":"array","description":"Array of [longitude, latitude] pairs"},"profile":{"type":"string"},"radiuses":{"type":"array","description":"Search radius in meters for each coordinate"}},"required":["coordinates"]}},
-  {"name":"mapbox_get_matrix","description":"Get a travel time/distance matrix between multiple origins and destinations in one API call.","namespace":"mapbox","tags":["mapbox","matrix","travel-time","distance","multiple","batch"],"inputSchema":{"type":"object","properties":{"sources":{"type":"array","description":"Array of {longitude, latitude} source points"},"destinations":{"type":"array","description":"Array of {longitude, latitude} destination points"},"profile":{"type":"string"},"annotations":{"type":"string"}},"required":["sources","destinations"]}},
-  {"name":"mapbox_get_isochrone","description":"Generate isochrone polygons showing the reachable area within a given time or distance from a point.","namespace":"mapbox","tags":["mapbox","isochrone","reachability","service-area","drive-time","polygon"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"profile":{"type":"string"},"minutes":{"description":"Number or array of drive-time minutes"},"meters":{"description":"Number or array of distance meters (alternative to minutes)"}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_get_service_area","description":"Generate concentric service area polygons (15/30/60 min drive radii) from a location — key for YardSync coverage zones.","namespace":"mapbox","tags":["mapbox","service-area","isochrone","coverage","drive-time","yardsync"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"drive_time_minutes":{"type":"array","items":{"type":"number"}}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_get_static_map_url","description":"Generate a static map image URL with optional pin markers.","namespace":"mapbox","tags":["mapbox","static-map","image","url","pins","markers"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"zoom":{"type":"number"},"width":{"type":"number"},"height":{"type":"number"},"style":{"type":"string"},"markers":{"type":"array","description":"Array of {longitude, latitude, color}"}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_get_satellite_map_url","description":"Generate a satellite imagery map URL for given coordinates.","namespace":"mapbox","tags":["mapbox","satellite","map","imagery","aerial","url"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"zoom":{"type":"number"},"width":{"type":"number"},"height":{"type":"number"}},"required":["longitude","latitude"]}},
-  {"name":"mapbox_get_route_map_url","description":"Generate a static map image URL showing a start and end pin for a route.","namespace":"mapbox","tags":["mapbox","map","route","static","url","pins"],"inputSchema":{"type":"object","properties":{"start_lng":{"type":"number"},"start_lat":{"type":"number"},"end_lng":{"type":"number"},"end_lat":{"type":"number"},"zoom":{"type":"number"}},"required":["start_lng","start_lat","end_lng","end_lat"]}},
-  {"name":"mapbox_calculate_distance","description":"Calculate straight-line (as-the-crow-flies) distance between two coordinates in miles and km (no API call).","namespace":"mapbox","tags":["mapbox","distance","calculate","miles","km","haversine"],"inputSchema":{"type":"object","properties":{"lng1":{"type":"number"},"lat1":{"type":"number"},"lng2":{"type":"number"},"lat2":{"type":"number"}},"required":["lng1","lat1","lng2","lat2"]}},
-  {"name":"mapbox_calculate_bearing","description":"Calculate the compass bearing (direction) from one coordinate to another.","namespace":"mapbox","tags":["mapbox","bearing","direction","compass","navigation"],"inputSchema":{"type":"object","properties":{"lng1":{"type":"number"},"lat1":{"type":"number"},"lng2":{"type":"number"},"lat2":{"type":"number"}},"required":["lng1","lat1","lng2","lat2"]}},
-  {"name":"mapbox_calculate_midpoint","description":"Find the geographic midpoint between two coordinates.","namespace":"mapbox","tags":["mapbox","midpoint","center","coordinates","between"],"inputSchema":{"type":"object","properties":{"lng1":{"type":"number"},"lat1":{"type":"number"},"lng2":{"type":"number"},"lat2":{"type":"number"}},"required":["lng1","lat1","lng2","lat2"]}},
-  {"name":"mapbox_point_in_polygon","description":"Check if a coordinate point is inside a GeoJSON polygon (ray-casting, no API call).","namespace":"mapbox","tags":["mapbox","point-in-polygon","geofence","coverage","boundary","check"],"inputSchema":{"type":"object","properties":{"longitude":{"type":"number"},"latitude":{"type":"number"},"polygon":{"description":"GeoJSON polygon geometry or coordinates array"}},"required":["longitude","latitude","polygon"]}},
-  {"name":"mapbox_list_datasets","description":"List all Mapbox datasets in the account (requires MAPBOX_USERNAME env var).","namespace":"mapbox","tags":["mapbox","datasets","list","geojson"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"mapbox_create_dataset","description":"Create a new Mapbox dataset for storing GeoJSON features.","namespace":"mapbox","tags":["mapbox","dataset","create","geojson"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"description":{"type":"string"}},"required":["name"]}},
-  {"name":"mapbox_get_dataset","description":"Get metadata for a specific Mapbox dataset.","namespace":"mapbox","tags":["mapbox","dataset","get"],"inputSchema":{"type":"object","properties":{"dataset_id":{"type":"string"}},"required":["dataset_id"]}},
-  {"name":"mapbox_delete_dataset","description":"Delete a Mapbox dataset.","namespace":"mapbox","tags":["mapbox","dataset","delete"],"inputSchema":{"type":"object","properties":{"dataset_id":{"type":"string"}},"required":["dataset_id"]}},
-  {"name":"mapbox_list_dataset_features","description":"List GeoJSON features in a Mapbox dataset.","namespace":"mapbox","tags":["mapbox","dataset","features","list","geojson"],"inputSchema":{"type":"object","properties":{"dataset_id":{"type":"string"},"limit":{"type":"number"}},"required":["dataset_id"]}},
-  {"name":"mapbox_add_dataset_feature","description":"Add or update a GeoJSON feature in a Mapbox dataset.","namespace":"mapbox","tags":["mapbox","dataset","feature","add","geojson","upsert"],"inputSchema":{"type":"object","properties":{"dataset_id":{"type":"string"},"feature_id":{"type":"string"},"geometry":{"type":"object","description":"GeoJSON geometry"},"properties":{"type":"object"}},"required":["dataset_id","geometry"]}},
-  {"name":"mapbox_delete_dataset_feature","description":"Delete a specific feature from a Mapbox dataset.","namespace":"mapbox","tags":["mapbox","dataset","feature","delete"],"inputSchema":{"type":"object","properties":{"dataset_id":{"type":"string"},"feature_id":{"type":"string"}},"required":["dataset_id","feature_id"]}},
-  {"name":"mapbox_list_tilesets","description":"List tilesets in the Mapbox account.","namespace":"mapbox","tags":["mapbox","tilesets","list","vector-tiles"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"},"type":{"type":"string","description":"raster or vector"}},"required":[]}},
-  {"name":"mapbox_get_tileset","description":"Get metadata for a specific Mapbox tileset.","namespace":"mapbox","tags":["mapbox","tileset","get","metadata"],"inputSchema":{"type":"object","properties":{"tileset_id":{"type":"string","description":"Tileset ID in format username.tileset-name"}},"required":["tileset_id"]}},
-  {"name":"mapbox_delete_tileset","description":"Delete a Mapbox tileset.","namespace":"mapbox","tags":["mapbox","tileset","delete"],"inputSchema":{"type":"object","properties":{"tileset_id":{"type":"string"}},"required":["tileset_id"]}},
-  {"name":"mapbox_list_styles","description":"List all custom map styles in the Mapbox account.","namespace":"mapbox","tags":["mapbox","styles","list","custom-map"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"mapbox_get_style","description":"Get a custom map style definition by its ID.","namespace":"mapbox","tags":["mapbox","style","get","custom-map"],"inputSchema":{"type":"object","properties":{"style_id":{"type":"string"}},"required":["style_id"]}},
-  {"name":"mapbox_delete_style","description":"Delete a custom map style.","namespace":"mapbox","tags":["mapbox","style","delete"],"inputSchema":{"type":"object","properties":{"style_id":{"type":"string"}},"required":["style_id"]}},
-  {"name":"mapbox_list_uploads","description":"List pending and recent uploads to Mapbox.","namespace":"mapbox","tags":["mapbox","uploads","list","data"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"mapbox_get_upload","description":"Get the status and details of a Mapbox upload.","namespace":"mapbox","tags":["mapbox","upload","get","status"],"inputSchema":{"type":"object","properties":{"upload_id":{"type":"string"}},"required":["upload_id"]}},
-  {"name":"mapbox_delete_upload","description":"Delete a Mapbox upload.","namespace":"mapbox","tags":["mapbox","upload","delete"],"inputSchema":{"type":"object","properties":{"upload_id":{"type":"string"}},"required":["upload_id"]}},
-  {"name":"mapbox_find_nearest_depot","description":"SUPER TOOL: Geocode a customer address and find the nearest depot from a list — returns distance to each, sorted closest first.","namespace":"mapbox","tags":["mapbox","depot","nearest","distance","yardsync","service","super-tool"],"inputSchema":{"type":"object","properties":{"customer_address":{"type":"string"},"depots":{"type":"array","description":"Array of depot objects with address field or address strings"}},"required":["customer_address","depots"]}},
-  {"name":"mapbox_check_service_coverage","description":"SUPER TOOL: Check if an address falls inside a service area polygon (geofence) — returns true/false with normalized address.","namespace":"mapbox","tags":["mapbox","geofence","coverage","service-area","check","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"address":{"type":"string"},"service_area_polygon":{"description":"GeoJSON polygon geometry or coordinates array defining the service boundary"}},"required":["address","service_area_polygon"]}},
-  {"name":"mapbox_batch_eta","description":"SUPER TOOL: Get ETAs and driving distances from one depot to many addresses using the matrix API — ideal for scheduling.","namespace":"mapbox","tags":["mapbox","eta","batch","matrix","dispatch","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"depot_address":{"type":"string"},"destination_addresses":{"type":"array","items":{"type":"string"}},"profile":{"type":"string"}},"required":["depot_address","destination_addresses"]}},
-  {"name":"mapbox_plan_driver_stops","description":"SUPER TOOL: Geocode all stop addresses and return an optimized stop order with total distance and drive time — complete daily route planning.","namespace":"mapbox","tags":["mapbox","route","optimize","driver","stops","dispatch","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"depot_address":{"type":"string"},"stop_addresses":{"type":"array","items":{"type":"string"}},"profile":{"type":"string"}},"required":["depot_address","stop_addresses"]}},
-  {"name":"mapbox_service_area_map","description":"SUPER TOOL: Geocode a depot address and generate concentric drive-time isochrone polygons plus a static map URL — service coverage visualization in one call.","namespace":"mapbox","tags":["mapbox","service-area","isochrone","coverage","map","yardsync","super-tool"],"inputSchema":{"type":"object","properties":{"depot_address":{"type":"string"},"drive_times":{"type":"array","items":{"type":"number"},"description":"Drive time thresholds in minutes (default [15,30,60])"},"country":{"type":"string"}},"required":["depot_address"]}}
+  {
+    "name": "mapbox_geocode",
+    "description": "Forward geocode an address to coordinates using Mapbox. Returns results with relevance scores.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geocode",
+      "address",
+      "coordinates",
+      "location"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO country code (default: us)"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "proximity": {
+          "type": "string",
+          "description": "lng,lat to bias results near a location"
+        }
+      },
+      "required": [
+        "address"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_reverse_geocode",
+    "description": "Reverse geocode coordinates to an address using Mapbox.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "reverse-geocode",
+      "coordinates",
+      "address",
+      "location"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "types": {
+          "type": "string",
+          "description": "Filter by place type: address, poi, neighborhood, etc."
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_batch_geocode",
+    "description": "Geocode multiple addresses in one call. Returns coordinates and found/not-found status for each.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geocode",
+      "batch",
+      "bulk",
+      "addresses"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "addresses"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_geocode_address_only",
+    "description": "Forward geocode filtered to address results only \u2014 excludes POIs, cities, and regions.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geocode",
+      "address",
+      "strict",
+      "filter"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "address"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_search_places",
+    "description": "Search for places or POIs by name/category, optionally near given coordinates.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "search",
+      "places",
+      "poi",
+      "nearby",
+      "category"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_validate_address",
+    "description": "Validate an address using Mapbox geocoding \u2014 returns whether it's valid, normalized form, and confidence score.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "validate",
+      "address",
+      "verify",
+      "normalize"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_address_to_coordinates",
+    "description": "Simplified geocoding \u2014 returns just longitude and latitude for an address.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geocode",
+      "address",
+      "coordinates",
+      "simple",
+      "lng",
+      "lat"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_coordinates_to_address",
+    "description": "Simplified reverse geocoding \u2014 returns just the address string for coordinates.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "reverse-geocode",
+      "address",
+      "simple",
+      "coordinates"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_directions",
+    "description": "Get driving (or other profile) directions between waypoints including distance, duration, and geometry.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "directions",
+      "routing",
+      "driving",
+      "navigation",
+      "waypoints"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "description": "Array of {longitude, latitude} objects (min 2)"
+        },
+        "profile": {
+          "type": "string",
+          "description": "driving, walking, cycling, or driving-traffic"
+        },
+        "alternatives": {
+          "type": "boolean"
+        },
+        "steps": {
+          "type": "boolean",
+          "description": "Include turn-by-turn steps"
+        },
+        "exclude": {
+          "type": "string",
+          "description": "Exclude tolls, motorway, ferry, etc."
+        }
+      },
+      "required": [
+        "waypoints"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_walking_directions",
+    "description": "Get walking directions between waypoints including distance and turn-by-turn steps.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "walking",
+      "directions",
+      "pedestrian",
+      "navigation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "description": "Array of {longitude, latitude}"
+        },
+        "steps": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "waypoints"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_cycling_directions",
+    "description": "Get cycling directions between waypoints.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "cycling",
+      "directions",
+      "bike",
+      "navigation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array"
+        },
+        "steps": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "waypoints"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_turn_by_turn",
+    "description": "Get detailed turn-by-turn navigation instructions for a route.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "directions",
+      "turn-by-turn",
+      "navigation",
+      "instructions",
+      "steps"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array"
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "waypoints"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_optimize_route",
+    "description": "Solve the Traveling Salesman Problem \u2014 find the optimal order for multiple stops to minimize total travel time.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "optimize",
+      "route",
+      "tsp",
+      "stops",
+      "order",
+      "efficient"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "description": "Array of {longitude, latitude} (min 3, first=start, last=end)"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "roundtrip": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "waypoints"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_map_matching",
+    "description": "Snap a GPS trace to the road network \u2014 corrects noisy GPS coordinates to actual roads.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "map-matching",
+      "gps",
+      "snap",
+      "roads",
+      "trace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "coordinates": {
+          "type": "array",
+          "description": "Array of [longitude, latitude] pairs"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "radiuses": {
+          "type": "array",
+          "description": "Search radius in meters for each coordinate"
+        }
+      },
+      "required": [
+        "coordinates"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_matrix",
+    "description": "Get a travel time/distance matrix between multiple origins and destinations in one API call.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "matrix",
+      "travel-time",
+      "distance",
+      "multiple",
+      "batch"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sources": {
+          "type": "array",
+          "description": "Array of {longitude, latitude} source points"
+        },
+        "destinations": {
+          "type": "array",
+          "description": "Array of {longitude, latitude} destination points"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sources",
+        "destinations"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_isochrone",
+    "description": "Generate isochrone polygons showing the reachable area within a given time or distance from a point.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "isochrone",
+      "reachability",
+      "service-area",
+      "drive-time",
+      "polygon"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "minutes": {
+          "description": "Number or array of drive-time minutes"
+        },
+        "meters": {
+          "description": "Number or array of distance meters (alternative to minutes)"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_service_area",
+    "description": "Generate concentric service area polygons (15/30/60 min drive radii) from a location \u2014 key for YardSync coverage zones.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "service-area",
+      "isochrone",
+      "coverage",
+      "drive-time",
+      "yardsync"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "drive_time_minutes": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_static_map_url",
+    "description": "Generate a static map image URL with optional pin markers.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "static-map",
+      "image",
+      "url",
+      "pins",
+      "markers"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "style": {
+          "type": "string"
+        },
+        "markers": {
+          "type": "array",
+          "description": "Array of {longitude, latitude, color}"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_satellite_map_url",
+    "description": "Generate a satellite imagery map URL for given coordinates.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "satellite",
+      "map",
+      "imagery",
+      "aerial",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_route_map_url",
+    "description": "Generate a static map image URL showing a start and end pin for a route.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "map",
+      "route",
+      "static",
+      "url",
+      "pins"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_lng": {
+          "type": "number"
+        },
+        "start_lat": {
+          "type": "number"
+        },
+        "end_lng": {
+          "type": "number"
+        },
+        "end_lat": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_lng",
+        "start_lat",
+        "end_lng",
+        "end_lat"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_calculate_distance",
+    "description": "Calculate straight-line (as-the-crow-flies) distance between two coordinates in miles and km (no API call).",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "distance",
+      "calculate",
+      "miles",
+      "km",
+      "haversine"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lng1": {
+          "type": "number"
+        },
+        "lat1": {
+          "type": "number"
+        },
+        "lng2": {
+          "type": "number"
+        },
+        "lat2": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lng1",
+        "lat1",
+        "lng2",
+        "lat2"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_calculate_bearing",
+    "description": "Calculate the compass bearing (direction) from one coordinate to another.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "bearing",
+      "direction",
+      "compass",
+      "navigation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lng1": {
+          "type": "number"
+        },
+        "lat1": {
+          "type": "number"
+        },
+        "lng2": {
+          "type": "number"
+        },
+        "lat2": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lng1",
+        "lat1",
+        "lng2",
+        "lat2"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_calculate_midpoint",
+    "description": "Find the geographic midpoint between two coordinates.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "midpoint",
+      "center",
+      "coordinates",
+      "between"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lng1": {
+          "type": "number"
+        },
+        "lat1": {
+          "type": "number"
+        },
+        "lng2": {
+          "type": "number"
+        },
+        "lat2": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lng1",
+        "lat1",
+        "lng2",
+        "lat2"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_point_in_polygon",
+    "description": "Check if a coordinate point is inside a GeoJSON polygon (ray-casting, no API call).",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "point-in-polygon",
+      "geofence",
+      "coverage",
+      "boundary",
+      "check"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "type": "number"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "polygon": {
+          "description": "GeoJSON polygon geometry or coordinates array"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude",
+        "polygon"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_list_datasets",
+    "description": "List all Mapbox datasets in the account (requires MAPBOX_USERNAME env var).",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "datasets",
+      "list",
+      "geojson"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "mapbox_create_dataset",
+    "description": "Create a new Mapbox dataset for storing GeoJSON features.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "create",
+      "geojson"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_dataset",
+    "description": "Get metadata for a specific Mapbox dataset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_delete_dataset",
+    "description": "Delete a Mapbox dataset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_list_dataset_features",
+    "description": "List GeoJSON features in a Mapbox dataset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "features",
+      "list",
+      "geojson"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "dataset_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_add_dataset_feature",
+    "description": "Add or update a GeoJSON feature in a Mapbox dataset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "feature",
+      "add",
+      "geojson",
+      "upsert"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "feature_id": {
+          "type": "string"
+        },
+        "geometry": {
+          "type": "object",
+          "description": "GeoJSON geometry"
+        },
+        "properties": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "geometry"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_delete_dataset_feature",
+    "description": "Delete a specific feature from a Mapbox dataset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "dataset",
+      "feature",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "feature_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "feature_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_list_tilesets",
+    "description": "List tilesets in the Mapbox account.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "tilesets",
+      "list",
+      "vector-tiles"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string",
+          "description": "raster or vector"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "mapbox_get_tileset",
+    "description": "Get metadata for a specific Mapbox tileset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "tileset",
+      "get",
+      "metadata"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tileset_id": {
+          "type": "string",
+          "description": "Tileset ID in format username.tileset-name"
+        }
+      },
+      "required": [
+        "tileset_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_delete_tileset",
+    "description": "Delete a Mapbox tileset.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "tileset",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tileset_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tileset_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_list_styles",
+    "description": "List all custom map styles in the Mapbox account.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "styles",
+      "list",
+      "custom-map"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "mapbox_get_style",
+    "description": "Get a custom map style definition by its ID.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "style",
+      "get",
+      "custom-map"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "style_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "style_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_delete_style",
+    "description": "Delete a custom map style.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "style",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "style_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "style_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_list_uploads",
+    "description": "List pending and recent uploads to Mapbox.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "uploads",
+      "list",
+      "data"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "mapbox_get_upload",
+    "description": "Get the status and details of a Mapbox upload.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "upload",
+      "get",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "upload_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "upload_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_delete_upload",
+    "description": "Delete a Mapbox upload.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "upload",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "upload_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "upload_id"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_find_nearest_depot",
+    "description": "SUPER TOOL: Geocode a customer address and find the nearest depot from a list \u2014 returns distance to each, sorted closest first.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "depot",
+      "nearest",
+      "distance",
+      "yardsync",
+      "service",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "customer_address": {
+          "type": "string"
+        },
+        "depots": {
+          "type": "array",
+          "description": "Array of depot objects with address field or address strings"
+        }
+      },
+      "required": [
+        "customer_address",
+        "depots"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_check_service_coverage",
+    "description": "SUPER TOOL: Check if an address falls inside a service area polygon (geofence) \u2014 returns true/false with normalized address.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geofence",
+      "coverage",
+      "service-area",
+      "check",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "service_area_polygon": {
+          "description": "GeoJSON polygon geometry or coordinates array defining the service boundary"
+        }
+      },
+      "required": [
+        "address",
+        "service_area_polygon"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_batch_eta",
+    "description": "SUPER TOOL: Get ETAs and driving distances from one depot to many addresses using the matrix API \u2014 ideal for scheduling.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "eta",
+      "batch",
+      "matrix",
+      "dispatch",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "depot_address": {
+          "type": "string"
+        },
+        "destination_addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "depot_address",
+        "destination_addresses"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_plan_driver_stops",
+    "description": "SUPER TOOL: Geocode all stop addresses and return an optimized stop order with total distance and drive time \u2014 complete daily route planning.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "route",
+      "optimize",
+      "driver",
+      "stops",
+      "dispatch",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "depot_address": {
+          "type": "string"
+        },
+        "stop_addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "depot_address",
+        "stop_addresses"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_service_area_map",
+    "description": "SUPER TOOL: Geocode a depot address and generate concentric drive-time isochrone polygons plus a static map URL \u2014 service coverage visualization in one call.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "service-area",
+      "isochrone",
+      "coverage",
+      "map",
+      "yardsync",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "depot_address": {
+          "type": "string"
+        },
+        "drive_times": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Drive time thresholds in minutes (default [15,30,60])"
+        },
+        "country": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "depot_address"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_traffic_incidents",
+    "description": "Get live traffic incidents (accidents, road closures, construction) for a geographic bounding box. Returns incident type, description, severity, congestion level, and coordinates. Useful for routing around disruptions before dispatching drivers.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "traffic",
+      "incidents",
+      "real-time",
+      "routing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bbox": {
+          "type": "array",
+          "description": "Bounding box [min_lng, min_lat, max_lng, max_lat], e.g. [-87.7, 41.8, -87.6, 41.9]"
+        },
+        "language": {
+          "type": "string",
+          "default": "en"
+        }
+      },
+      "required": [
+        "bbox"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_live_eta",
+    "description": "Get drive-time ETA with live traffic conditions between two coordinates using Mapbox's real-time traffic routing. Returns duration in minutes and a congestion breakdown (unknown/low/moderate/heavy/severe) along the route.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "eta",
+      "traffic",
+      "real-time",
+      "directions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "origin_lat": {
+          "type": "number"
+        },
+        "origin_lng": {
+          "type": "number"
+        },
+        "dest_lat": {
+          "type": "number"
+        },
+        "dest_lng": {
+          "type": "number"
+        },
+        "profile": {
+          "type": "string",
+          "default": "driving-traffic",
+          "description": "driving-traffic uses live traffic; driving uses historical"
+        }
+      },
+      "required": [
+        "origin_lat",
+        "origin_lng",
+        "dest_lat",
+        "dest_lng"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_batch_reverse_geocode",
+    "description": "Reverse geocode multiple coordinates to addresses in parallel. Pass an array of {lat, lng, id} objects and get back resolved addresses for all of them in one call. Useful for converting a batch of GPS coordinates to readable addresses.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "geocoding",
+      "reverse-geocode",
+      "batch",
+      "addresses"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "coordinates": {
+          "type": "array",
+          "description": "Array of {lat, lng, id} objects (id is optional, returned for correlation)"
+        },
+        "types": {
+          "type": "string",
+          "default": "address",
+          "description": "Comma-separated place types: address, place, postcode, neighborhood"
+        }
+      },
+      "required": [
+        "coordinates"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_compare_addresses",
+    "description": "Check whether two address strings resolve to the same physical location within a configurable distance tolerance. Useful for deduplication, validating customer-entered addresses, or confirming delivery addresses match billing addresses.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "addresses",
+      "comparison",
+      "deduplication",
+      "validation"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address_a": {
+          "type": "string"
+        },
+        "address_b": {
+          "type": "string"
+        },
+        "tolerance_meters": {
+          "type": "number",
+          "default": 100,
+          "description": "Max distance in meters to consider addresses the same location"
+        }
+      },
+      "required": [
+        "address_a",
+        "address_b"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_get_duration_matrix",
+    "description": "Get an NxM matrix of travel durations and/or distances between multiple origin and destination points using the Mapbox Matrix API. Useful for finding the closest driver to a job, or building a time-distance table for route optimization.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "matrix",
+      "duration",
+      "distance",
+      "routing",
+      "optimization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "locations": {
+          "type": "array",
+          "description": "Array of {lat, lng} points (all used as both origins and destinations)"
+        },
+        "profile": {
+          "type": "string",
+          "default": "driving",
+          "description": "driving, driving-traffic, walking, or cycling"
+        },
+        "annotations": {
+          "type": "string",
+          "default": "duration",
+          "description": "duration, distance, or duration,distance"
+        }
+      },
+      "required": [
+        "locations"
+      ]
+    }
+  },
+  {
+    "name": "mapbox_route_plan_with_traffic",
+    "description": "SUPER TOOL: Plan a multi-stop route with real-time traffic \u2014 returns total duration, per-leg breakdown, distance, and flags any legs with heavy/severe congestion. Designed for daily driver dispatch planning where traffic conditions matter.",
+    "namespace": "mapbox",
+    "tags": [
+      "mapbox",
+      "routing",
+      "traffic",
+      "multi-stop",
+      "dispatch",
+      "super-tool",
+      "yardsync"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "stops": {
+          "type": "array",
+          "description": "Array of {lat, lng, label} stops in order"
+        },
+        "profile": {
+          "type": "string",
+          "default": "driving-traffic"
+        }
+      },
+      "required": [
+        "stops"
+      ]
+    }
+  }
 ]

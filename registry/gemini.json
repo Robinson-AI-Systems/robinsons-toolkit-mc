@@ -856,5 +856,170 @@
         "prompt"
       ]
     }
+  },
+  {
+    "name": "gemini_transcribe_video",
+    "description": "Transcribe or analyze a video file using Gemini's multimodal vision capabilities. Uploads the video to the Files API, waits for processing, then generates a timestamped transcript or answers a custom prompt about the video content.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "video",
+      "transcription",
+      "multimodal",
+      "files-api"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Local path to video file"
+        },
+        "file_base64": {
+          "type": "string",
+          "description": "Base64-encoded video"
+        },
+        "mime_type": {
+          "type": "string",
+          "default": "video/mp4",
+          "description": "video/mp4, video/webm, video/mov, video/avi"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Custom prompt (default: transcribe with timestamps)"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "gemini_multi_speaker_tts",
+    "description": "Generate multi-speaker audio with different voices for each speaker using Gemini's native TTS. Pass an array of {speaker, text, voice} turns and get back a single audio file with natural voice switching between speakers. Ideal for dialogue, podcasts, or narration.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "tts",
+      "text-to-speech",
+      "multi-speaker",
+      "audio",
+      "dialogue"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "turns": {
+          "type": "array",
+          "description": "Array of {speaker: string, text: string, voice?: string} \u2014 voice defaults to Kore/Charon/Fenrir/Aoede in rotation"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash-preview-tts"
+        }
+      },
+      "required": [
+        "turns",
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "gemini_document_ocr",
+    "description": "Extract text from a scanned document, image, or PDF using Gemini vision. Supports three output formats: plain text (default), Markdown (preserves structure and headings), or JSON (structured sections). Automatically uses the Files API for documents larger than 20MB.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "ocr",
+      "document",
+      "text-extraction",
+      "vision",
+      "pdf"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_path": {
+          "type": "string"
+        },
+        "file_base64": {
+          "type": "string"
+        },
+        "mime_type": {
+          "type": "string",
+          "default": "image/png",
+          "description": "image/png, image/jpeg, application/pdf"
+        },
+        "output_format": {
+          "type": "string",
+          "default": "text",
+          "enum": [
+            "text",
+            "markdown",
+            "json"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "gemini_compare_documents",
+    "description": "Upload two documents to Gemini and compare them side-by-side \u2014 identifying differences, similarities, and key changes. Useful for contract redlining, policy diff analysis, or comparing report versions. Supports PDF, images, and any Gemini-supported format.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "documents",
+      "comparison",
+      "diff",
+      "contracts",
+      "analysis"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_a_path": {
+          "type": "string"
+        },
+        "file_a_base64": {
+          "type": "string"
+        },
+        "file_b_path": {
+          "type": "string"
+        },
+        "file_b_base64": {
+          "type": "string"
+        },
+        "mime_type_a": {
+          "type": "string",
+          "default": "application/pdf"
+        },
+        "mime_type_b": {
+          "type": "string",
+          "default": "application/pdf"
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Custom comparison prompt"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        }
+      }
+    }
   }
 ]

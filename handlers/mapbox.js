@@ -439,7 +439,163 @@ async function execute(tool, args) {
     };
   }
 
-  throw new Error(`Unknown Mapbox tool: ${tool}`);
+
+  // ── TRAFFIC & INCIDENTS ────────────────────────────────────────────────────
+  if (tool === 'mapbox_get_traffic_incidents') {
+    // Get live traffic incidents (accidents, road closures) for a bounding box
+    const { bbox, language = 'en' } = args;
+    if (!bbox) throw new Error('bbox is required: [min_lng, min_lat, max_lng, max_lat]');
+    const [minLng, minLat, maxLng, maxLat] = bbox;
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const url = `https://api.mapbox.com/incidents/v1/incidents/${minLng},${minLat},${maxLng},${maxLat}?language=${language}&access_token=${token}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Mapbox incidents ${res.status}: ${data.message || JSON.stringify(data)}`);
+    const incidents = (data.features || []).map(f => ({
+      id: f.id,
+      type: f.properties?.incident_type,
+      description: f.properties?.long_description || f.properties?.description,
+      start_time: f.properties?.start_time,
+      end_time: f.properties?.end_time,
+      severity: f.properties?.severity,
+      congestion: f.properties?.congestion?.value,
+      coordinates: f.geometry?.coordinates
+    }));
+    return { incidents, count: incidents.length, bbox };
+  }
+
+  if (tool === 'mapbox_get_live_eta') {
+    // Get ETA with live traffic for a route (vs. historical travel time)
+    const { origin_lat, origin_lng, dest_lat, dest_lng, profile = 'driving-traffic' } = args;
+    if (!origin_lat || !origin_lng || !dest_lat || !dest_lng) throw new Error('origin and destination coordinates are required');
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const coords = `${origin_lng},${origin_lat};${dest_lng},${dest_lat}`;
+    const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${coords}?access_token=${token}&overview=simplified&annotations=duration,congestion`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Mapbox directions ${res.status}: ${data.message || JSON.stringify(data)}`);
+    const route = data.routes?.[0];
+    if (!route) throw new Error('No route found');
+    return {
+      duration_seconds: route.duration,
+      duration_minutes: Math.round(route.duration / 60),
+      distance_meters: route.distance,
+      distance_miles: (route.distance / 1609.34).toFixed(2),
+      profile,
+      congestion_summary: route.legs?.[0]?.annotation?.congestion?.reduce((acc, c) => {
+        acc[c] = (acc[c] || 0) + 1; return acc;
+      }, {})
+    };
+  }
+
+  // ── BATCH REVERSE GEOCODE ──────────────────────────────────────────────────
+  if (tool === 'mapbox_batch_reverse_geocode') {
+    // Reverse geocode multiple coordinates in parallel
+    const { coordinates, types = 'address' } = args;
+    if (!coordinates?.length) throw new Error('coordinates array is required: [{lat, lng}]');
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const results = await Promise.all(coordinates.map(async ({ lat, lng, id }) => {
+      try {
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=${types}&access_token=${token}&limit=1`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const feature = data.features?.[0];
+        return { id, lat, lng, address: feature?.place_name, place_type: feature?.place_type?.[0], found: !!feature };
+      } catch (e) {
+        return { id, lat, lng, error: e.message, found: false };
+      }
+    }));
+    return { results, found: results.filter(r => r.found).length, total: results.length };
+  }
+
+  // ── ADDRESS COMPARISON ─────────────────────────────────────────────────────
+  if (tool === 'mapbox_compare_addresses') {
+    // Check if two address strings resolve to the same location (within tolerance)
+    const { address_a, address_b, tolerance_meters = 100 } = args;
+    if (!address_a || !address_b) throw new Error('address_a and address_b are required');
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const geocode = async (addr) => {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addr)}.json?access_token=${token}&limit=1&types=address`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const f = data.features?.[0];
+      return f ? { place_name: f.place_name, lng: f.center[0], lat: f.center[1] } : null;
+    };
+    const [geoA, geoB] = await Promise.all([geocode(address_a), geocode(address_b)]);
+    if (!geoA || !geoB) return { match: false, reason: 'One or both addresses could not be geocoded', geo_a: geoA, geo_b: geoB };
+    // Haversine distance
+    const R = 6371000;
+    const dLat = (geoB.lat - geoA.lat) * Math.PI / 180;
+    const dLng = (geoB.lng - geoA.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(geoA.lat*Math.PI/180)*Math.cos(geoB.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+    const distance_meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return {
+      match: distance_meters <= tolerance_meters,
+      distance_meters: Math.round(distance_meters),
+      tolerance_meters,
+      address_a: { input: address_a, resolved: geoA.place_name },
+      address_b: { input: address_b, resolved: geoB.place_name }
+    };
+  }
+
+  // ── DURATION MATRIX ───────────────────────────────────────────────────────
+  if (tool === 'mapbox_get_duration_matrix') {
+    // Get an NxN matrix of travel durations between multiple points (uses Matrix API)
+    const { locations, profile = 'driving', annotations = 'duration' } = args;
+    if (!locations?.length || locations.length < 2) throw new Error('At least 2 locations required: [{lat, lng}]');
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const coords = locations.map(l => `${l.lng},${l.lat}`).join(';');
+    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/${profile}/${coords}?annotations=${annotations}&access_token=${token}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Mapbox matrix ${res.status}: ${data.message || JSON.stringify(data)}`);
+    return {
+      durations_seconds: data.durations,
+      distances_meters: data.distances,
+      locations: data.destinations?.map(d => ({ name: d.name, coordinates: d.location })),
+      profile
+    };
+  }
+
+  // ── SUPER: ROUTE PLAN WITH TRAFFIC ────────────────────────────────────────
+  // Get optimized route for multiple stops + live ETA + incident warnings
+  if (tool === 'mapbox_route_plan_with_traffic') {
+    const { stops, profile = 'driving-traffic' } = args;
+    if (!stops?.length || stops.length < 2) throw new Error('At least 2 stops required: [{lat, lng, label}]');
+    const token = process.env.MAPBOX_ACCESS_TOKEN;
+    if (!token) throw new Error('MAPBOX_ACCESS_TOKEN not set in .env');
+    const coords = stops.map(s => `${s.lng},${s.lat}`).join(';');
+    const url = `https://api.mapbox.com/directions/v5/mapbox/${profile}/${coords}?access_token=${token}&overview=simplified&steps=false&annotations=duration,congestion`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Mapbox directions ${res.status}: ${data.message || JSON.stringify(data)}`);
+    const route = data.routes?.[0];
+    if (!route) throw new Error('No route found');
+    const totalMinutes = Math.round(route.duration / 60);
+    const legs = route.legs?.map((leg, i) => ({
+      from: stops[i]?.label || `Stop ${i+1}`,
+      to: stops[i+1]?.label || `Stop ${i+2}`,
+      duration_minutes: Math.round(leg.duration / 60),
+      distance_miles: (leg.distance / 1609.34).toFixed(1),
+      has_congestion: leg.annotation?.congestion?.some(c => c === 'heavy' || c === 'severe')
+    }));
+    return {
+      total_duration_minutes: totalMinutes,
+      total_distance_miles: (route.distance / 1609.34).toFixed(1),
+      stops: stops.length,
+      legs,
+      has_traffic_delays: legs?.some(l => l.has_congestion),
+      profile
+    };
+  }
+
+
+    throw new Error(`Unknown Mapbox tool: ${tool}`);
 }
 
 export default { execute };

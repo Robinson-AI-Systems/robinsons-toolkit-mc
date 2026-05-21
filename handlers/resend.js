@@ -283,7 +283,86 @@ async function execute(tool, args) {
     };
   }
 
-  throw new Error(`Unknown Resend tool: ${tool}`);
+
+  // ── SCHEDULED EMAILS ──────────────────────────────────────────────────────
+  if (tool === 'resend_schedule_email') {
+    // Send an email at a future time using Resend's scheduled delivery
+    const { from: from_addr, to, subject, html, text, scheduled_at, reply_to, cc, bcc } = args;
+    if (!from_addr || !to || !subject || !scheduled_at) throw new Error('from, to, subject, and scheduled_at are required');
+    const body = { from: from_addr, to, subject, scheduled_at };
+    if (html) body.html = html;
+    if (text) body.text = text;
+    if (reply_to) body.reply_to = reply_to;
+    if (cc) body.cc = cc;
+    if (bcc) body.bcc = bcc;
+    const data = await resend('POST', '/emails', body);
+    return { id: data.id, scheduled_at, status: 'scheduled' };
+  }
+
+  if (tool === 'resend_list_scheduled_emails') {
+    // List emails scheduled for future delivery (status: scheduled)
+    const data = await resend('GET', '/emails?status=scheduled');
+    return { emails: data.data || data, count: (data.data || data)?.length || 0 };
+  }
+
+  // ── EMAIL SUPPRESSIONS ────────────────────────────────────────────────────
+  if (tool === 'resend_add_suppression') {
+    // Add an email address to the suppression list (opt-out / bounce management)
+    const { email } = args;
+    if (!email) throw new Error('email is required');
+    return await resend('POST', '/contacts/suppressions', { email });
+  }
+
+  if (tool === 'resend_remove_suppression') {
+    // Remove an email address from the suppression list
+    const { email } = args;
+    if (!email) throw new Error('email is required');
+    return await resend('DELETE', `/contacts/suppressions/${encodeURIComponent(email)}`);
+  }
+
+  if (tool === 'resend_list_suppressions') {
+    // List all suppressed email addresses (bounces, unsubscribes, spam complaints)
+    const { limit = 50, page = 1 } = args;
+    const data = await resend('GET', `/contacts/suppressions?limit=${limit}&page=${page}`);
+    return {
+      suppressions: (data.data || data || []).map(s => ({
+        email: s.email,
+        reason: s.reason,
+        created_at: s.created_at
+      })),
+      count: (data.data || data)?.length || 0
+    };
+  }
+
+  // ── BROADCAST ANALYTICS ────────────────────────────────────────────────────
+  if (tool === 'resend_get_broadcast_analytics') {
+    // Get delivery stats for a broadcast: sent, delivered, opened, clicked, bounced
+    const { broadcast_id } = args;
+    if (!broadcast_id) throw new Error('broadcast_id is required');
+    const [broadcast, events] = await Promise.all([
+      resend('GET', `/broadcasts/${broadcast_id}`),
+      resend('GET', `/broadcasts/${broadcast_id}/stats`).catch(() => null)
+    ]);
+    return {
+      id: broadcast.id,
+      name: broadcast.name,
+      subject: broadcast.subject,
+      status: broadcast.status,
+      sent_at: broadcast.sent_at,
+      audience_id: broadcast.audience_id,
+      stats: events || {
+        sent: broadcast.sent,
+        delivered: broadcast.delivered,
+        opened: broadcast.opened,
+        clicked: broadcast.clicked,
+        bounced: broadcast.bounced,
+        unsubscribed: broadcast.unsubscribed
+      }
+    };
+  }
+
+
+    throw new Error(`Unknown Resend tool: ${tool}`);
 }
 
 export default { execute };

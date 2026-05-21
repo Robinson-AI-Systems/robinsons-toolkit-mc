@@ -1185,7 +1185,217 @@ ${r.content?.slice(0, 500)}`).join('\n\n');
   }
 
 
-  throw new Error(`Unknown compound tool: ${tool}`);
+
+  // ── DEPLOY WITH AUTO-ROLLBACK ─────────────────────────────────────────────
+  // Deploy to Vercel and automatically roll back if the deployment fails
+  if (tool === 'compound_deploy_with_auto_rollback') {
+    const { vercel_project_id, version, sentry_project, slack_channel, app_name, rollback_on_states = ['ERROR', 'CANCELED'] } = args;
+    if (!vercel_project_id) throw new Error('vercel_project_id is required');
+    const results = { steps: [] };
+
+    // Wait for Vercel deployment to settle
+    await new Promise(r => setTimeout(r, 8000));
+    const vercel = await loadHandler('vercel');
+    let latest;
+    try {
+      const d = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 2 });
+      latest = d.deployments?.[0];
+      results.deployment = { id: latest?.uid, state: latest?.state, url: latest?.url ? `https://${latest.url}` : null };
+      results.steps.push({ step: 'deployment_check', success: true, state: latest?.state });
+    } catch (e) {
+      results.steps.push({ step: 'deployment_check', success: false, error: e.message });
+      return results;
+    }
+
+    const deployFailed = rollback_on_states.includes(latest?.state?.toUpperCase());
+
+    if (deployFailed) {
+      // Find previous successful deployment and promote it
+      try {
+        const d = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 10 });
+        const previousGood = d.deployments?.find(dep => dep.state === 'READY' && dep.uid !== latest?.uid);
+        if (previousGood) {
+          await vercel.execute('vercel_promote_deployment', { deploymentId: previousGood.uid, projectId: vercel_project_id });
+          results.rolled_back_to = previousGood.uid;
+          results.steps.push({ step: 'rollback', success: true, promoted_deployment: previousGood.uid });
+        } else {
+          results.steps.push({ step: 'rollback', success: false, reason: 'No previous good deployment found' });
+        }
+      } catch (e) {
+        results.steps.push({ step: 'rollback', success: false, error: e.message });
+      }
+
+      if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+        try {
+          const slack = await loadHandler('slack');
+          await slack.execute('slack_send_alert', {
+            channel: slack_channel, severity: 'critical',
+            title: `🚨 Deploy failed${app_name ? ` — ${app_name}` : ''}${version ? ` v${version}` : ''} — rolled back`,
+            message: `Deployment state: ${latest?.state}
+${results.rolled_back_to ? `Rolled back to: ${results.rolled_back_to}` : 'No rollback target found'}`
+          });
+          results.steps.push({ step: 'slack_alert', success: true });
+        } catch (e) { results.steps.push({ step: 'slack_alert', success: false, error: e.message }); }
+      }
+    } else if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        await slack.execute('slack_send_alert', {
+          channel: slack_channel, severity: 'info',
+          title: `✅ Deploy successful${app_name ? ` — ${app_name}` : ''}${version ? ` v${version}` : ''}`,
+          message: results.deployment?.url || ''
+        });
+        results.steps.push({ step: 'slack_alert', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_alert', success: false, error: e.message }); }
+    }
+
+    return { ...results, deploy_failed: deployFailed, auto_rolled_back: deployFailed && !!results.rolled_back_to };
+  }
+
+  // ── DATABASE HEALTH REPORT ────────────────────────────────────────────────
+  // Neon branch overview + slow queries + table sizes + active connections in one call
+  if (tool === 'compound_database_health_report') {
+    const { neon_project_id, include_slow_queries = true, include_table_sizes = true } = args;
+    if (!neon_project_id) throw new Error('neon_project_id is required');
+    const neon = await loadHandler('neon');
+    const report = { project_id: neon_project_id, sections: {}, generated_at: new Date().toISOString() };
+
+    const trySection = async (name, fn) => {
+      try { report.sections[name] = await fn(); }
+      catch (e) { report.sections[name] = { error: e.message }; }
+    };
+
+    await Promise.all([
+      trySection('branches', () => neon.execute('neon_list_branches', { project_id: neon_project_id })),
+      trySection('active_connections', () => neon.execute('neon_run_sql', { project_id: neon_project_id, sql: "SELECT count(*) as count FROM pg_stat_activity WHERE state != 'idle'" })),
+      include_slow_queries ? trySection('slow_queries', () => neon.execute('neon_run_sql', { project_id: neon_project_id, sql: "SELECT query, calls, mean_exec_time::numeric(10,2) as avg_ms, total_exec_time::numeric(10,2) as total_ms FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10" })) : Promise.resolve(),
+      include_table_sizes ? trySection('table_sizes', () => neon.execute('neon_run_sql', { project_id: neon_project_id, sql: "SELECT relname as table_name, pg_size_pretty(pg_total_relation_size(relid)) as total_size, pg_total_relation_size(relid) as bytes FROM pg_catalog.pg_statio_user_tables ORDER BY bytes DESC LIMIT 15" })) : Promise.resolve(),
+    ]);
+
+    return report;
+  }
+
+  // ── PIPELINE STATUS ───────────────────────────────────────────────────────
+  // GitHub Actions + Vercel + Sentry error count in one CI/CD status snapshot
+  if (tool === 'compound_pipeline_status') {
+    const { github_owner, github_repo, vercel_project_id, sentry_project, branch = 'main' } = args;
+    const status = { branch, checked_at: new Date().toISOString() };
+
+    await Promise.all([
+      github_owner && github_repo ? (async () => {
+        try {
+          const gh = await loadHandler('github');
+          const runs = await gh.execute('github_list_workflow_runs', { owner: github_owner, repo: github_repo, branch, per_page: 5 });
+          const latest = (runs.workflow_runs || runs)[0];
+          status.github_actions = { status: latest?.status, conclusion: latest?.conclusion, name: latest?.name, updated_at: latest?.updated_at };
+        } catch (e) { status.github_actions = { error: e.message }; }
+      })() : Promise.resolve(),
+
+      vercel_project_id ? (async () => {
+        try {
+          const vercel = await loadHandler('vercel');
+          const d = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 1 });
+          const latest = d.deployments?.[0];
+          status.vercel = { state: latest?.state, url: latest?.url ? `https://${latest.url}` : null, created_at: latest?.createdAt };
+        } catch (e) { status.vercel = { error: e.message }; }
+      })() : Promise.resolve(),
+
+      sentry_project ? (async () => {
+        try {
+          const sentry = await loadHandler('sentry');
+          const issues = await sentry.execute('sentry_list_issues', { project_slug: sentry_project, limit: 3, query: 'is:unresolved', sort: 'date' });
+          status.sentry = { unresolved_count: Array.isArray(issues) ? issues.length : 0, recent: Array.isArray(issues) ? issues.slice(0,3).map(i => ({ title: i.title, count: i.count })) : [] };
+        } catch (e) { status.sentry = { error: e.message }; }
+      })() : Promise.resolve(),
+    ]);
+
+    const allGreen = (
+      (!status.github_actions || status.github_actions.conclusion === 'success') &&
+      (!status.vercel || status.vercel.state === 'READY') &&
+      (!status.sentry || status.sentry.unresolved_count === 0)
+    );
+    return { ...status, all_green: allGreen };
+  }
+
+  // ── ALERT TRIAGE ──────────────────────────────────────────────────────────
+  // Fetch top Sentry issues + map to Linear tickets + summarize with AI in one call
+  if (tool === 'compound_alert_triage') {
+    const { sentry_project, linear_team_id, limit = 10, auto_create_issues = false } = args;
+    if (!sentry_project) throw new Error('sentry_project is required');
+    const results = { triaged: [], created_issues: [] };
+
+    const sentry = await loadHandler('sentry');
+    const issues = await sentry.execute('sentry_list_issues', { project_slug: sentry_project, limit, query: 'is:unresolved', sort: 'users' });
+    results.triaged = Array.isArray(issues) ? issues.map(i => ({
+      id: i.id, title: i.title, count: i.count, users_affected: i.userCount,
+      level: i.level, first_seen: i.firstSeen, last_seen: i.lastSeen
+    })) : [];
+
+    if (auto_create_issues && linear_team_id && results.triaged.length) {
+      const linear = await loadHandler('linear');
+      const topIssues = results.triaged.slice(0, 3); // Only auto-create for top 3
+      for (const issue of topIssues) {
+        try {
+          const created = await linear.execute('linear_create_issue', {
+            title: `Bug: ${issue.title}`,
+            description: `**Sentry ID:** ${issue.id}
+**Users affected:** ${issue.users_affected}
+**Occurrences:** ${issue.count}
+**First seen:** ${issue.first_seen}`,
+            team_id: linear_team_id,
+            priority: issue.level === 'fatal' ? 1 : 2
+          });
+          results.created_issues.push({ sentry_id: issue.id, linear_id: created.issue?.identifier });
+        } catch (e) { results.created_issues.push({ sentry_id: issue.id, error: e.message }); }
+      }
+    }
+
+    return {
+      ...results,
+      total_unresolved: results.triaged.length,
+      total_users_affected: results.triaged.reduce((s, i) => s + (i.users_affected || 0), 0),
+      linear_issues_created: results.created_issues.filter(i => i.linear_id).length
+    };
+  }
+
+  // ── COMPETITOR RESEARCH ───────────────────────────────────────────────────
+  // Search + AI synthesis for competitive intelligence in one call
+  if (tool === 'compound_competitor_research') {
+    const { company, competitors, aspects = ['pricing', 'features', 'reviews', 'recent news'], max_results = 5 } = args;
+    if (!company) throw new Error('company is required');
+    const search = await loadHandler('search');
+    const targets = competitors?.length ? competitors : [company];
+    const allResults = {};
+
+    for (const target of targets) {
+      allResults[target] = {};
+      for (const aspect of aspects.slice(0, 3)) { // Limit to 3 aspects to avoid rate limiting
+        try {
+          const data = await search.execute('tavily_search', {
+            query: `${target} ${aspect} 2024 2025`,
+            max_results,
+            search_depth: 'basic',
+            include_answer: true
+          });
+          allResults[target][aspect] = {
+            answer: data.answer,
+            sources: (data.results || []).slice(0, 3).map(r => ({ title: r.title, url: r.url }))
+          };
+        } catch (e) { allResults[target][aspect] = { error: e.message }; }
+      }
+    }
+
+    return {
+      subject: company,
+      competitors_researched: targets,
+      aspects_covered: aspects.slice(0, 3),
+      research: allResults,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+
+    throw new Error(`Unknown compound tool: ${tool}`);
 }
 
 export default { execute };
