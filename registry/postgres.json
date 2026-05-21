@@ -1492,5 +1492,156 @@
       "properties": {},
       "required": []
     }
+  },
+  {
+    "name": "postgres_advisory_lock",
+    "description": "Attempt to acquire a PostgreSQL advisory lock on an integer key (non-blocking). Returns acquired: true if the lock was obtained, false if it's held by another session. Use for distributed locking patterns \u2014 e.g. ensure only one worker processes a job at a time.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "advisory-lock",
+      "concurrency",
+      "distributed",
+      "locking"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lock_key": {
+          "type": "number",
+          "description": "Integer lock key (e.g. hash of a resource ID)"
+        },
+        "shared": {
+          "type": "boolean",
+          "default": false,
+          "description": "Acquire shared (read) lock instead of exclusive"
+        }
+      },
+      "required": [
+        "lock_key"
+      ]
+    }
+  },
+  {
+    "name": "postgres_advisory_unlock",
+    "description": "Release a PostgreSQL advisory lock held by the current session on the given integer key. Call this after your critical section completes to allow other sessions to acquire the lock.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "advisory-lock",
+      "concurrency",
+      "release"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "lock_key": {
+          "type": "number"
+        },
+        "shared": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "lock_key"
+      ]
+    }
+  },
+  {
+    "name": "postgres_notify",
+    "description": "Send a NOTIFY event on a PostgreSQL channel with an optional payload string. Any sessions or applications running LISTEN on that channel will receive the notification in real time. Use for lightweight event-driven patterns like job queue signals or cache invalidation.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "notify",
+      "pub-sub",
+      "events",
+      "real-time"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel name (alphanumeric and underscores)"
+        },
+        "payload": {
+          "type": "string",
+          "description": "Optional message payload (up to 8000 bytes)"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "postgres_list_replication_slots",
+    "description": "List all logical and physical replication slots on the PostgreSQL instance. Returns slot name, plugin, type, database, active status, restart LSN, and confirmed flush LSN. Use to audit CDC pipelines and check for slot lag.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "replication",
+      "cdc",
+      "slots",
+      "logical-replication"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "postgres_create_replication_slot",
+    "description": "Create a logical replication slot for Change Data Capture (CDC). The slot retains WAL data from its creation point so consumers can replay changes. Use pgoutput plugin for native logical replication or wal2json for JSON output.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "replication",
+      "cdc",
+      "slot",
+      "wal",
+      "logical-replication"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "slot_name": {
+          "type": "string"
+        },
+        "plugin": {
+          "type": "string",
+          "default": "pgoutput",
+          "description": "Decoder plugin: pgoutput, wal2json, or pglogical"
+        }
+      },
+      "required": [
+        "slot_name"
+      ]
+    }
+  },
+  {
+    "name": "postgres_drop_replication_slot",
+    "description": "Drop a logical replication slot by name. WARNING: dropping an active slot will cause the consumer to lose its position and may require a full resync. Only drop slots that are no longer needed or whose consumers have been shut down.",
+    "namespace": "postgres",
+    "tags": [
+      "postgres",
+      "replication",
+      "cdc",
+      "slot",
+      "drop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "slot_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_name"
+      ]
+    }
   }
 ]

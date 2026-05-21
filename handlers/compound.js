@@ -755,6 +755,436 @@ ${additional_context || ''}`;
     return { cycle, message_sent: false, preview: text };
   }
 
+
+  // ── FULL FEATURE DEPLOY ───────────────────────────────────────────────────
+  // Merge GitHub PR + run Neon migration + deploy to Vercel production
+  if (tool === 'compound_full_feature_deploy') {
+    const { github_owner, github_repo, pr_number, neon_project_id, migration_sql, vercel_project_id, version, sentry_project } = args;
+    if (!github_owner || !github_repo) throw new Error('github_owner and github_repo are required');
+    const results = { steps: [] };
+    if (pr_number) {
+      try {
+        const gh = await loadHandler('github');
+        const merge = await gh.execute('github_merge_pull_request', { owner: github_owner, repo: github_repo, pull_number: pr_number, merge_method: 'squash' });
+        results.steps.push({ step: 'pr_merge', success: true, sha: merge.sha, message: merge.message });
+        results.merged_sha = merge.sha;
+      } catch (e) { results.steps.push({ step: 'pr_merge', success: false, error: e.message }); }
+    }
+    if (neon_project_id && migration_sql) {
+      try {
+        const migration = await execute('compound_neon_safe_migration', { neon_project_id, migration_sql });
+        results.steps.push({ step: 'neon_migration', success: migration.migration_success, status: migration.status });
+        results.migration = migration;
+      } catch (e) { results.steps.push({ step: 'neon_migration', success: false, error: e.message }); }
+    }
+    if (vercel_project_id && version) {
+      try {
+        const deploy = await execute('compound_deploy_and_release', { version, vercel_project_id, sentry_project, environment: 'production', git_push: false });
+        results.steps.push({ step: 'vercel_deploy', success: deploy.all_succeeded, state: deploy.deployment?.state });
+        results.deployment = deploy.deployment;
+      } catch (e) { results.steps.push({ step: 'vercel_deploy', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── HOTFIX DEPLOY ──────────────────────────────────────────────────────────
+  // Git commit + push + Vercel deploy + Slack alert in one call
+  if (tool === 'compound_hotfix_deploy') {
+    const { project_path, commit_message, vercel_project_id, version, slack_channel, app_name, sentry_project } = args;
+    if (!project_path || !commit_message) throw new Error('project_path and commit_message are required');
+    const results = { steps: [] };
+    const gitResult = await execute('compound_git_commit_push', { project_path, message: commit_message });
+    results.steps.push({ step: 'git', success: gitResult.all_succeeded, detail: gitResult.steps });
+    results.git = gitResult;
+    if (vercel_project_id && version) {
+      await new Promise(r => setTimeout(r, 8000)); // Wait for Vercel webhook
+      try {
+        const vercel = await loadHandler('vercel');
+        const d = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 1 });
+        const latest = d.deployments?.[0];
+        results.steps.push({ step: 'vercel_check', success: !!latest, state: latest?.state, url: latest?.url ? `https://${latest.url}` : null });
+        results.deployment = latest;
+      } catch (e) { results.steps.push({ step: 'vercel_check', success: false, error: e.message }); }
+    }
+    if (sentry_project && version) {
+      try {
+        const sentry = await loadHandler('sentry');
+        await sentry.execute('sentry_deploy_release', { version, environment: 'production', project_slug: sentry_project });
+        results.steps.push({ step: 'sentry_release', success: true });
+      } catch (e) { results.steps.push({ step: 'sentry_release', success: false, error: e.message }); }
+    }
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        const deployUrl = results.deployment?.url ? `https://${results.deployment.url}` : null;
+        await slack.execute('slack_send_alert', {
+          channel: slack_channel, severity: 'warning',
+          title: `🔥 Hotfix deployed${app_name ? ` — ${app_name}` : ''}${version ? ` v${version}` : ''}`,
+          message: `${commit_message}${deployUrl ? `
+${deployUrl}` : ''}`
+        });
+        results.steps.push({ step: 'slack_alert', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_alert', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── STAGING REFRESH ────────────────────────────────────────────────────────
+  // Reset staging Neon branch to main data + re-deploy staging Vercel project
+  if (tool === 'compound_staging_refresh') {
+    const { neon_project_id, vercel_project_id, staging_branch_name = 'staging', slack_channel } = args;
+    if (!neon_project_id) throw new Error('neon_project_id is required');
+    const results = { steps: [] };
+    const neon = await loadHandler('neon');
+    try {
+      const branches = await neon.execute('neon_list_branches', { project_id: neon_project_id });
+      const existing = (branches.branches || branches).find(b => b.name === staging_branch_name);
+      if (existing) {
+        await neon.execute('neon_delete_branch', { project_id: neon_project_id, branch_id: existing.id });
+        results.steps.push({ step: 'neon_delete_old_staging', success: true });
+      }
+      const newBranch = await neon.execute('neon_create_branch', { project_id: neon_project_id, branch_name: staging_branch_name });
+      results.neon_branch_id = newBranch.branch?.id;
+      results.steps.push({ step: 'neon_create_staging_branch', success: true, branch_id: newBranch.branch?.id });
+    } catch (e) { results.steps.push({ step: 'neon_staging_branch', success: false, error: e.message }); }
+    if (vercel_project_id) {
+      try {
+        const vercel = await loadHandler('vercel');
+        const deploy = await vercel.execute('vercel_create_deployment', { projectId: vercel_project_id, target: 'preview', gitBranch: staging_branch_name });
+        results.steps.push({ step: 'vercel_staging_deploy', success: true, url: deploy.url });
+        results.staging_url = deploy.url;
+      } catch (e) { results.steps.push({ step: 'vercel_staging_deploy', success: false, error: e.message }); }
+    }
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        await slack.execute('slack_send_message', { channel: slack_channel, text: `🔄 Staging refreshed${results.staging_url ? ` — ${results.staging_url}` : ''}` });
+        results.steps.push({ step: 'slack_notify', success: true });
+      } catch (e) { results.steps.push({ step: 'slack_notify', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── PROVISION NEW PROJECT ─────────────────────────────────────────────────
+  // GitHub repo + Vercel project + Neon database + wire env vars in one call
+  if (tool === 'compound_provision_new_project') {
+    const { project_name, github_org, vercel_team_id, neon_org_id, private_repo = true, framework } = args;
+    if (!project_name) throw new Error('project_name is required');
+    const results = { project_name, steps: [] };
+    let neonConnString = null;
+    try {
+      const gh = await loadHandler('github');
+      const repo = await gh.execute('github_create_repo', { name: project_name, private: private_repo, org: github_org, auto_init: true });
+      results.github_repo = repo.html_url;
+      results.steps.push({ step: 'github_repo', success: true, url: repo.html_url });
+    } catch (e) { results.steps.push({ step: 'github_repo', success: false, error: e.message }); }
+    try {
+      const neon = await loadHandler('neon');
+      const neonProject = await neon.execute('neon_create_project', { name: project_name, region_id: 'aws-us-east-2', org_id: neon_org_id });
+      results.neon_project_id = neonProject.project?.id;
+      const connInfo = await neon.execute('neon_get_connection_string', { project_id: neonProject.project?.id, database: 'neondb' });
+      neonConnString = connInfo.connection_string;
+      results.neon_connection_string = neonConnString;
+      results.steps.push({ step: 'neon_project', success: true, id: neonProject.project?.id });
+    } catch (e) { results.steps.push({ step: 'neon_project', success: false, error: e.message }); }
+    try {
+      const vercel = await loadHandler('vercel');
+      const project = await vercel.execute('vercel_create_project', { name: project_name, teamId: vercel_team_id, framework: framework || 'nextjs' });
+      results.vercel_project_id = project.id;
+      results.steps.push({ step: 'vercel_project', success: true, id: project.id });
+      if (neonConnString) {
+        await vercel.execute('vercel_add_env_variable', { projectId: project.id, key: 'DATABASE_URL', value: neonConnString, target: ['production', 'preview', 'development'] });
+        results.steps.push({ step: 'vercel_env_wired', success: true });
+      }
+    } catch (e) { results.steps.push({ step: 'vercel_project', success: false, error: e.message }); }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── TENANT PROVISION ──────────────────────────────────────────────────────
+  // Stripe customer + DB tenant schema + Clerk org + welcome email in one call
+  if (tool === 'compound_provision_tenant') {
+    const { tenant_name, admin_email, price_id, neon_project_id, from_email, app_name = 'the app' } = args;
+    if (!tenant_name || !admin_email) throw new Error('tenant_name and admin_email are required');
+    const results = { tenant: tenant_name, steps: [] };
+    try {
+      const stripe = await loadHandler('stripe');
+      const customer = await stripe.execute('stripe_create_customer', { email: admin_email, name: tenant_name });
+      results.stripe_customer_id = customer.id;
+      results.steps.push({ step: 'stripe_customer', success: true, id: customer.id });
+      if (price_id) {
+        const sub = await stripe.execute('stripe_create_subscription', { customer_id: customer.id, price_id });
+        results.stripe_subscription_id = sub.id;
+        results.steps.push({ step: 'stripe_subscription', success: true, status: sub.status });
+      }
+    } catch (e) { results.steps.push({ step: 'stripe', success: false, error: e.message }); }
+    try {
+      const clerk = await loadHandler('clerk');
+      const org = await clerk.execute('clerk_create_organization', { name: tenant_name });
+      results.clerk_org_id = org.id;
+      results.steps.push({ step: 'clerk_org', success: true, id: org.id });
+    } catch (e) { results.steps.push({ step: 'clerk_org', success: false, error: e.message }); }
+    if (neon_project_id) {
+      try {
+        const neon = await loadHandler('neon');
+        const schema = `tenant_${tenant_name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+        await neon.execute('neon_run_sql', { project_id: neon_project_id, sql: `CREATE SCHEMA IF NOT EXISTS ${schema}` });
+        results.db_schema = schema;
+        results.steps.push({ step: 'db_schema', success: true, schema });
+      } catch (e) { results.steps.push({ step: 'db_schema', success: false, error: e.message }); }
+    }
+    if (from_email) {
+      try {
+        const resend = await loadHandler('resend');
+        await resend.execute('resend_send_email', { from: from_email, to: admin_email, subject: `Welcome to ${app_name} — your account is ready`, html: `<p>Welcome ${tenant_name}! Your ${app_name} account has been created. Sign in to get started.</p>` });
+        results.steps.push({ step: 'welcome_email', success: true });
+      } catch (e) { results.steps.push({ step: 'welcome_email', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── TENANT UPGRADE ────────────────────────────────────────────────────────
+  // Stripe plan upgrade + send confirmation email in one call
+  if (tool === 'compound_tenant_upgrade') {
+    const { stripe_subscription_id, new_price_id, admin_email, from_email, app_name = 'the app', plan_name } = args;
+    if (!stripe_subscription_id || !new_price_id) throw new Error('stripe_subscription_id and new_price_id are required');
+    const results = { steps: [] };
+    try {
+      const stripe = await loadHandler('stripe');
+      const sub = await stripe.execute('stripe_update_subscription', { subscription_id: stripe_subscription_id, price_id: new_price_id });
+      results.subscription = { id: sub.id, status: sub.status };
+      results.steps.push({ step: 'stripe_upgrade', success: true, status: sub.status });
+    } catch (e) { results.steps.push({ step: 'stripe_upgrade', success: false, error: e.message }); }
+    if (from_email && admin_email) {
+      try {
+        const resend = await loadHandler('resend');
+        await resend.execute('resend_send_email', { from: from_email, to: admin_email, subject: `Your ${app_name} plan has been upgraded`, html: `<p>Your account has been upgraded${plan_name ? ` to ${plan_name}` : ''}. Your new features are available immediately.</p>` });
+        results.steps.push({ step: 'upgrade_email', success: true });
+      } catch (e) { results.steps.push({ step: 'upgrade_email', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── WEEKLY ENGINEERING REPORT ─────────────────────────────────────────────
+  // GitHub commits + Vercel deploys + Neon query stats + Stripe MRR in one report
+  if (tool === 'compound_weekly_engineering_report') {
+    const { github_owner, github_repo, vercel_project_id, neon_project_id, slack_channel } = args;
+    const report = { week: new Date().toISOString().slice(0, 10), sections: {} };
+    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    if (github_owner && github_repo) {
+      try {
+        const gh = await loadHandler('github');
+        const [commits, prs] = await Promise.all([
+          gh.execute('github_list_commits', { owner: github_owner, repo: github_repo, since, per_page: 50 }).catch(() => []),
+          gh.execute('github_list_pull_requests', { owner: github_owner, repo: github_repo, state: 'closed', per_page: 20 }).catch(() => [])
+        ]);
+        const mergedPRs = (Array.isArray(prs) ? prs : prs.pull_requests || []).filter(pr => pr.merged_at && new Date(pr.merged_at) > new Date(since));
+        report.sections.github = { commits: Array.isArray(commits) ? commits.length : (commits.commits?.length || 0), merged_prs: mergedPRs.length };
+      } catch (e) { report.sections.github = { error: e.message }; }
+    }
+    if (vercel_project_id) {
+      try {
+        const vercel = await loadHandler('vercel');
+        const d = await vercel.execute('vercel_list_deployments', { projectId: vercel_project_id, limit: 20 });
+        const recent = (d.deployments || []).filter(x => x.createdAt && new Date(x.createdAt) > new Date(since));
+        report.sections.vercel = { deployments_this_week: recent.length, latest_state: d.deployments?.[0]?.state };
+      } catch (e) { report.sections.vercel = { error: e.message }; }
+    }
+    if (neon_project_id) {
+      try {
+        const neon = await loadHandler('neon');
+        const branches = await neon.execute('neon_list_branches', { project_id: neon_project_id });
+        report.sections.neon = { branches: (branches.branches || branches).length };
+      } catch (e) { report.sections.neon = { error: e.message }; }
+    }
+    try {
+      const stripe = await loadHandler('stripe');
+      const revenue = await stripe.execute('stripe_revenue_summary', {});
+      report.sections.stripe = { mrr: revenue.mrr_usd, arr: revenue.arr_usd, active_subs: revenue.active_subscriptions };
+    } catch (e) { report.sections.stripe = { error: e.message }; }
+    if (slack_channel || process.env.SLACK_DEFAULT_CHANNEL) {
+      try {
+        const slack = await loadHandler('slack');
+        const lines = [`📊 *Weekly Engineering Report — ${report.week}*`];
+        if (report.sections.github?.commits !== undefined) lines.push(`• GitHub: ${report.sections.github.commits} commits, ${report.sections.github.merged_prs} PRs merged`);
+        if (report.sections.vercel?.deployments_this_week !== undefined) lines.push(`• Vercel: ${report.sections.vercel.deployments_this_week} deployments (latest: ${report.sections.vercel.latest_state})`);
+        if (report.sections.stripe?.mrr !== undefined) lines.push(`• Stripe: MRR $${report.sections.stripe.mrr?.toLocaleString() || 'N/A'}`);
+        await slack.execute('slack_send_message', { channel: slack_channel, text: lines.join('\n') });
+        report.slack_sent = true;
+      } catch (e) { report.slack_error = e.message; }
+    }
+    return report;
+  }
+
+  // ── COST AUDIT ────────────────────────────────────────────────────────────
+  // Fetch spending data from Neon, Vercel, OpenAI, and Stripe in one report
+  if (tool === 'compound_cost_audit') {
+    const costs = { generated_at: new Date().toISOString(), services: {} };
+    const tryFetch = async (name, fn) => {
+      try { costs.services[name] = await fn(); }
+      catch (e) { costs.services[name] = { error: e.message }; }
+    };
+    await Promise.all([
+      tryFetch('neon', async () => {
+        const h = await loadHandler('neon');
+        const consumption = await h.execute('neon_get_consumption_history_per_account', {}).catch(() => null);
+        return consumption || { note: 'Consumption history requires Neon API access' };
+      }),
+      tryFetch('openai', async () => {
+        const h = await loadHandler('openai');
+        const usage = await h.execute('openai_get_usage', {}).catch(() => null);
+        return usage || { note: 'Requires OPENAI_ADMIN_KEY' };
+      }),
+      tryFetch('anthropic', async () => {
+        const h = await loadHandler('anthropic');
+        const usage = await h.execute('anthropic_get_usage', {}).catch(() => null);
+        return usage || { note: 'Requires ANTHROPIC_ADMIN_KEY' };
+      }),
+      tryFetch('stripe_balance', async () => {
+        const h = await loadHandler('stripe');
+        return await h.execute('stripe_get_balance', {});
+      }),
+    ]);
+    return costs;
+  }
+
+  // ── DISPATCH JOB (YardSync) ───────────────────────────────────────────────
+  // Create DB job record + send driver SMS + send customer confirmation email
+  if (tool === 'compound_dispatch_job') {
+    const { neon_project_id, job_data, driver_phone, driver_message, customer_email, customer_subject, customer_html, from_email } = args;
+    if (!driver_phone && !customer_email) throw new Error('At least one of driver_phone or customer_email is required');
+    const results = { steps: [] };
+    if (neon_project_id && job_data) {
+      try {
+        const neon = await loadHandler('neon');
+        const cols = Object.keys(job_data).join(', ');
+        const vals = Object.values(job_data).map(v => typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` : v).join(', ');
+        const insert = await neon.execute('neon_run_sql', { project_id: neon_project_id, sql: `INSERT INTO jobs (${cols}) VALUES (${vals}) RETURNING id` });
+        results.job_id = insert.rows?.[0]?.id;
+        results.steps.push({ step: 'db_insert', success: true, job_id: results.job_id });
+      } catch (e) { results.steps.push({ step: 'db_insert', success: false, error: e.message }); }
+    }
+    if (driver_phone && driver_message) {
+      try {
+        const twilio = await loadHandler('twilio');
+        await twilio.execute('twilio_send_sms', { to: driver_phone, body: driver_message });
+        results.steps.push({ step: 'driver_sms', success: true });
+      } catch (e) { results.steps.push({ step: 'driver_sms', success: false, error: e.message }); }
+    }
+    if (customer_email && from_email) {
+      try {
+        const resend = await loadHandler('resend');
+        await resend.execute('resend_send_email', { from: from_email, to: customer_email, subject: customer_subject || 'Your service appointment is confirmed', html: customer_html || '<p>Your appointment has been confirmed.</p>' });
+        results.steps.push({ step: 'customer_email', success: true });
+      } catch (e) { results.steps.push({ step: 'customer_email', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── COMPLETE JOB (YardSync) ───────────────────────────────────────────────
+  // Update DB job status + notify customer + create Stripe invoice
+  if (tool === 'compound_complete_job') {
+    const { neon_project_id, job_id, completion_data, customer_email, from_email, app_name, stripe_customer_id, amount_cents, invoice_description } = args;
+    if (!job_id) throw new Error('job_id is required');
+    const results = { job_id, steps: [] };
+    if (neon_project_id) {
+      try {
+        const neon = await loadHandler('neon');
+        const sets = Object.entries({ ...completion_data, status: 'completed', completed_at: 'NOW()' })
+          .map(([k, v]) => `${k} = ${v === 'NOW()' ? v : typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` : v}`).join(', ');
+        await neon.execute('neon_run_sql', { project_id: neon_project_id, sql: `UPDATE jobs SET ${sets} WHERE id = ${job_id}` });
+        results.steps.push({ step: 'db_update', success: true });
+      } catch (e) { results.steps.push({ step: 'db_update', success: false, error: e.message }); }
+    }
+    if (customer_email && from_email) {
+      try {
+        const resend = await loadHandler('resend');
+        await resend.execute('resend_send_email', { from: from_email, to: customer_email, subject: `Your service is complete${app_name ? ` — ${app_name}` : ''}`, html: `<p>Your service has been completed. Thank you for your business!</p>` });
+        results.steps.push({ step: 'completion_email', success: true });
+      } catch (e) { results.steps.push({ step: 'completion_email', success: false, error: e.message }); }
+    }
+    if (stripe_customer_id && amount_cents) {
+      try {
+        const stripe = await loadHandler('stripe');
+        const invoice = await stripe.execute('stripe_create_invoice', { customer_id: stripe_customer_id, auto_advance: true, collection_method: 'send_invoice', days_until_due: 30 });
+        await stripe.execute('stripe_create_invoice_item', { customer_id: stripe_customer_id, amount: amount_cents, description: invoice_description || `Job #${job_id}`, invoice_id: invoice.id });
+        const finalized = await stripe.execute('stripe_finalize_invoice', { invoice_id: invoice.id });
+        results.invoice_id = finalized.id;
+        results.invoice_url = finalized.hosted_invoice_url;
+        results.steps.push({ step: 'stripe_invoice', success: true, invoice_id: finalized.id });
+      } catch (e) { results.steps.push({ step: 'stripe_invoice', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── DRIVER ONBOARD (YardSync) ─────────────────────────────────────────────
+  // Create Clerk account + send welcome SMS + seed initial route data in Neon
+  if (tool === 'compound_driver_onboard') {
+    const { email, phone, first_name, last_name, neon_project_id, driver_data, from_number } = args;
+    if (!email) throw new Error('email is required');
+    const results = { email, steps: [] };
+    let clerkUserId = null;
+    try {
+      const clerk = await loadHandler('clerk');
+      const user = await clerk.execute('clerk_create_user', { email_address: email, first_name, last_name, phone_number: phone });
+      clerkUserId = user.id;
+      results.clerk_user_id = user.id;
+      results.steps.push({ step: 'clerk_user', success: true, id: user.id });
+    } catch (e) { results.steps.push({ step: 'clerk_user', success: false, error: e.message }); }
+    if (phone && from_number) {
+      try {
+        const twilio = await loadHandler('twilio');
+        await twilio.execute('twilio_send_sms', { to: phone, body: `Welcome ${first_name || ''}! Your driver account is ready. Download the app to get started.` });
+        results.steps.push({ step: 'welcome_sms', success: true });
+      } catch (e) { results.steps.push({ step: 'welcome_sms', success: false, error: e.message }); }
+    }
+    if (neon_project_id && clerkUserId) {
+      try {
+        const neon = await loadHandler('neon');
+        const driverRecord = { clerk_user_id: clerkUserId, email, first_name: first_name || '', last_name: last_name || '', phone: phone || '', status: 'active', ...driver_data };
+        const cols = Object.keys(driverRecord).join(', ');
+        const vals = Object.values(driverRecord).map(v => `'${String(v).replace(/'/g, "''")}'`).join(', ');
+        const insert = await neon.execute('neon_run_sql', { project_id: neon_project_id, sql: `INSERT INTO drivers (${cols}) VALUES (${vals}) RETURNING id` });
+        results.driver_id = insert.rows?.[0]?.id;
+        results.steps.push({ step: 'db_driver_record', success: true, driver_id: results.driver_id });
+      } catch (e) { results.steps.push({ step: 'db_driver_record', success: false, error: e.message }); }
+    }
+    return { ...results, all_succeeded: results.steps.every(s => s.success) };
+  }
+
+  // ── RESEARCH AND SUMMARIZE ────────────────────────────────────────────────
+  // Web search + AI summarization in one call (Tavily → Claude/OpenAI)
+  if (tool === 'compound_research_and_summarize') {
+    const { query, max_results = 5, model = 'claude-3-5-haiku-20241022', use_gemini = false, search_depth = 'advanced' } = args;
+    if (!query) throw new Error('query is required');
+    const search = await loadHandler('search');
+    const searchResults = await search.execute('tavily_search', { query, max_results, search_depth, include_answer: true });
+    const context = (searchResults.results || []).map((r, i) => `[${i+1}] ${r.title}
+URL: ${r.url}
+${r.content?.slice(0, 500)}`).join('\n\n');
+    const prompt = `Based on these search results, provide a comprehensive answer to: "${query}"\n\nSources:\n${context}`;
+    let summary = searchResults.answer || '';
+    if (use_gemini) {
+      try {
+        const gemini = await loadHandler('gemini');
+        const res = await gemini.execute('gemini_standard_query', { prompt, model: 'gemini-2.5-flash' });
+        summary = res.text;
+      } catch (e) { summary = searchResults.answer || `Search found ${searchResults.results?.length || 0} results.`; }
+    } else {
+      try {
+        const anthropic = await loadHandler('anthropic');
+        const res = await anthropic.execute('anthropic_message', { model, prompt, max_tokens: 1000 });
+        summary = res.text;
+      } catch (e) { summary = searchResults.answer || `Search found ${searchResults.results?.length || 0} results.`; }
+    }
+    return {
+      query,
+      summary,
+      sources: (searchResults.results || []).map(r => ({ title: r.title, url: r.url })),
+      result_count: searchResults.results?.length || 0
+    };
+  }
+
+
   throw new Error(`Unknown compound tool: ${tool}`);
 }
 

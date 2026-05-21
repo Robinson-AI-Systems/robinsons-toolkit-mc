@@ -1360,5 +1360,150 @@
       "properties": {},
       "required": []
     }
+  },
+  {
+    "name": "n8n_export_workflow",
+    "description": "Export a workflow's full JSON definition by ID. Returns the complete workflow object including all nodes, connections, and settings \u2014 ready to be imported into another n8n instance or saved as a backup.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "export",
+      "backup",
+      "json"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_import_workflow",
+    "description": "Import a workflow from a JSON definition into n8n, creating a new workflow. The imported workflow starts inactive. Use n8n_export_workflow to get the JSON from an existing workflow, or pass a hand-crafted workflow object.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "import",
+      "create",
+      "json"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_json": {
+          "description": "Full workflow JSON object or JSON string"
+        }
+      },
+      "required": [
+        "workflow_json"
+      ]
+    }
+  },
+  {
+    "name": "n8n_clone_workflow",
+    "description": "Clone an existing workflow into a new inactive copy. Duplicates all nodes, connections, and settings. Optionally provide a new name; defaults to the original name with '(copy)' appended.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "clone",
+      "duplicate",
+      "copy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "new_name": {
+          "type": "string",
+          "description": "Name for the cloned workflow (optional)"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_execution_data",
+    "description": "Get detailed data for a specific workflow execution by ID, including status, timing, which nodes ran, any error that occurred, and the full output data. Use after n8n_list_executions to drill into a specific run.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "debug",
+      "logs",
+      "detail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string"
+        },
+        "include_data": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include full node output data (default: true)"
+        }
+      },
+      "required": [
+        "execution_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_workflow_execution_stats",
+    "description": "Get aggregated execution statistics for a specific workflow \u2014 total runs, success/failure/error counts, success rate percentage, and average duration in milliseconds. Useful for monitoring workflow reliability.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "execution",
+      "stats",
+      "monitoring",
+      "reliability"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 50,
+          "description": "Number of recent executions to analyze"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_node_types",
+    "description": "List all available node types in this n8n instance \u2014 including built-in and community nodes. Returns name, display name, description, category, and version. Use this to discover what nodes are available before building a workflow definition.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "nodes",
+      "catalog",
+      "discovery",
+      "types"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
   }
 ]

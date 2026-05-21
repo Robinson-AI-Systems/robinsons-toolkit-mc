@@ -310,7 +310,82 @@ async function execute(tool, args) {
     };
   }
 
-  throw new Error(`Unknown Qdrant tool: ${tool}`);
+
+  // ── SPARSE VECTOR UPSERT ──────────────────────────────────────────────────
+  // Upsert points with sparse vectors (for BM25/keyword hybrid search)
+  if (tool === 'qdrant_upsert_sparse_points') {
+    const { collection_name, points } = args;
+    if (!collection_name || !points?.length) throw new Error('collection_name and points array are required');
+    // Each point: { id, sparse_vector: { indices: [...], values: [...] }, vector_name, payload }
+    const formatted = points.map(p => ({
+      id: p.id,
+      vectors: { [p.vector_name || 'sparse']: { indices: p.sparse_vector.indices, values: p.sparse_vector.values } },
+      payload: p.payload || {}
+    }));
+    const data = await qdrant('PUT', `/collections/${collection_name}/points`, { points: formatted });
+    return { status: data.status, result: data.result };
+  }
+
+  // ── NAMED VECTOR SEARCH ────────────────────────────────────────────────────
+  // Search a specific named vector within a collection (for multi-vector collections)
+  if (tool === 'qdrant_search_named_vector') {
+    const { collection_name, vector, vector_name, limit = 10, score_threshold, filter, with_payload = true } = args;
+    if (!collection_name || !vector) throw new Error('collection_name and vector are required');
+    if (!vector_name) throw new Error('vector_name is required (use qdrant_search for default vector)');
+    const body = { vector: { name: vector_name, vector }, limit, with_payload };
+    if (score_threshold !== undefined) body.score_threshold = score_threshold;
+    if (filter) body.filter = filter;
+    const data = await qdrant('POST', `/collections/${collection_name}/points/search`, body);
+    return data.result || data;
+  }
+
+  // ── MULTI-VECTOR COLLECTION SETUP ─────────────────────────────────────────
+  // Create a collection with multiple named vector spaces (e.g. dense + sparse for hybrid search)
+  if (tool === 'qdrant_create_collection_multi_vector') {
+    const { collection_name, vectors_config, on_disk_payload = false } = args;
+    if (!collection_name || !vectors_config) throw new Error('collection_name and vectors_config are required');
+    // vectors_config: { vector_name: { size, distance } }
+    const data = await qdrant('PUT', `/collections/${collection_name}`, {
+      vectors: vectors_config,
+      on_disk_payload
+    });
+    return { status: data.status, collection_name, vectors: Object.keys(vectors_config) };
+  }
+
+  // ── HYBRID SEARCH (dense + sparse re-rank) ─────────────────────────────────
+  // Search with both a dense vector and a sparse vector, then merge results
+  if (tool === 'qdrant_hybrid_search') {
+    const { collection_name, dense_vector, sparse_vector, dense_name = 'dense', sparse_name = 'sparse', limit = 10, filter, with_payload = true } = args;
+    if (!collection_name || !dense_vector) throw new Error('collection_name and dense_vector are required');
+    // Run both in parallel
+    const [denseResults, sparseResults] = await Promise.all([
+      qdrant('POST', `/collections/${collection_name}/points/search`, {
+        vector: { name: dense_name, vector: dense_vector }, limit, with_payload, filter: filter || undefined
+      }).then(d => d.result || []).catch(() => []),
+      sparse_vector ? qdrant('POST', `/collections/${collection_name}/points/search`, {
+        vector: { name: sparse_name, vector: sparse_vector }, limit, with_payload, filter: filter || undefined
+      }).then(d => d.result || []).catch(() => []) : Promise.resolve([])
+    ]);
+    // Simple reciprocal rank fusion merge
+    const scores = new Map();
+    const payloads = new Map();
+    const k = 60;
+    denseResults.forEach((r, i) => { scores.set(r.id, (scores.get(r.id) || 0) + 1/(k + i + 1)); payloads.set(r.id, r.payload); });
+    sparseResults.forEach((r, i) => { scores.set(r.id, (scores.get(r.id) || 0) + 1/(k + i + 1)); payloads.set(r.id, r.payload); });
+    const merged = [...scores.entries()].sort(([,a],[,b]) => b - a).slice(0, limit).map(([id, score]) => ({ id, score, payload: payloads.get(id) }));
+    return { results: merged, dense_count: denseResults.length, sparse_count: sparseResults.length };
+  }
+
+  // ── LIST SHARDS ────────────────────────────────────────────────────────────
+  if (tool === 'qdrant_list_shards') {
+    const { collection_name } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    const data = await qdrant('GET', `/collections/${collection_name}/shards`);
+    return data.result || data;
+  }
+
+
+    throw new Error(`Unknown Qdrant tool: ${tool}`);
 }
 
 export default { execute };

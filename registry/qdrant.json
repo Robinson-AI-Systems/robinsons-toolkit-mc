@@ -1,50 +1,1495 @@
 [
-  {"name":"qdrant_health_check","description":"Check Qdrant service health and connectivity.","namespace":"qdrant","tags":["qdrant","health","ping","status","connection"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_version","description":"Get the Qdrant service version.","namespace":"qdrant","tags":["qdrant","version","info"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_telemetry","description":"Get Qdrant telemetry data including request counts and performance metrics.","namespace":"qdrant","tags":["qdrant","telemetry","metrics","performance"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_metrics","description":"Get Prometheus-compatible metrics from Qdrant.","namespace":"qdrant","tags":["qdrant","metrics","prometheus","monitoring"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_list_collections","description":"List all vector collections in the Qdrant instance.","namespace":"qdrant","tags":["qdrant","collections","list"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_collection","description":"Get details for a Qdrant collection including vector config, point count, and index status.","namespace":"qdrant","tags":["qdrant","collection","get","info","details"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_create_collection","description":"Create a new Qdrant vector collection with specified vector size and distance metric.","namespace":"qdrant","tags":["qdrant","collection","create","vector","setup"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vector_size":{"type":"number","description":"Embedding dimension (e.g. 1536 for OpenAI text-embedding-3-small, 384 for nomic-embed-text)"},"distance":{"type":"string","description":"Cosine (default), Dot, Euclid, or Manhattan"},"on_disk_payload":{"type":"boolean"}},"required":["collection_name","vector_size"]}},
-  {"name":"qdrant_create_collection_named_vectors","description":"Create a Qdrant collection with multiple named vector spaces (multi-vector support).","namespace":"qdrant","tags":["qdrant","collection","create","named-vectors","multi-vector"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vectors_config":{"type":"object","description":"Object mapping vector names to {size, distance} e.g. {'text': {size: 384, distance: 'Cosine'}}"}},"required":["collection_name","vectors_config"]}},
-  {"name":"qdrant_delete_collection","description":"Delete a Qdrant collection and all its vectors.","namespace":"qdrant","tags":["qdrant","collection","delete","drop"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_update_collection","description":"Update a Qdrant collection's optimizer or HNSW index configuration.","namespace":"qdrant","tags":["qdrant","collection","update","config","hnsw","optimizer"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"optimizers_config":{"type":"object"},"hnsw_config":{"type":"object"}},"required":["collection_name"]}},
-  {"name":"qdrant_get_aliases","description":"List all aliases across all collections.","namespace":"qdrant","tags":["qdrant","aliases","list"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_list_collection_aliases","description":"List aliases pointing to a specific Qdrant collection.","namespace":"qdrant","tags":["qdrant","aliases","collection","list"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_create_alias","description":"Create an alias for a Qdrant collection — enables hot-swap without changing client code.","namespace":"qdrant","tags":["qdrant","alias","create","hot-swap","zero-downtime"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"alias_name":{"type":"string"}},"required":["collection_name","alias_name"]}},
-  {"name":"qdrant_delete_alias","description":"Delete a Qdrant collection alias.","namespace":"qdrant","tags":["qdrant","alias","delete"],"inputSchema":{"type":"object","properties":{"alias_name":{"type":"string"}},"required":["alias_name"]}},
-  {"name":"qdrant_rename_alias","description":"Rename a Qdrant alias (atomic swap — no downtime).","namespace":"qdrant","tags":["qdrant","alias","rename","swap","atomic"],"inputSchema":{"type":"object","properties":{"old_alias_name":{"type":"string"},"new_alias_name":{"type":"string"}},"required":["old_alias_name","new_alias_name"]}},
-  {"name":"qdrant_create_payload_index","description":"Create a payload field index for efficient filtered search (e.g. index 'user_id' as keyword).","namespace":"qdrant","tags":["qdrant","payload","index","create","filter","performance"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"field_name":{"type":"string"},"field_schema":{"type":"string","description":"keyword, integer, float, bool, geo, text, datetime"}},"required":["collection_name","field_name"]}},
-  {"name":"qdrant_delete_payload_index","description":"Remove a payload field index from a Qdrant collection.","namespace":"qdrant","tags":["qdrant","payload","index","delete"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"field_name":{"type":"string"}},"required":["collection_name","field_name"]}},
-  {"name":"qdrant_upsert_points","description":"Insert or update vectors (points) in a Qdrant collection. Each point needs id, vector, and optional payload.","namespace":"qdrant","tags":["qdrant","points","upsert","insert","vectors","write"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"points":{"type":"array","description":"Array of {id, vector, payload} objects"}},"required":["collection_name","points"]}},
-  {"name":"qdrant_get_point","description":"Get a single vector point by its ID from a Qdrant collection.","namespace":"qdrant","tags":["qdrant","point","get","vector","retrieve"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"point_id":{"description":"Point ID (integer or UUID string)"}},"required":["collection_name","point_id"]}},
-  {"name":"qdrant_get_points","description":"Get multiple vector points by their IDs from a Qdrant collection.","namespace":"qdrant","tags":["qdrant","points","get","batch","retrieve"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"ids":{"type":"array"},"with_payload":{"type":"boolean"},"with_vector":{"type":"boolean"}},"required":["collection_name","ids"]}},
-  {"name":"qdrant_delete_points","description":"Delete specific points by ID from a Qdrant collection.","namespace":"qdrant","tags":["qdrant","points","delete","remove"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"ids":{"type":"array"}},"required":["collection_name","ids"]}},
-  {"name":"qdrant_delete_points_by_filter","description":"Delete all points in a Qdrant collection matching a filter condition.","namespace":"qdrant","tags":["qdrant","points","delete","filter","bulk"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"filter":{"type":"object","description":"Qdrant filter condition"}},"required":["collection_name","filter"]}},
-  {"name":"qdrant_count_points","description":"Count the number of points in a Qdrant collection, optionally filtered.","namespace":"qdrant","tags":["qdrant","points","count","stats"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"filter":{"type":"object"},"exact":{"type":"boolean"}},"required":["collection_name"]}},
-  {"name":"qdrant_scroll_points","description":"Paginate through points in a Qdrant collection with optional filtering and ordering.","namespace":"qdrant","tags":["qdrant","points","scroll","paginate","list","browse"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"limit":{"type":"number"},"offset":{"description":"Cursor from previous scroll"},"filter":{"type":"object"},"with_payload":{"type":"boolean"},"with_vector":{"type":"boolean"}},"required":["collection_name"]}},
-  {"name":"qdrant_update_payload","description":"Merge additional fields into the payload of existing points (by ID or filter).","namespace":"qdrant","tags":["qdrant","payload","update","merge","metadata"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"payload":{"type":"object"},"ids":{"type":"array"},"filter":{"type":"object"}},"required":["collection_name","payload"]}},
-  {"name":"qdrant_overwrite_payload","description":"Replace the payload of points entirely (all existing payload fields are removed).","namespace":"qdrant","tags":["qdrant","payload","overwrite","replace","set"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"payload":{"type":"object"},"ids":{"type":"array"},"filter":{"type":"object"}},"required":["collection_name","payload"]}},
-  {"name":"qdrant_delete_payload","description":"Remove specific payload keys from points.","namespace":"qdrant","tags":["qdrant","payload","delete","keys","remove"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}},"ids":{"type":"array"},"filter":{"type":"object"}},"required":["collection_name","keys"]}},
-  {"name":"qdrant_clear_payload","description":"Remove all payload from points (vectors are preserved).","namespace":"qdrant","tags":["qdrant","payload","clear","reset"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"ids":{"type":"array"},"filter":{"type":"object"}},"required":["collection_name"]}},
-  {"name":"qdrant_update_vectors","description":"Update only the vector values of existing points without changing their payload.","namespace":"qdrant","tags":["qdrant","vectors","update","re-embed"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"points":{"type":"array","description":"Array of {id, vector} objects"}},"required":["collection_name","points"]}},
-  {"name":"qdrant_delete_vectors","description":"Delete named vectors from points in a multi-vector collection.","namespace":"qdrant","tags":["qdrant","vectors","delete","named","multi-vector"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vector_names":{"type":"array","items":{"type":"string"}},"ids":{"type":"array"},"filter":{"type":"object"}},"required":["collection_name","vector_names"]}},
-  {"name":"qdrant_search","description":"Search for semantically similar vectors in a Qdrant collection using an embedding vector.","namespace":"qdrant","tags":["qdrant","search","similarity","vector","semantic","nearest-neighbor"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vector":{"type":"array","description":"Query embedding vector (floats)"},"limit":{"type":"number","description":"Number of results (default 10)"},"filter":{"type":"object","description":"Qdrant filter for metadata filtering"},"score_threshold":{"type":"number"},"with_payload":{"type":"boolean"},"with_vector":{"type":"boolean"}},"required":["collection_name","vector"]}},
-  {"name":"qdrant_search_batch","description":"Run multiple vector searches in a single Qdrant API call.","namespace":"qdrant","tags":["qdrant","search","batch","bulk","similarity"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"searches":{"type":"array","description":"Array of search request objects"}},"required":["collection_name","searches"]}},
-  {"name":"qdrant_search_groups","description":"Search for similar vectors and group results by a payload field value.","namespace":"qdrant","tags":["qdrant","search","groups","facets","category"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vector":{"type":"array"},"group_by":{"type":"string","description":"Payload field to group results by"},"group_size":{"type":"number"},"limit":{"type":"number"},"filter":{"type":"object"}},"required":["collection_name","vector","group_by"]}},
-  {"name":"qdrant_recommend","description":"Find similar points based on example point IDs (positive examples) and optional negative examples.","namespace":"qdrant","tags":["qdrant","recommend","similar","positive","negative","ids"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"positive":{"type":"array","description":"IDs of example points to find more like"},"negative":{"type":"array","description":"IDs of points to avoid"},"limit":{"type":"number"},"filter":{"type":"object"},"score_threshold":{"type":"number"}},"required":["collection_name","positive"]}},
-  {"name":"qdrant_recommend_batch","description":"Run multiple recommendation queries in a single Qdrant API call.","namespace":"qdrant","tags":["qdrant","recommend","batch","bulk"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"searches":{"type":"array"}},"required":["collection_name","searches"]}},
-  {"name":"qdrant_recommend_groups","description":"Recommend similar points and group results by a payload field.","namespace":"qdrant","tags":["qdrant","recommend","groups","facets"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"positive":{"type":"array"},"group_by":{"type":"string"},"group_size":{"type":"number"},"limit":{"type":"number"}},"required":["collection_name","positive","group_by"]}},
-  {"name":"qdrant_discover","description":"Discovery search — find points in an area of the vector space using context pairs (positive+negative examples).","namespace":"qdrant","tags":["qdrant","discover","context","exploration","search"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"target":{"description":"Target point ID or vector"},"context":{"type":"array","description":"Array of {positive, negative} example pairs"},"limit":{"type":"number"},"filter":{"type":"object"}},"required":["collection_name"]}},
-  {"name":"qdrant_discover_batch","description":"Run multiple discovery searches in a single Qdrant API call.","namespace":"qdrant","tags":["qdrant","discover","batch","bulk"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"searches":{"type":"array"}},"required":["collection_name","searches"]}},
-  {"name":"qdrant_list_snapshots","description":"List all snapshots (backups) for a Qdrant collection.","namespace":"qdrant","tags":["qdrant","snapshots","backup","list"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_create_snapshot","description":"Create a snapshot (backup) of a Qdrant collection.","namespace":"qdrant","tags":["qdrant","snapshot","backup","create"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_delete_snapshot","description":"Delete a Qdrant collection snapshot.","namespace":"qdrant","tags":["qdrant","snapshot","delete","backup"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"snapshot_name":{"type":"string"}},"required":["collection_name","snapshot_name"]}},
-  {"name":"qdrant_list_full_snapshots","description":"List all full-instance snapshots (covers all collections).","namespace":"qdrant","tags":["qdrant","snapshots","full","backup","list"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_create_full_snapshot","description":"Create a full instance snapshot of all Qdrant collections.","namespace":"qdrant","tags":["qdrant","snapshot","full","backup","create"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_cluster_info","description":"Get Qdrant cluster topology, node status, and shard distribution.","namespace":"qdrant","tags":["qdrant","cluster","nodes","topology","health"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"qdrant_get_collection_cluster_info","description":"Get shard and replica distribution for a specific collection in the Qdrant cluster.","namespace":"qdrant","tags":["qdrant","cluster","collection","shards","replicas"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}},
-  {"name":"qdrant_upsert_documents","description":"SUPER TOOL: Upsert a batch of documents into Qdrant — automatically maps document fields to point id, vector, and payload.","namespace":"qdrant","tags":["qdrant","upsert","documents","batch","super-tool","ingest"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"documents":{"type":"array","description":"Array of documents with vector field + any payload fields"},"id_field":{"type":"string","description":"Field to use as point ID (default: id)"}},"required":["collection_name","documents"]}},
-  {"name":"qdrant_setup_collection","description":"SUPER TOOL: Create a production-ready collection with best-practice HNSW settings and optional payload field indexes in one call.","namespace":"qdrant","tags":["qdrant","setup","collection","create","hnsw","index","super-tool"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"},"vector_size":{"type":"number"},"distance":{"type":"string"},"index_fields":{"type":"array","description":"Array of {name, type} objects for payload indexes"}},"required":["collection_name","vector_size"]}},
-  {"name":"qdrant_collection_status","description":"SUPER TOOL: Get a comprehensive status snapshot for a collection — info, exact point count, and all aliases in one call.","namespace":"qdrant","tags":["qdrant","collection","status","overview","super-tool","count","aliases"],"inputSchema":{"type":"object","properties":{"collection_name":{"type":"string"}},"required":["collection_name"]}}
+  {
+    "name": "qdrant_health_check",
+    "description": "Check Qdrant service health and connectivity.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "health",
+      "ping",
+      "status",
+      "connection"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_version",
+    "description": "Get the Qdrant service version.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "version",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_telemetry",
+    "description": "Get Qdrant telemetry data including request counts and performance metrics.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "telemetry",
+      "metrics",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_metrics",
+    "description": "Get Prometheus-compatible metrics from Qdrant.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "metrics",
+      "prometheus",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_list_collections",
+    "description": "List all vector collections in the Qdrant instance.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collections",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_collection",
+    "description": "Get details for a Qdrant collection including vector config, point count, and index status.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "get",
+      "info",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_collection",
+    "description": "Create a new Qdrant vector collection with specified vector size and distance metric.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "create",
+      "vector",
+      "setup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector_size": {
+          "type": "number",
+          "description": "Embedding dimension (e.g. 1536 for OpenAI text-embedding-3-small, 384 for nomic-embed-text)"
+        },
+        "distance": {
+          "type": "string",
+          "description": "Cosine (default), Dot, Euclid, or Manhattan"
+        },
+        "on_disk_payload": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector_size"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_collection_named_vectors",
+    "description": "Create a Qdrant collection with multiple named vector spaces (multi-vector support).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "create",
+      "named-vectors",
+      "multi-vector"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vectors_config": {
+          "type": "object",
+          "description": "Object mapping vector names to {size, distance} e.g. {'text': {size: 384, distance: 'Cosine'}}"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vectors_config"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_collection",
+    "description": "Delete a Qdrant collection and all its vectors.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "delete",
+      "drop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_collection",
+    "description": "Update a Qdrant collection's optimizer or HNSW index configuration.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "update",
+      "config",
+      "hnsw",
+      "optimizer"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "optimizers_config": {
+          "type": "object"
+        },
+        "hnsw_config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_get_aliases",
+    "description": "List all aliases across all collections.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "aliases",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_list_collection_aliases",
+    "description": "List aliases pointing to a specific Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "aliases",
+      "collection",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_alias",
+    "description": "Create an alias for a Qdrant collection \u2014 enables hot-swap without changing client code.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "alias",
+      "create",
+      "hot-swap",
+      "zero-downtime"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "alias_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "alias_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_alias",
+    "description": "Delete a Qdrant collection alias.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "alias",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "alias_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "alias_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_rename_alias",
+    "description": "Rename a Qdrant alias (atomic swap \u2014 no downtime).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "alias",
+      "rename",
+      "swap",
+      "atomic"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "old_alias_name": {
+          "type": "string"
+        },
+        "new_alias_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "old_alias_name",
+        "new_alias_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_payload_index",
+    "description": "Create a payload field index for efficient filtered search (e.g. index 'user_id' as keyword).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "index",
+      "create",
+      "filter",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "field_name": {
+          "type": "string"
+        },
+        "field_schema": {
+          "type": "string",
+          "description": "keyword, integer, float, bool, geo, text, datetime"
+        }
+      },
+      "required": [
+        "collection_name",
+        "field_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_payload_index",
+    "description": "Remove a payload field index from a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "index",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "field_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "field_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_upsert_points",
+    "description": "Insert or update vectors (points) in a Qdrant collection. Each point needs id, vector, and optional payload.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "upsert",
+      "insert",
+      "vectors",
+      "write"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "description": "Array of {id, vector, payload} objects"
+        }
+      },
+      "required": [
+        "collection_name",
+        "points"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_get_point",
+    "description": "Get a single vector point by its ID from a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "point",
+      "get",
+      "vector",
+      "retrieve"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "point_id": {
+          "description": "Point ID (integer or UUID string)"
+        }
+      },
+      "required": [
+        "collection_name",
+        "point_id"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_get_points",
+    "description": "Get multiple vector points by their IDs from a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "get",
+      "batch",
+      "retrieve"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array"
+        },
+        "with_payload": {
+          "type": "boolean"
+        },
+        "with_vector": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name",
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_points",
+    "description": "Delete specific points by ID from a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection_name",
+        "ids"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_points_by_filter",
+    "description": "Delete all points in a Qdrant collection matching a filter condition.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "delete",
+      "filter",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object",
+          "description": "Qdrant filter condition"
+        }
+      },
+      "required": [
+        "collection_name",
+        "filter"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_count_points",
+    "description": "Count the number of points in a Qdrant collection, optionally filtered.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "count",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object"
+        },
+        "exact": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_scroll_points",
+    "description": "Paginate through points in a Qdrant collection with optional filtering and ordering.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "points",
+      "scroll",
+      "paginate",
+      "list",
+      "browse"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "offset": {
+          "description": "Cursor from previous scroll"
+        },
+        "filter": {
+          "type": "object"
+        },
+        "with_payload": {
+          "type": "boolean"
+        },
+        "with_vector": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_payload",
+    "description": "Merge additional fields into the payload of existing points (by ID or filter).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "update",
+      "merge",
+      "metadata"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object"
+        },
+        "ids": {
+          "type": "array"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name",
+        "payload"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_overwrite_payload",
+    "description": "Replace the payload of points entirely (all existing payload fields are removed).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "overwrite",
+      "replace",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object"
+        },
+        "ids": {
+          "type": "array"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name",
+        "payload"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_payload",
+    "description": "Remove specific payload keys from points.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "delete",
+      "keys",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ids": {
+          "type": "array"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_clear_payload",
+    "description": "Remove all payload from points (vectors are preserved).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "payload",
+      "clear",
+      "reset"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_vectors",
+    "description": "Update only the vector values of existing points without changing their payload.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "vectors",
+      "update",
+      "re-embed"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "description": "Array of {id, vector} objects"
+        }
+      },
+      "required": [
+        "collection_name",
+        "points"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_vectors",
+    "description": "Delete named vectors from points in a multi-vector collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "vectors",
+      "delete",
+      "named",
+      "multi-vector"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ids": {
+          "type": "array"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector_names"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_search",
+    "description": "Search for semantically similar vectors in a Qdrant collection using an embedding vector.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "search",
+      "similarity",
+      "vector",
+      "semantic",
+      "nearest-neighbor"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "description": "Query embedding vector (floats)"
+        },
+        "limit": {
+          "type": "number",
+          "description": "Number of results (default 10)"
+        },
+        "filter": {
+          "type": "object",
+          "description": "Qdrant filter for metadata filtering"
+        },
+        "score_threshold": {
+          "type": "number"
+        },
+        "with_payload": {
+          "type": "boolean"
+        },
+        "with_vector": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_search_batch",
+    "description": "Run multiple vector searches in a single Qdrant API call.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "search",
+      "batch",
+      "bulk",
+      "similarity"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "searches": {
+          "type": "array",
+          "description": "Array of search request objects"
+        }
+      },
+      "required": [
+        "collection_name",
+        "searches"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_search_groups",
+    "description": "Search for similar vectors and group results by a payload field value.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "search",
+      "groups",
+      "facets",
+      "category"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array"
+        },
+        "group_by": {
+          "type": "string",
+          "description": "Payload field to group results by"
+        },
+        "group_size": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector",
+        "group_by"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_recommend",
+    "description": "Find similar points based on example point IDs (positive examples) and optional negative examples.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "recommend",
+      "similar",
+      "positive",
+      "negative",
+      "ids"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "positive": {
+          "type": "array",
+          "description": "IDs of example points to find more like"
+        },
+        "negative": {
+          "type": "array",
+          "description": "IDs of points to avoid"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "filter": {
+          "type": "object"
+        },
+        "score_threshold": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name",
+        "positive"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_recommend_batch",
+    "description": "Run multiple recommendation queries in a single Qdrant API call.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "recommend",
+      "batch",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "searches": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection_name",
+        "searches"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_recommend_groups",
+    "description": "Recommend similar points and group results by a payload field.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "recommend",
+      "groups",
+      "facets"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "positive": {
+          "type": "array"
+        },
+        "group_by": {
+          "type": "string"
+        },
+        "group_size": {
+          "type": "number"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name",
+        "positive",
+        "group_by"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_discover",
+    "description": "Discovery search \u2014 find points in an area of the vector space using context pairs (positive+negative examples).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "discover",
+      "context",
+      "exploration",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "target": {
+          "description": "Target point ID or vector"
+        },
+        "context": {
+          "type": "array",
+          "description": "Array of {positive, negative} example pairs"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "filter": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_discover_batch",
+    "description": "Run multiple discovery searches in a single Qdrant API call.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "discover",
+      "batch",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "searches": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection_name",
+        "searches"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_list_snapshots",
+    "description": "List all snapshots (backups) for a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshots",
+      "backup",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_snapshot",
+    "description": "Create a snapshot (backup) of a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "backup",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_snapshot",
+    "description": "Delete a Qdrant collection snapshot.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "delete",
+      "backup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "snapshot_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "snapshot_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_list_full_snapshots",
+    "description": "List all full-instance snapshots (covers all collections).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshots",
+      "full",
+      "backup",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_create_full_snapshot",
+    "description": "Create a full instance snapshot of all Qdrant collections.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "full",
+      "backup",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_cluster_info",
+    "description": "Get Qdrant cluster topology, node status, and shard distribution.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "cluster",
+      "nodes",
+      "topology",
+      "health"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_get_collection_cluster_info",
+    "description": "Get shard and replica distribution for a specific collection in the Qdrant cluster.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "cluster",
+      "collection",
+      "shards",
+      "replicas"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_upsert_documents",
+    "description": "SUPER TOOL: Upsert a batch of documents into Qdrant \u2014 automatically maps document fields to point id, vector, and payload.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "upsert",
+      "documents",
+      "batch",
+      "super-tool",
+      "ingest"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "documents": {
+          "type": "array",
+          "description": "Array of documents with vector field + any payload fields"
+        },
+        "id_field": {
+          "type": "string",
+          "description": "Field to use as point ID (default: id)"
+        }
+      },
+      "required": [
+        "collection_name",
+        "documents"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_setup_collection",
+    "description": "SUPER TOOL: Create a production-ready collection with best-practice HNSW settings and optional payload field indexes in one call.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "setup",
+      "collection",
+      "create",
+      "hnsw",
+      "index",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector_size": {
+          "type": "number"
+        },
+        "distance": {
+          "type": "string"
+        },
+        "index_fields": {
+          "type": "array",
+          "description": "Array of {name, type} objects for payload indexes"
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector_size"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_collection_status",
+    "description": "SUPER TOOL: Get a comprehensive status snapshot for a collection \u2014 info, exact point count, and all aliases in one call.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "status",
+      "overview",
+      "super-tool",
+      "count",
+      "aliases"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_upsert_sparse_points",
+    "description": "Upsert points with sparse vectors into a Qdrant collection. Sparse vectors use index/value pairs (like BM25 term frequencies) instead of dense float arrays \u2014 ideal for keyword search or hybrid dense+sparse retrieval pipelines.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "sparse",
+      "vectors",
+      "upsert",
+      "bm25",
+      "hybrid-search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "description": "Array of {id, sparse_vector: {indices, values}, vector_name, payload}"
+        }
+      },
+      "required": [
+        "collection_name",
+        "points"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_search_named_vector",
+    "description": "Search a specific named vector space within a multi-vector Qdrant collection. Use when a collection has multiple vector types (e.g. 'dense', 'sparse', 'title', 'body') and you want to query just one of them.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "search",
+      "named-vector",
+      "multi-vector",
+      "hybrid"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vector": {
+          "type": "array",
+          "description": "Query vector (dense float array)"
+        },
+        "vector_name": {
+          "type": "string",
+          "description": "Name of the vector space to search (e.g. 'dense', 'title')"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        },
+        "score_threshold": {
+          "type": "number"
+        },
+        "filter": {
+          "type": "object"
+        },
+        "with_payload": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "collection_name",
+        "vector",
+        "vector_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_collection_multi_vector",
+    "description": "Create a Qdrant collection with multiple named vector spaces \u2014 for example a 'dense' space (1536-dim OpenAI embeddings) and a 'sparse' space for BM25 keyword vectors. Required setup step before hybrid search with qdrant_hybrid_search.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "multi-vector",
+      "hybrid-search",
+      "setup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "vectors_config": {
+          "type": "object",
+          "description": "Map of vector_name \u2192 {size, distance}. E.g. {dense: {size: 1536, distance: 'Cosine'}, sparse: {size: 0, distance: 'Dot'}}"
+        },
+        "on_disk_payload": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "collection_name",
+        "vectors_config"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_hybrid_search",
+    "description": "SUPER TOOL: Run hybrid search combining a dense vector (semantic) and sparse vector (keyword/BM25) against a multi-vector Qdrant collection, then merge results using Reciprocal Rank Fusion. Best-of-both-worlds retrieval for RAG pipelines.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "hybrid-search",
+      "dense",
+      "sparse",
+      "rrfusion",
+      "rag",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "dense_vector": {
+          "type": "array",
+          "description": "Dense query vector (e.g. from OpenAI embeddings)"
+        },
+        "sparse_vector": {
+          "type": "object",
+          "description": "Sparse query vector {indices, values} (e.g. from BM25)"
+        },
+        "dense_name": {
+          "type": "string",
+          "default": "dense"
+        },
+        "sparse_name": {
+          "type": "string",
+          "default": "sparse"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        },
+        "filter": {
+          "type": "object"
+        },
+        "with_payload": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "collection_name",
+        "dense_vector"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_list_shards",
+    "description": "List all shards for a Qdrant collection, including their shard IDs, state (active, inactive, partial), peer IDs, and points count per shard. Use to inspect cluster distribution or debug shard recovery issues.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shards",
+      "cluster",
+      "distribution",
+      "ops"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  }
 ]

@@ -313,6 +313,94 @@ async function execute(tool, args) {
     return await n8n('GET', '/settings');
   }
 
+
+  // ── WORKFLOW IMPORT / EXPORT ──────────────────────────────────────────────
+  if (tool === 'n8n_export_workflow') {
+    const { workflow_id } = args;
+    if (!workflow_id) throw new Error('workflow_id is required');
+    const data = await n8n('GET', `/workflows/${workflow_id}`);
+    return { workflow_id, name: data.name, json: data, exported_at: new Date().toISOString() };
+  }
+
+  if (tool === 'n8n_import_workflow') {
+    const { workflow_json } = args;
+    if (!workflow_json) throw new Error('workflow_json is required');
+    const body = typeof workflow_json === 'string' ? JSON.parse(workflow_json) : workflow_json;
+    // Clear ID so it creates a new workflow instead of overwriting
+    delete body.id;
+    const data = await n8n('POST', '/workflows', body);
+    return { id: data.id, name: data.name, active: data.active, created: true };
+  }
+
+  if (tool === 'n8n_clone_workflow') {
+    const { workflow_id, new_name } = args;
+    if (!workflow_id) throw new Error('workflow_id is required');
+    const original = await n8n('GET', `/workflows/${workflow_id}`);
+    delete original.id;
+    original.name = new_name || `${original.name} (copy)`;
+    original.active = false;
+    const cloned = await n8n('POST', '/workflows', original);
+    return { original_id: workflow_id, new_id: cloned.id, name: cloned.name };
+  }
+
+  // ── EXECUTION DETAILS ─────────────────────────────────────────────────────
+  if (tool === 'n8n_get_execution_data') {
+    const { execution_id, include_data = true } = args;
+    if (!execution_id) throw new Error('execution_id is required');
+    const data = await n8n('GET', `/executions/${execution_id}?includeData=${include_data}`);
+    return {
+      id: data.id,
+      status: data.status,
+      mode: data.mode,
+      started_at: data.startedAt,
+      stopped_at: data.stoppedAt,
+      workflow_id: data.workflowId,
+      workflow_name: data.workflowData?.name,
+      error: data.data?.resultData?.error || null,
+      nodes_executed: data.data?.resultData?.runData ? Object.keys(data.data.resultData.runData).length : null,
+      output: include_data ? data.data?.resultData : undefined
+    };
+  }
+
+  // ── WORKFLOW EXECUTION STATS ───────────────────────────────────────────────
+  if (tool === 'n8n_workflow_execution_stats') {
+    const { workflow_id, limit = 50 } = args;
+    if (!workflow_id) throw new Error('workflow_id is required');
+    const data = await n8n('GET', `/executions?workflowId=${workflow_id}&limit=${limit}`);
+    const executions = data.data || data || [];
+    const statuses = executions.reduce((acc, e) => { acc[e.status] = (acc[e.status] || 0) + 1; return acc; }, {});
+    const durations = executions
+      .filter(e => e.startedAt && e.stoppedAt)
+      .map(e => new Date(e.stoppedAt) - new Date(e.startedAt));
+    const avgMs = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : null;
+    return {
+      workflow_id,
+      total: executions.length,
+      statuses,
+      success_rate: statuses.success ? `${Math.round(statuses.success / executions.length * 100)}%` : '0%',
+      avg_duration_ms: avgMs,
+      last_execution: executions[0] ? { id: executions[0].id, status: executions[0].status, started_at: executions[0].startedAt } : null
+    };
+  }
+
+  // ── NODE TYPE CATALOG ─────────────────────────────────────────────────────
+  if (tool === 'n8n_list_node_types') {
+    // Returns available node type names (for building workflow definitions)
+    const data = await n8n('GET', '/node-types');
+    const types = (data.data || data || []);
+    return {
+      count: types.length,
+      node_types: types.map(n => ({
+        name: n.name,
+        display_name: n.displayName,
+        description: n.description,
+        category: n.group?.[0],
+        version: n.version
+      }))
+    };
+  }
+
+
   throw new Error(`Unknown n8n tool: ${tool}`);
 }
 

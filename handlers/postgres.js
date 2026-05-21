@@ -377,7 +377,56 @@ async function execute(tool, args) {
     return await pg(`SELECT checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time, buffers_checkpoint, buffers_clean, maxwritten_clean, buffers_backend, buffers_alloc, stats_reset FROM pg_stat_bgwriter`);
   }
 
-  throw new Error(`Unknown Postgres tool: ${tool}`);
+
+  // ── ADVISORY LOCKS ────────────────────────────────────────────────────────
+  if (tool === 'postgres_advisory_lock') {
+    const { lock_key, shared = false } = args;
+    if (lock_key === undefined) throw new Error('lock_key (integer) is required');
+    const fn = shared ? 'pg_try_advisory_lock_shared' : 'pg_try_advisory_lock';
+    const result = await pg(`SELECT ${fn}(${parseInt(lock_key)}) as acquired`);
+    return { lock_key: parseInt(lock_key), acquired: result[0]?.acquired ?? false, shared };
+  }
+  if (tool === 'postgres_advisory_unlock') {
+    const { lock_key, shared = false } = args;
+    if (lock_key === undefined) throw new Error('lock_key (integer) is required');
+    const fn = shared ? 'pg_advisory_unlock_shared' : 'pg_advisory_unlock';
+    const result = await pg(`SELECT ${fn}(${parseInt(lock_key)}) as released`);
+    return { lock_key: parseInt(lock_key), released: result[0]?.released ?? false };
+  }
+
+  // ── NOTIFY ─────────────────────────────────────────────────────────────────
+  if (tool === 'postgres_notify') {
+    const { channel, payload } = args;
+    if (!channel) throw new Error('channel is required');
+    const safeChannel = channel.replace(/[^a-zA-Z0-9_]/g, '_');
+    if (payload !== undefined) {
+      await pg(`SELECT pg_notify($1, $2)`, [safeChannel, String(payload)]);
+    } else {
+      await pg(`SELECT pg_notify($1, '')`, [safeChannel]);
+    }
+    return { sent: true, channel: safeChannel, payload: payload || null };
+  }
+
+  // ── LOGICAL REPLICATION SLOTS ──────────────────────────────────────────────
+  if (tool === 'postgres_list_replication_slots') {
+    const result = await pg(`SELECT slot_name, plugin, slot_type, database, active, restart_lsn, confirmed_flush_lsn FROM pg_replication_slots ORDER BY slot_name`);
+    return { slots: result, count: result.length };
+  }
+  if (tool === 'postgres_create_replication_slot') {
+    const { slot_name, plugin = 'pgoutput' } = args;
+    if (!slot_name) throw new Error('slot_name is required');
+    const result = await pg(`SELECT * FROM pg_create_logical_replication_slot($1, $2)`, [slot_name, plugin]);
+    return { created: true, slot_name, plugin, lsn: result[0]?.lsn };
+  }
+  if (tool === 'postgres_drop_replication_slot') {
+    const { slot_name } = args;
+    if (!slot_name) throw new Error('slot_name is required');
+    await pg(`SELECT pg_drop_replication_slot($1)`, [slot_name]);
+    return { dropped: true, slot_name };
+  }
+
+
+    throw new Error(`Unknown Postgres tool: ${tool}`);
 }
 
 export default { execute };

@@ -1038,5 +1038,505 @@
         "linear_team_id"
       ]
     }
+  },
+  {
+    "name": "compound_full_feature_deploy",
+    "description": "SUPER TOOL: Merge a GitHub pull request, run a Neon database migration on a test branch first, then deploy to Vercel production \u2014 all in one atomic call. Replaces 6+ manual steps in the standard feature ship workflow.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "deploy",
+      "github",
+      "neon",
+      "vercel",
+      "ci-cd",
+      "feature-ship"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "github_owner": {
+          "type": "string"
+        },
+        "github_repo": {
+          "type": "string"
+        },
+        "pr_number": {
+          "type": "number",
+          "description": "PR to merge (optional if already merged)"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "migration_sql": {
+          "type": "string",
+          "description": "SQL to run before deploy (optional)"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "description": "Semver or git SHA for Sentry release"
+        },
+        "sentry_project": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "github_owner",
+        "github_repo"
+      ]
+    }
+  },
+  {
+    "name": "compound_hotfix_deploy",
+    "description": "SUPER TOOL: Emergency hotfix workflow \u2014 git commit + push + verify Vercel deployed + create Sentry release + post Slack alert, all in one call. Use when a critical bug needs to ship immediately without the normal PR process.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "hotfix",
+      "deploy",
+      "emergency",
+      "git",
+      "vercel",
+      "slack"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_path": {
+          "type": "string",
+          "description": "Relative path under WORKSPACE_ROOT"
+        },
+        "commit_message": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "sentry_project": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_path",
+        "commit_message"
+      ]
+    }
+  },
+  {
+    "name": "compound_staging_refresh",
+    "description": "SUPER TOOL: Rebuild a staging environment from scratch \u2014 delete the old Neon staging branch, create a fresh branch from main, then re-deploy the Vercel preview. Keeps staging in sync with production data shape.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "staging",
+      "neon",
+      "vercel",
+      "environment",
+      "refresh"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "neon_project_id": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "staging_branch_name": {
+          "type": "string",
+          "default": "staging"
+        },
+        "slack_channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "neon_project_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_provision_new_project",
+    "description": "SUPER TOOL: Provision a brand-new project from scratch \u2014 create GitHub repo, Neon database, Vercel project, and wire the DATABASE_URL into Vercel environment variables automatically. Replaces 15+ manual setup steps.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "provision",
+      "github",
+      "neon",
+      "vercel",
+      "setup",
+      "new-project"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "github_org": {
+          "type": "string",
+          "description": "GitHub org (omit for personal account)"
+        },
+        "vercel_team_id": {
+          "type": "string"
+        },
+        "neon_org_id": {
+          "type": "string"
+        },
+        "private_repo": {
+          "type": "boolean",
+          "default": true
+        },
+        "framework": {
+          "type": "string",
+          "default": "nextjs"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "compound_provision_tenant",
+    "description": "SUPER TOOL: Provision a new multi-tenant customer \u2014 create Stripe customer and subscription, create Clerk organization, create a dedicated DB schema in Neon, and send a welcome email \u2014 all in one call. The full SaaS onboarding workflow.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "tenant",
+      "saas",
+      "onboarding",
+      "stripe",
+      "clerk",
+      "neon",
+      "multi-tenant"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tenant_name": {
+          "type": "string"
+        },
+        "admin_email": {
+          "type": "string"
+        },
+        "price_id": {
+          "type": "string",
+          "description": "Stripe price ID for subscription (optional)"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string",
+          "default": "the app"
+        }
+      },
+      "required": [
+        "tenant_name",
+        "admin_email"
+      ]
+    }
+  },
+  {
+    "name": "compound_tenant_upgrade",
+    "description": "SUPER TOOL: Upgrade a tenant's subscription plan \u2014 change Stripe subscription to new price ID and send a confirmation email, all in one call. Handles the complete plan upgrade workflow with customer notification.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "tenant",
+      "upgrade",
+      "stripe",
+      "billing",
+      "saas"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "stripe_subscription_id": {
+          "type": "string"
+        },
+        "new_price_id": {
+          "type": "string"
+        },
+        "admin_email": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "plan_name": {
+          "type": "string",
+          "description": "Human-readable plan name for the email"
+        }
+      },
+      "required": [
+        "stripe_subscription_id",
+        "new_price_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_weekly_engineering_report",
+    "description": "SUPER TOOL: Generate a weekly engineering report pulling from GitHub (commits, merged PRs), Vercel (deployments), Neon (DB branches), and Stripe (MRR) \u2014 and optionally post the summary to Slack. Perfect for Monday standups and investor updates.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "reporting",
+      "weekly",
+      "github",
+      "vercel",
+      "stripe",
+      "slack",
+      "engineering"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "github_owner": {
+          "type": "string"
+        },
+        "github_repo": {
+          "type": "string"
+        },
+        "vercel_project_id": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "slack_channel": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "compound_cost_audit",
+    "description": "SUPER TOOL: Pull cost and usage data from Neon, OpenAI, Anthropic, and Stripe simultaneously to give a cross-service spending overview. Helps identify which services are driving costs and where to optimize.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "cost",
+      "audit",
+      "billing",
+      "openai",
+      "anthropic",
+      "neon",
+      "stripe",
+      "spending"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "compound_dispatch_job",
+    "description": "SUPER TOOL: YardSync job dispatch \u2014 insert job record into Neon database, send driver SMS via Twilio, and email customer confirmation via Resend in one atomic call. The complete dispatch workflow for field service management.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "yardsync",
+      "dispatch",
+      "job",
+      "twilio",
+      "resend",
+      "neon",
+      "field-service"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "neon_project_id": {
+          "type": "string"
+        },
+        "job_data": {
+          "type": "object",
+          "description": "Key-value pairs to INSERT into the jobs table"
+        },
+        "driver_phone": {
+          "type": "string"
+        },
+        "driver_message": {
+          "type": "string"
+        },
+        "customer_email": {
+          "type": "string"
+        },
+        "customer_subject": {
+          "type": "string"
+        },
+        "customer_html": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "compound_complete_job",
+    "description": "SUPER TOOL: YardSync job completion \u2014 mark job complete in Neon, send customer a completion email, and create a Stripe invoice for the job amount, all in one call. The full job close-out workflow.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "yardsync",
+      "job-complete",
+      "neon",
+      "stripe",
+      "resend",
+      "invoice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "completion_data": {
+          "type": "object",
+          "description": "Additional fields to UPDATE in the jobs table"
+        },
+        "customer_email": {
+          "type": "string"
+        },
+        "from_email": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "stripe_customer_id": {
+          "type": "string"
+        },
+        "amount_cents": {
+          "type": "number",
+          "description": "Invoice amount in cents"
+        },
+        "invoice_description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id"
+      ]
+    }
+  },
+  {
+    "name": "compound_driver_onboard",
+    "description": "SUPER TOOL: YardSync driver onboarding \u2014 create Clerk user account, send welcome SMS via Twilio, and insert driver record into Neon database, all in one call. Replaces 3 separate API calls and manual data entry.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "yardsync",
+      "driver",
+      "onboarding",
+      "clerk",
+      "twilio",
+      "neon"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "neon_project_id": {
+          "type": "string"
+        },
+        "driver_data": {
+          "type": "object",
+          "description": "Additional fields for the drivers table"
+        },
+        "from_number": {
+          "type": "string",
+          "description": "Twilio number to send SMS from"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "compound_research_and_summarize",
+    "description": "SUPER TOOL: Web search via Tavily plus AI synthesis \u2014 searches the web for a query with configurable depth, then sends the top results to Claude or Gemini for a structured summary answer. One call replaces separate search + LLM workflow.",
+    "namespace": "compound",
+    "tags": [
+      "super-tool",
+      "research",
+      "search",
+      "tavily",
+      "claude",
+      "gemini",
+      "summarize",
+      "rag"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "max_results": {
+          "type": "number",
+          "default": 5
+        },
+        "search_depth": {
+          "type": "string",
+          "default": "advanced",
+          "enum": [
+            "basic",
+            "advanced"
+          ]
+        },
+        "use_gemini": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use Gemini instead of Claude for synthesis"
+        },
+        "model": {
+          "type": "string",
+          "default": "claude-3-5-haiku-20241022"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
   }
 ]

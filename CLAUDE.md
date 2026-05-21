@@ -356,9 +356,9 @@ After each session:
 
 ---
 
-## Current State — Session 15 (CLEAN BASELINE)
+## Current State — Session 16 (Phase 2 Complete)
 
-**Total registered tools: 2,464** across 31 namespaces
+**Total registered tools: 2,505** across 31 namespaces (+41 from Session 16)
 **Sync: ✅ ALL 31 NAMESPACES PERFECTLY SYNCED — zero issues**
 
 ### What Phase 1 Actually Found (Session 15 audit)
@@ -394,9 +394,9 @@ Session 14 notes were based on stale data. The real state when Phase 1 began:
 | `sentry` | 71 | ✅ |
 | `anthropic` | 64 | ✅ |
 | `local` | 62 | ✅ |
-| `postgres` | 59 | ✅ |
-| `n8n` | 57 | ✅ |
-| `qdrant` | 48 | ✅ |
+| `postgres` | 65 | ✅ |
+| `n8n` | 63 | ✅ |
+| `qdrant` | 53 | ✅ |
 | `resend` | 46 | ✅ |
 | `context7` | 45 | ✅ |
 | `mapbox` | 45 | ✅ |
@@ -408,22 +408,21 @@ Session 14 notes were based on stale data. The real state when Phase 1 began:
 | `moonshot` | 17 | ✅ |
 | `ollama` | 16 | ✅ |
 | `voyage` | 11 | ✅ |
-| `gemini` | 15 | ✅ |
-| `compound` | 29 | ✅ |
+| `gemini` | 27 | ✅ |
+| `compound` | 41 | ✅ |
 | `local` | 62 | ✅ |
 
-### Open Build Gaps (depth expansion — no sync issues)
+### Open Build Gaps (Phase 2 complete — remaining opportunities)
 
-| Namespace | Current | Planned Additions | Priority |
+All Phase 2 depth targets shipped in Session 16. Remaining opportunities for future sessions:
+
+| Namespace | Current | Opportunity | Priority |
 |---|---|---|---|
-| `sentry` | 71 | monitors, alerting rules, dashboards, performance | 🟠 |
-| `gemini` | 15 | Thinking models, 2.0 Flash, video, Batch API | 🟠 |
-| `compound` | 29 | +15 new Super Tools | 🟡 |
-| `n8n` | 57 | execution history, node catalog, templates | 🟡 |
-| `postgres` | 59 | advisory locks, LISTEN/NOTIFY, replication | 🟡 |
-| `qdrant` | 48 | named/sparse vectors, multi-vector | 🟡 |
-| `mapbox` | 45 | traffic/incidents, isochrone | 🟢 |
-| `resend` | 46 | broadcast scheduling, domain verification | 🟢 |
+| `sentry` | 71 | performance tracing queries, replay sessions list, saved searches | 🟡 |
+| `gemini` | 27 | live/streaming API session, video-specific analysis | 🟡 |
+| `compound` | 41 | auto-rollback on deploy failure, competitor research | 🟡 |
+| `mapbox` | 45 | traffic incidents, ETA with real-time traffic | 🟢 |
+| `resend` | 46 | broadcast scheduling, advanced domain DNS verification | 🟢 |
 
 ## Session Log
 
@@ -467,6 +466,14 @@ gemini: 0→15, fly: 76→101, supabase: 98→100. Total: 2,355 across 28 namesp
 Fixed doc inconsistencies; updated BUILD COMPLETE counts; added Open Build Gaps table.
 
 ### Session 14 (current) — Full .env audit + broken sync fixes + new namespaces
+
+### Session 16 — Phase 2: Depth expansion across 5 namespaces
+- **gemini**: 15 → 27 (+12 tools): multi-turn chat, function calling, token counting, image URL analysis, image editing, Files API CRUD, cached content CRUD, query-with-cache, thinking/reasoning query
+- **compound**: 29 → 41 (+12 Super Tools): full_feature_deploy, hotfix_deploy, staging_refresh, provision_new_project, provision_tenant, tenant_upgrade, weekly_engineering_report, cost_audit, dispatch_job, complete_job, driver_onboard, research_and_summarize
+- **n8n**: 57 → 63 (+6): export_workflow, import_workflow, clone_workflow, get_execution_data, workflow_execution_stats, list_node_types
+- **postgres**: 59 → 65 (+6): advisory_lock, advisory_unlock, notify, list_replication_slots, create_replication_slot, drop_replication_slot
+- **qdrant**: 48 → 53 (+5): upsert_sparse_points, search_named_vector, create_collection_multi_vector, hybrid_search (RRF), list_shards
+- Total added: 41 tools | Final count: 2,505 tools | All 31 namespaces synced
 
 ### Session 15 — Phase 1: Audit correction + registry deduplication
 - Discovered Session 14 stale data: cloudflare/google/search were NOT broken — all fully implemented

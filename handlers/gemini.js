@@ -1,9 +1,10 @@
 /**
- * Gemini Handler — 15 tools
+ * Gemini Handler — 27 tools
  * Native Google Gemini API client built on fetch (no SDK dependency).
- * Covers: text generation, structured JSON output, code execution, grounded
- * search, multimodal file analysis, image generation, spatial reasoning,
- * text-to-speech, embeddings, context caching, batching, long-running
+ * Covers: text generation, multi-turn chat, function calling, structured JSON
+ * output, code execution, grounded search, multimodal file analysis, image
+ * generation, image editing, spatial reasoning, text-to-speech, embeddings,
+ * context caching, file management, token counting, batching, long-running
  * deep-research operations, and model discovery.
  */
 
@@ -157,7 +158,6 @@ async function execute(tool, args) {
     };
   }
 
-
   // ── 4. GROUNDED QUERY (Google Search retrieval) ───────────────────────────
   if (tool === 'gemini_grounded_query') {
     const { prompt, model = DEFAULT_MODEL } = args;
@@ -275,7 +275,6 @@ async function execute(tool, args) {
     const data = await gem('POST', `/v1beta/models/${model}:embedContent`, body);
     return { embedding: data.embedding?.values, dimensions: data.embedding?.values?.length, model };
   }
-
 
   // ── 10. CACHE DOCUMENT (Context Caching) ──────────────────────────────────
   if (tool === 'gemini_cache_document') {
@@ -413,6 +412,248 @@ async function execute(tool, args) {
       })),
       count: data.models?.length || 0,
       next_page_token: data.nextPageToken
+    };
+  }
+
+  // ── 16. MULTI-TURN CHAT ────────────────────────────────────────────────────
+  // Send a conversation history and get the next assistant turn
+  if (tool === 'gemini_chat') {
+    const { messages, model = DEFAULT_MODEL, system_instruction, temperature, max_tokens } = args;
+    if (!Array.isArray(messages) || !messages.length) throw new Error('messages array is required (each: {role: "user"|"model", text: string})');
+    const contents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : (m.role || 'user'),
+      parts: [{ text: m.text || m.content || '' }]
+    }));
+    const body = { contents };
+    if (system_instruction) body.systemInstruction = { parts: [{ text: system_instruction }] };
+    const gc = {};
+    if (temperature !== undefined) gc.temperature = temperature;
+    if (max_tokens !== undefined) gc.maxOutputTokens = max_tokens;
+    if (Object.keys(gc).length) body.generationConfig = gc;
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    const reply = data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('\n');
+    return {
+      reply,
+      finish_reason: data.candidates?.[0]?.finishReason,
+      usage: data.usageMetadata,
+      model,
+      // Return updated history so caller can append and continue the conversation
+      updated_messages: [...messages, { role: 'model', text: reply }]
+    };
+  }
+
+  // ── 17. FUNCTION CALLING ───────────────────────────────────────────────────
+  // Call Gemini with tool definitions; returns either a text reply or tool call request
+  if (tool === 'gemini_function_call') {
+    const { prompt, tools: toolDefs, model = DEFAULT_MODEL, system_instruction, tool_choice } = args;
+    if (!prompt || !toolDefs?.length) throw new Error('prompt and tools array are required');
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      tools: [{ functionDeclarations: toolDefs }]
+    };
+    if (system_instruction) body.systemInstruction = { parts: [{ text: system_instruction }] };
+    if (tool_choice) body.toolConfig = { functionCallingConfig: { mode: tool_choice } };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    const cand = data.candidates?.[0];
+    const parts = cand?.content?.parts || [];
+    const textParts = parts.filter(p => p.text).map(p => p.text);
+    const fnCalls = parts.filter(p => p.functionCall).map(p => ({
+      name: p.functionCall.name,
+      args: p.functionCall.args
+    }));
+    return {
+      text: textParts.join('\n') || null,
+      function_calls: fnCalls,
+      has_tool_call: fnCalls.length > 0,
+      finish_reason: cand?.finishReason,
+      usage: data.usageMetadata,
+      model
+    };
+  }
+
+  // ── 18. COUNT TOKENS ───────────────────────────────────────────────────────
+  // Count tokens before sending to avoid exceeding context limits
+  if (tool === 'gemini_count_tokens') {
+    const { text, model = DEFAULT_MODEL, contents } = args;
+    if (!text && !contents) throw new Error('text or contents is required');
+    const body = {
+      contents: contents || [{ role: 'user', parts: [{ text }] }]
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:countTokens`, body);
+    return {
+      total_tokens: data.totalTokens,
+      model,
+      context_limit: null, // caller can compare against gemini_list_models
+      within_limit: data.totalTokens < 1000000 // 1M token default assumption
+    };
+  }
+
+  // ── 19. ANALYZE IMAGE FROM URL ─────────────────────────────────────────────
+  // Analyze an image at a public URL without uploading to Files API
+  if (tool === 'gemini_analyze_image_url') {
+    const { prompt, image_url, mime_type = 'image/jpeg', model = DEFAULT_MODEL } = args;
+    if (!prompt || !image_url) throw new Error('prompt and image_url are required');
+    const body = {
+      contents: [{ role: 'user', parts: [
+        { inlineData: { mimeType: mime_type, data: await fetch(image_url).then(r => r.arrayBuffer()).then(b => Buffer.from(b).toString('base64')) } },
+        { text: prompt }
+      ]}]
+    };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    return {
+      text: data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('\n'),
+      finish_reason: data.candidates?.[0]?.finishReason,
+      usage: data.usageMetadata,
+      model
+    };
+  }
+
+  // ── 20. EDIT IMAGE (Imagen inpainting/editing) ─────────────────────────────
+  // Edit an existing image using a text prompt (Imagen 3 edit mode)
+  if (tool === 'gemini_edit_image') {
+    const { prompt, output_path, mask_base64, model = 'imagen-3.0-capability-001' } = args;
+    if (!prompt || !output_path) throw new Error('prompt and output_path are required');
+    const imageBase64 = args.file_base64 || (args.file_path ? readFileSync(args.file_path).toString('base64') : null);
+    if (!imageBase64) throw new Error('file_base64 or file_path is required for the source image');
+    const instance = { prompt, image: { bytesBase64Encoded: imageBase64 } };
+    if (mask_base64) instance.mask = { image: { bytesBase64Encoded: mask_base64 } };
+    const data = await gem('POST', `/v1beta/models/${model}:predict`, {
+      instances: [instance],
+      parameters: { sampleCount: 1 }
+    });
+    const pred = data.predictions?.[0];
+    const b64 = pred?.bytesBase64Encoded || pred?.image?.bytesBase64Encoded;
+    if (!b64) throw new Error('No edited image returned');
+    writeFileSync(output_path, Buffer.from(b64, 'base64'));
+    return { saved: output_path, model };
+  }
+
+  // ── 21. LIST FILES (Files API) ─────────────────────────────────────────────
+  // List files previously uploaded to the Gemini Files API
+  if (tool === 'gemini_list_files') {
+    const { page_size = 20, page_token } = args;
+    const qs = new URLSearchParams({ pageSize: String(page_size) });
+    if (page_token) qs.set('pageToken', page_token);
+    const data = await gem('GET', `/v1beta/files?${qs.toString()}`);
+    return {
+      files: (data.files || []).map(f => ({
+        name: f.name,
+        display_name: f.displayName,
+        mime_type: f.mimeType,
+        size_bytes: f.sizeBytes,
+        state: f.state,
+        uri: f.uri,
+        create_time: f.createTime,
+        expiration_time: f.expirationTime
+      })),
+      count: data.files?.length || 0,
+      next_page_token: data.nextPageToken
+    };
+  }
+
+  // ── 22. GET FILE (Files API) ───────────────────────────────────────────────
+  if (tool === 'gemini_get_file') {
+    const { file_name } = args;
+    if (!file_name) throw new Error('file_name is required (e.g. "files/abc123")');
+    const name = file_name.startsWith('files/') ? file_name : `files/${file_name}`;
+    const data = await gem('GET', `/v1beta/${name}`);
+    return {
+      name: data.name,
+      display_name: data.displayName,
+      mime_type: data.mimeType,
+      size_bytes: data.sizeBytes,
+      state: data.state,
+      uri: data.uri,
+      create_time: data.createTime,
+      expiration_time: data.expirationTime
+    };
+  }
+
+  // ── 23. DELETE FILE (Files API) ───────────────────────────────────────────
+  if (tool === 'gemini_delete_file') {
+    const { file_name } = args;
+    if (!file_name) throw new Error('file_name is required (e.g. "files/abc123")');
+    const name = file_name.startsWith('files/') ? file_name : `files/${file_name}`;
+    await gem('DELETE', `/v1beta/${name}`);
+    return { deleted: true, file_name };
+  }
+
+  // ── 24. LIST CACHED CONTENTS ───────────────────────────────────────────────
+  if (tool === 'gemini_list_cached_contents') {
+    const { page_size = 20, page_token } = args;
+    const qs = new URLSearchParams({ pageSize: String(page_size) });
+    if (page_token) qs.set('pageToken', page_token);
+    const data = await gem('GET', `/v1beta/cachedContents?${qs.toString()}`);
+    return {
+      cached_contents: (data.cachedContents || []).map(c => ({
+        name: c.name,
+        display_name: c.displayName,
+        model: c.model,
+        create_time: c.createTime,
+        expire_time: c.expireTime,
+        usage: c.usageMetadata
+      })),
+      count: data.cachedContents?.length || 0,
+      next_page_token: data.nextPageToken
+    };
+  }
+
+  // ── 25. DELETE CACHED CONTENT ─────────────────────────────────────────────
+  if (tool === 'gemini_delete_cached_content') {
+    const { cache_name } = args;
+    if (!cache_name) throw new Error('cache_name is required (e.g. "cachedContents/abc123")');
+    const name = cache_name.startsWith('cachedContents/') ? cache_name : `cachedContents/${cache_name}`;
+    await gem('DELETE', `/v1beta/${name}`);
+    return { deleted: true, cache_name };
+  }
+
+  // ── 26. QUERY WITH CACHE ───────────────────────────────────────────────────
+  // Use a cached context (from gemini_cache_document) as prefix for a new query
+  if (tool === 'gemini_query_with_cache') {
+    const { prompt, cache_name, model = DEFAULT_MODEL, temperature, max_tokens } = args;
+    if (!prompt || !cache_name) throw new Error('prompt and cache_name are required');
+    const cachedContentName = cache_name.startsWith('cachedContents/') ? cache_name : `cachedContents/${cache_name}`;
+    const body = {
+      cachedContent: cachedContentName,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    };
+    const gc = {};
+    if (temperature !== undefined) gc.temperature = temperature;
+    if (max_tokens !== undefined) gc.maxOutputTokens = max_tokens;
+    if (Object.keys(gc).length) body.generationConfig = gc;
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    return {
+      text: data.candidates?.[0]?.content?.parts?.map(p => p.text).filter(Boolean).join('\n'),
+      finish_reason: data.candidates?.[0]?.finishReason,
+      usage: data.usageMetadata,
+      cache_name,
+      model
+    };
+  }
+
+  // ── 27. THINKING QUERY (extended reasoning / gemini-2.5-pro) ──────────────
+  // Use Gemini's thinking capability for complex multi-step reasoning tasks
+  if (tool === 'gemini_thinking_query') {
+    const { prompt, model = 'gemini-2.5-pro', system_instruction, thinking_budget, max_tokens = 16000 } = args;
+    if (!prompt) throw new Error('prompt is required');
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: max_tokens,
+        ...(thinking_budget !== undefined ? { thinkingConfig: { thinkingBudget: thinking_budget } } : {})
+      }
+    };
+    if (system_instruction) body.systemInstruction = { parts: [{ text: system_instruction }] };
+    const data = await gem('POST', `/v1beta/models/${model}:generateContent`, body);
+    const parts = data.candidates?.[0]?.content?.parts || [];
+    const thoughtParts = parts.filter(p => p.thought);
+    const textParts = parts.filter(p => p.text && !p.thought);
+    return {
+      text: textParts.map(p => p.text).filter(Boolean).join('\n'),
+      thinking: thoughtParts.map(p => p.text).filter(Boolean).join('\n') || null,
+      finish_reason: data.candidates?.[0]?.finishReason,
+      usage: data.usageMetadata,
+      model
     };
   }
 

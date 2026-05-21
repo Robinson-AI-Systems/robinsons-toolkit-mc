@@ -1,17 +1,860 @@
 [
-  {"name":"gemini_standard_query","description":"Send a prompt to Google Gemini and get a text response. Supports system_instruction, temperature, max_tokens, and model override. Default model: gemini-2.5-flash.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"model":{"type":"string"},"system_instruction":{"type":"string"},"temperature":{"type":"number"},"max_tokens":{"type":"number"}},"required":["prompt"]},"tags":["gemini","google","llm","ai","chat","generate"]},
-  {"name":"gemini_structured_extractor","description":"Extract JSON from a prompt using a JSON Schema. Returns {json, raw, usage}. Uses Gemini's native responseSchema mode for guaranteed schema-conformant output.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"json_schema":{"type":"object"},"model":{"type":"string"},"system_instruction":{"type":"string"}},"required":["prompt","json_schema"]},"tags":["gemini","json","schema","structured","extraction","google"]},
-  {"name":"gemini_code_execution_engine","description":"Ask Gemini to solve a problem by writing and executing Python in a sandboxed environment. Returns the answer plus executable_code and execution_result blocks. Great for math, data analysis, and verification tasks.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"model":{"type":"string"}},"required":["prompt"]},"tags":["gemini","code","python","execution","sandbox","google"]},
-  {"name":"gemini_grounded_query","description":"Query Gemini with Google Search grounding enabled. Returns the answer plus grounding_metadata and citations from real web sources. Use when factual freshness matters.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"model":{"type":"string"}},"required":["prompt"]},"tags":["gemini","grounding","search","citations","factual","google"]},
-  {"name":"gemini_analyze_media","description":"Upload a media file (image, audio, video, or PDF) via base64 or file_path and ask Gemini a question about it. Uses the Files API and supports the full 1M-token multimodal context.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"mime_type":{"type":"string"},"file_base64":{"type":"string"},"file_path":{"type":"string"},"model":{"type":"string"},"display_name":{"type":"string"}},"required":["prompt","mime_type"]},"tags":["gemini","multimodal","vision","audio","video","pdf","google"]},
-  {"name":"gemini_generate_image","description":"Generate one or more images from a text prompt using Imagen (default: imagen-3.0-generate-002). Saves each image to output_path and returns the saved file paths.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"output_path":{"type":"string"},"model":{"type":"string"},"number_of_images":{"type":"number"},"aspect_ratio":{"type":"string"}},"required":["prompt","output_path"]},"tags":["gemini","imagen","image","generation","google"]},
-  {"name":"gemini_spatial_analysis","description":"Detect objects in an image and return JSON bounding boxes normalized to a 0-1000 grid: [{label, box_2d:[ymin,xmin,ymax,xmax]}]. Supply file_base64 or file_path plus an optional target_objects hint.","namespace":"gemini","inputSchema":{"type":"object","properties":{"file_base64":{"type":"string"},"file_path":{"type":"string"},"mime_type":{"type":"string"},"prompt":{"type":"string"},"target_objects":{"type":"string"},"model":{"type":"string"}}},"tags":["gemini","spatial","bounding-box","detection","vision","google"]},
-  {"name":"gemini_text_to_speech","description":"Synthesize speech from text using Gemini native TTS (default model: gemini-2.5-flash-preview-tts). Writes the audio to output_path. Voice defaults to 'Kore'.","namespace":"gemini","inputSchema":{"type":"object","properties":{"text":{"type":"string"},"output_path":{"type":"string"},"voice":{"type":"string"},"model":{"type":"string"}},"required":["text","output_path"]},"tags":["gemini","tts","speech","audio","google"]},
-  {"name":"gemini_generate_embeddings","description":"Generate text embeddings using text-embedding-004 (or any embedding model). Accepts a single string or an array (uses batchEmbedContents for arrays). Returns the vector(s) plus dimensions.","namespace":"gemini","inputSchema":{"type":"object","properties":{"text":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"model":{"type":"string"},"task_type":{"type":"string"}},"required":["text"]},"tags":["gemini","embeddings","vector","semantic","google"]},
-  {"name":"gemini_cache_document","description":"Create a Gemini context cache for a large document or system instruction. Returns cache_name to reuse across subsequent generateContent calls for major cost savings. Requires a billing-enabled GCP project.","namespace":"gemini","inputSchema":{"type":"object","properties":{"contents":{"type":"array"},"model":{"type":"string"},"system_instruction":{"type":"string"},"ttl_seconds":{"type":"number"},"display_name":{"type":"string"}},"required":["contents"]},"tags":["gemini","cache","context-caching","cost","google"]},
-  {"name":"gemini_batch_processor","description":"Process an array of prompts in parallel with bounded concurrency (default 4). Returns per-prompt {ok, text, usage|error}. Client-side fan-out — works on any tier.","namespace":"gemini","inputSchema":{"type":"object","properties":{"prompts":{"type":"array","items":{"type":"string"}},"model":{"type":"string"},"concurrency":{"type":"number"},"system_instruction":{"type":"string"}},"required":["prompts"]},"tags":["gemini","batch","parallel","bulk","google"]},
-  {"name":"gemini_deep_research_start","description":"Submit a server-side batchGenerateContent long-running operation for large-scale or background work. Returns operation_name to poll with gemini_deep_research_status.","namespace":"gemini","inputSchema":{"type":"object","properties":{"requests":{"type":"array"},"model":{"type":"string"},"display_name":{"type":"string"}},"required":["requests"]},"tags":["gemini","batch","long-running","background","google"]},
-  {"name":"gemini_deep_research_status","description":"Poll the status of a long-running Gemini operation by operation_name. Returns {done, metadata, response, error}.","namespace":"gemini","inputSchema":{"type":"object","properties":{"operation_name":{"type":"string"}},"required":["operation_name"]},"tags":["gemini","operation","poll","status","google"]},
-  {"name":"gemini_cancel_batch_job","description":"Cancel a running Gemini long-running operation. Falls back to DELETE if :cancel is rejected. Returns the final operation state.","namespace":"gemini","inputSchema":{"type":"object","properties":{"operation_name":{"type":"string"}},"required":["operation_name"]},"tags":["gemini","operation","cancel","google"]},
-  {"name":"gemini_list_models","description":"Enumerate available Gemini models with display_name, version, input/output token limits, and supported generation methods. Useful for model discovery before using other gemini_* tools.","namespace":"gemini","inputSchema":{"type":"object","properties":{"page_size":{"type":"number"},"page_token":{"type":"string"}}},"tags":["gemini","models","list","discovery","google"]}
+  {
+    "name": "gemini_standard_query",
+    "description": "Send a prompt to Google Gemini and get a text response. Supports system_instruction, temperature, max_tokens, and model override. Default model: gemini-2.5-flash.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "google",
+      "llm",
+      "ai",
+      "chat",
+      "generate"
+    ]
+  },
+  {
+    "name": "gemini_structured_extractor",
+    "description": "Extract JSON from a prompt using a JSON Schema. Returns {json, raw, usage}. Uses Gemini's native responseSchema mode for guaranteed schema-conformant output.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "json_schema": {
+          "type": "object"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system_instruction": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt",
+        "json_schema"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "json",
+      "schema",
+      "structured",
+      "extraction",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_code_execution_engine",
+    "description": "Ask Gemini to solve a problem by writing and executing Python in a sandboxed environment. Returns the answer plus executable_code and execution_result blocks. Great for math, data analysis, and verification tasks.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "code",
+      "python",
+      "execution",
+      "sandbox",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_grounded_query",
+    "description": "Query Gemini with Google Search grounding enabled. Returns the answer plus grounding_metadata and citations from real web sources. Use when factual freshness matters.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "grounding",
+      "search",
+      "citations",
+      "factual",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_analyze_media",
+    "description": "Upload a media file (image, audio, video, or PDF) via base64 or file_path and ask Gemini a question about it. Uses the Files API and supports the full 1M-token multimodal context.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "mime_type": {
+          "type": "string"
+        },
+        "file_base64": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt",
+        "mime_type"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "multimodal",
+      "vision",
+      "audio",
+      "video",
+      "pdf",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_generate_image",
+    "description": "Generate one or more images from a text prompt using Imagen (default: imagen-3.0-generate-002). Saves each image to output_path and returns the saved file paths.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "number_of_images": {
+          "type": "number"
+        },
+        "aspect_ratio": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompt",
+        "output_path"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "imagen",
+      "image",
+      "generation",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_spatial_analysis",
+    "description": "Detect objects in an image and return JSON bounding boxes normalized to a 0-1000 grid: [{label, box_2d:[ymin,xmin,ymax,xmax]}]. Supply file_base64 or file_path plus an optional target_objects hint.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_base64": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string"
+        },
+        "mime_type": {
+          "type": "string"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "target_objects": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "gemini",
+      "spatial",
+      "bounding-box",
+      "detection",
+      "vision",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_text_to_speech",
+    "description": "Synthesize speech from text using Gemini native TTS (default model: gemini-2.5-flash-preview-tts). Writes the audio to output_path. Voice defaults to 'Kore'.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "voice": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "output_path"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "tts",
+      "speech",
+      "audio",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_generate_embeddings",
+    "description": "Generate text embeddings using text-embedding-004 (or any embedding model). Accepts a single string or an array (uses batchEmbedContents for arrays). Returns the vector(s) plus dimensions.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "task_type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "embeddings",
+      "vector",
+      "semantic",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_cache_document",
+    "description": "Create a Gemini context cache for a large document or system instruction. Returns cache_name to reuse across subsequent generateContent calls for major cost savings. Requires a billing-enabled GCP project.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "contents": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "ttl_seconds": {
+          "type": "number"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "contents"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "cache",
+      "context-caching",
+      "cost",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_batch_processor",
+    "description": "Process an array of prompts in parallel with bounded concurrency (default 4). Returns per-prompt {ok, text, usage|error}. Client-side fan-out \u2014 works on any tier.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "string"
+        },
+        "concurrency": {
+          "type": "number"
+        },
+        "system_instruction": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "prompts"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "batch",
+      "parallel",
+      "bulk",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_deep_research_start",
+    "description": "Submit a server-side batchGenerateContent long-running operation for large-scale or background work. Returns operation_name to poll with gemini_deep_research_status.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array"
+        },
+        "model": {
+          "type": "string"
+        },
+        "display_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "requests"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "batch",
+      "long-running",
+      "background",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_deep_research_status",
+    "description": "Poll the status of a long-running Gemini operation by operation_name. Returns {done, metadata, response, error}.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_name"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "operation",
+      "poll",
+      "status",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_cancel_batch_job",
+    "description": "Cancel a running Gemini long-running operation. Falls back to DELETE if :cancel is rejected. Returns the final operation state.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation_name"
+      ]
+    },
+    "tags": [
+      "gemini",
+      "operation",
+      "cancel",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_list_models",
+    "description": "Enumerate available Gemini models with display_name, version, input/output token limits, and supported generation methods. Useful for model discovery before using other gemini_* tools.",
+    "namespace": "gemini",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_size": {
+          "type": "number"
+        },
+        "page_token": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": [
+      "gemini",
+      "models",
+      "list",
+      "discovery",
+      "google"
+    ]
+  },
+  {
+    "name": "gemini_chat",
+    "description": "Send a multi-turn conversation history to Gemini and get the next assistant reply. Pass messages as [{role, text}] array; returns updated_messages array ready for the next turn. Supports system instructions, temperature, and max_tokens.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "chat",
+      "multi-turn",
+      "conversation",
+      "ai"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "description": "Conversation history: [{role: 'user'|'model'|'assistant', text: string}]"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "messages"
+      ]
+    }
+  },
+  {
+    "name": "gemini_function_call",
+    "description": "Call Gemini with tool/function definitions and get back either a text response or a structured function call request. Supports tool_choice mode (AUTO, ANY, NONE) to control when Gemini uses tools.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "function-calling",
+      "tools",
+      "ai",
+      "structured"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array",
+          "description": "Function declarations: [{name, description, parameters: {type, properties, required}}]"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "tool_choice": {
+          "type": "string",
+          "enum": [
+            "AUTO",
+            "ANY",
+            "NONE"
+          ],
+          "description": "AUTO=Gemini decides, ANY=force tool use, NONE=text only"
+        }
+      },
+      "required": [
+        "prompt",
+        "tools"
+      ]
+    }
+  },
+  {
+    "name": "gemini_count_tokens",
+    "description": "Count tokens for a prompt or conversation before sending to Gemini, to verify it fits within the model context window. Returns total_tokens count so you can compare against the model limit before making an expensive request.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "tokens",
+      "context",
+      "planning",
+      "cost"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Text to count tokens for"
+        },
+        "contents": {
+          "type": "array",
+          "description": "Raw contents array for multi-turn token counting"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        }
+      }
+    }
+  },
+  {
+    "name": "gemini_analyze_image_url",
+    "description": "Analyze an image at a public URL using Gemini vision \u2014 no file upload needed. Fetches the image bytes directly and passes them inline to Gemini. Faster than gemini_analyze_media for small public images.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "vision",
+      "image",
+      "multimodal",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "Publicly accessible image URL"
+        },
+        "mime_type": {
+          "type": "string",
+          "default": "image/jpeg",
+          "description": "image/jpeg, image/png, image/webp, image/gif"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        }
+      },
+      "required": [
+        "prompt",
+        "image_url"
+      ]
+    }
+  },
+  {
+    "name": "gemini_edit_image",
+    "description": "Edit an existing image using Imagen's inpainting and editing capabilities. Provide the source image (file_path or file_base64), an optional mask for targeted edits, and a text prompt describing the change. Returns the edited image saved to output_path.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "imagen",
+      "image-editing",
+      "inpainting",
+      "ai-image"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "Description of the edit to make"
+        },
+        "output_path": {
+          "type": "string"
+        },
+        "file_path": {
+          "type": "string",
+          "description": "Local path to source image"
+        },
+        "file_base64": {
+          "type": "string",
+          "description": "Base64-encoded source image"
+        },
+        "mask_base64": {
+          "type": "string",
+          "description": "Optional base64 mask \u2014 white=edit area, black=keep"
+        },
+        "model": {
+          "type": "string",
+          "default": "imagen-3.0-capability-001"
+        }
+      },
+      "required": [
+        "prompt",
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "gemini_list_files",
+    "description": "List files previously uploaded to the Gemini Files API. Returns file names, URIs, MIME types, sizes, processing states, and expiration times. Files expire after 48 hours unless refreshed.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "files",
+      "uploads",
+      "management"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_size": {
+          "type": "number",
+          "default": 20
+        },
+        "page_token": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "gemini_get_file",
+    "description": "Get metadata and status for a specific file uploaded to the Gemini Files API by its file name (e.g. 'files/abc123'). Check the state field \u2014 ACTIVE means ready to use; PROCESSING means still uploading.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "files",
+      "uploads",
+      "management"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "type": "string",
+          "description": "File name like 'files/abc123' or just 'abc123'"
+        }
+      },
+      "required": [
+        "file_name"
+      ]
+    }
+  },
+  {
+    "name": "gemini_delete_file",
+    "description": "Delete a file from the Gemini Files API by its file name. Frees up quota. Files are automatically deleted after 48 hours, but use this for immediate cleanup or to remove sensitive content.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "files",
+      "delete",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "type": "string",
+          "description": "File name like 'files/abc123' or just 'abc123'"
+        }
+      },
+      "required": [
+        "file_name"
+      ]
+    }
+  },
+  {
+    "name": "gemini_list_cached_contents",
+    "description": "List all cached content entries created with gemini_cache_document. Returns cache names, associated models, creation times, and expiration times. Use to audit active caches and their TTLs.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "cache",
+      "context-caching",
+      "management"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "page_size": {
+          "type": "number",
+          "default": 20
+        },
+        "page_token": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "gemini_delete_cached_content",
+    "description": "Delete a specific cached content entry from the Gemini context cache by its cache name. Use after processing is done or to free up quota. Cache names come from gemini_cache_document or gemini_list_cached_contents.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "cache",
+      "context-caching",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cache_name": {
+          "type": "string",
+          "description": "Cache name like 'cachedContents/abc123' or just 'abc123'"
+        }
+      },
+      "required": [
+        "cache_name"
+      ]
+    }
+  },
+  {
+    "name": "gemini_query_with_cache",
+    "description": "Query Gemini using a previously cached document context as a prefix. Dramatically reduces token costs when repeatedly querying against the same large document or codebase. cache_name comes from gemini_cache_document.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "cache",
+      "context-caching",
+      "cost-savings",
+      "rag"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "cache_name": {
+          "type": "string",
+          "description": "Cache name from gemini_cache_document (e.g. 'cachedContents/abc123')"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-flash"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "max_tokens": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "prompt",
+        "cache_name"
+      ]
+    }
+  },
+  {
+    "name": "gemini_thinking_query",
+    "description": "SUPER TOOL: Send a complex multi-step reasoning task to Gemini 2.5 Pro with extended thinking enabled. The model reasons through the problem step-by-step before answering. Returns both the thinking process and the final answer. Best for math, logic, code review, and research synthesis.",
+    "namespace": "gemini",
+    "tags": [
+      "gemini",
+      "thinking",
+      "reasoning",
+      "gemini-2.5-pro",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string",
+          "default": "gemini-2.5-pro"
+        },
+        "system_instruction": {
+          "type": "string"
+        },
+        "thinking_budget": {
+          "type": "number",
+          "description": "Max thinking tokens (0=disable, -1=dynamic/unlimited, or a specific number)"
+        },
+        "max_tokens": {
+          "type": "number",
+          "default": 16000
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    }
+  }
 ]
