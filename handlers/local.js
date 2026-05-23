@@ -973,6 +973,200 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown local tool: ${tool}`);
+
+  // ── DOCKER ────────────────────────────────────────────────────────────────
+  if (tool === 'local_docker_list_containers') {
+    const { all = false } = args;
+    const { execSync } = await import('child_process');
+    const out = execSync(`docker ps ${all ? '-a ' : ''}--format '{{json .}}'`, { encoding: 'utf-8', stdio: 'pipe' });
+    return out.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
+  }
+  if (tool === 'local_docker_start') {
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker start ${args.container}`, { encoding: 'utf-8' }).trim() };
+  }
+  if (tool === 'local_docker_stop') {
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker stop ${args.container}`, { encoding: 'utf-8' }).trim() };
+  }
+  if (tool === 'local_docker_restart') {
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker restart ${args.container}`, { encoding: 'utf-8' }).trim() };
+  }
+  if (tool === 'local_docker_logs') {
+    const { container, lines = 50 } = args;
+    if (!container) throw new Error('container is required');
+    const { execSync } = await import('child_process');
+    return { logs: execSync(`docker logs --tail ${lines} ${container} 2>&1`, { encoding: 'utf-8' }) };
+  }
+  if (tool === 'local_docker_exec') {
+    const { container, command } = args;
+    if (!container || !command) throw new Error('container and command are required');
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker exec ${container} ${command}`, { encoding: 'utf-8' }) };
+  }
+  if (tool === 'local_docker_list_images') {
+    const { execSync } = await import('child_process');
+    const out = execSync(`docker images --format '{{json .}}'`, { encoding: 'utf-8', stdio: 'pipe' });
+    return out.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
+  }
+  if (tool === 'local_docker_pull') {
+    const { image } = args;
+    if (!image) throw new Error('image is required');
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker pull ${image}`, { encoding: 'utf-8' }) };
+  }
+  if (tool === 'local_docker_compose_up') {
+    const { cwd = '.', detach = true, services } = args;
+    const { execSync } = await import('child_process');
+    const svcStr = services?.join(' ') || '';
+    return { output: execSync(`docker compose up ${detach ? '-d ' : ''}${svcStr}`, { cwd, encoding: 'utf-8', stdio: 'pipe' }) };
+  }
+  if (tool === 'local_docker_compose_down') {
+    const { cwd = '.', volumes = false } = args;
+    const { execSync } = await import('child_process');
+    return { output: execSync(`docker compose down ${volumes ? '-v' : ''}`, { cwd, encoding: 'utf-8', stdio: 'pipe' }) };
+  }
+  if (tool === 'local_docker_compose_logs') {
+    const { cwd = '.', service, lines = 50 } = args;
+    const { execSync } = await import('child_process');
+    const svc = service || '';
+    return { logs: execSync(`docker compose logs --tail ${lines} ${svc} 2>&1`, { cwd, encoding: 'utf-8' }) };
+  }
+
+  // ── PROCESS MANAGEMENT ────────────────────────────────────────────────────
+  if (tool === 'local_kill_process') {
+    const { pid, signal = 'TERM' } = args;
+    if (!pid) throw new Error('pid is required');
+    const { execSync } = await import('child_process');
+    execSync(`kill -${signal} ${pid}`);
+    return { success: true, pid, signal };
+  }
+  if (tool === 'local_get_process_by_name') {
+    const { name } = args;
+    if (!name) throw new Error('name is required');
+    const { execSync } = await import('child_process');
+    try {
+      const out = execSync(`pgrep -a -f "${name}"`, { encoding: 'utf-8' });
+      return { processes: out.trim().split('\n').filter(Boolean).map(l => { const [pid, ...rest] = l.split(' '); return { pid: parseInt(pid), cmd: rest.join(' ') }; }) };
+    } catch { return { processes: [] }; }
+  }
+  if (tool === 'local_get_memory_usage') {
+    const { execSync } = await import('child_process');
+    const out = execSync('free -h', { encoding: 'utf-8' });
+    return { memory: out };
+  }
+  if (tool === 'local_get_cpu_usage') {
+    const { execSync } = await import('child_process');
+    const out = execSync("top -bn1 | grep 'Cpu\\|cpu' | head -3", { encoding: 'utf-8' });
+    return { cpu: out };
+  }
+
+  // ── ARCHIVE / ZIP ─────────────────────────────────────────────────────────
+  if (tool === 'local_zip_files') {
+    const { output_path, files, cwd: workDir = '.' } = args;
+    if (!output_path || !files?.length) throw new Error('output_path and files array are required');
+    const { execSync } = await import('child_process');
+    execSync(`zip -r "${output_path}" ${files.map(f => `"${f}"`).join(' ')}`, { cwd: workDir, encoding: 'utf-8' });
+    return { success: true, output_path, files_zipped: files.length };
+  }
+  if (tool === 'local_unzip') {
+    const { zip_path, output_dir = '.', overwrite = false } = args;
+    if (!zip_path) throw new Error('zip_path is required');
+    const { execSync } = await import('child_process');
+    execSync(`unzip ${overwrite ? '-o ' : ''}"${zip_path}" -d "${output_dir}"`, { encoding: 'utf-8' });
+    return { success: true, zip_path, output_dir };
+  }
+  if (tool === 'local_tar_create') {
+    const { output_path, files, compress = true, cwd: workDir = '.' } = args;
+    if (!output_path || !files?.length) throw new Error('output_path and files array are required');
+    const { execSync } = await import('child_process');
+    const flag = compress ? 'czf' : 'cf';
+    execSync(`tar -${flag} "${output_path}" ${files.map(f => `"${f}"`).join(' ')}`, { cwd: workDir });
+    return { success: true, output_path, compressed: compress };
+  }
+  if (tool === 'local_tar_extract') {
+    const { tar_path, output_dir = '.', strip_components } = args;
+    if (!tar_path) throw new Error('tar_path is required');
+    const { execSync } = await import('child_process');
+    const stripFlag = strip_components ? `--strip-components=${strip_components}` : '';
+    execSync(`tar -xf "${tar_path}" -C "${output_dir}" ${stripFlag}`, { encoding: 'utf-8' });
+    return { success: true, tar_path, output_dir };
+  }
+
+  // ── NETWORK TOOLS ─────────────────────────────────────────────────────────
+  if (tool === 'local_ping') {
+    const { host, count = 4 } = args;
+    if (!host) throw new Error('host is required');
+    const { execSync } = await import('child_process');
+    try {
+      const out = execSync(`ping -c ${count} "${host}" 2>&1`, { encoding: 'utf-8' });
+      return { success: true, host, output: out };
+    } catch (e) {
+      return { success: false, host, output: e.stdout || e.message };
+    }
+  }
+  if (tool === 'local_curl') {
+    const { url, method = 'GET', headers: reqHeaders, data, follow_redirects = true, timeout = 30 } = args;
+    if (!url) throw new Error('url is required');
+    const { execSync } = await import('child_process');
+    let cmd = `curl -s -o - -w "\\n%{http_code}" -X ${method}`;
+    if (follow_redirects) cmd += ' -L';
+    cmd += ` --max-time ${timeout}`;
+    if (reqHeaders) Object.entries(reqHeaders).forEach(([k, v]) => cmd += ` -H "${k}: ${v}"`);
+    if (data) cmd += ` -d '${JSON.stringify(data)}'`;
+    cmd += ` "${url}"`;
+    const out = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe' });
+    const lines = out.split('\n');
+    const statusCode = parseInt(lines[lines.length - 1]);
+    const body = lines.slice(0, -1).join('\n');
+    return { status_code: statusCode, body: body.length > 5000 ? body.slice(0, 5000) + '...' : body };
+  }
+  if (tool === 'local_check_ports') {
+    const { ports, host = 'localhost' } = args;
+    if (!ports?.length) throw new Error('ports array is required');
+    const results = [];
+    for (const port of ports) {
+      const { execSync } = await import('child_process');
+      try {
+        execSync(`nc -z -w2 "${host}" ${port} 2>/dev/null`, { stdio: 'pipe' });
+        results.push({ port, open: true });
+      } catch {
+        results.push({ port, open: false });
+      }
+    }
+    return { host, results };
+  }
+
+  // ── SYSTEMD ───────────────────────────────────────────────────────────────
+  if (tool === 'local_systemctl_status') {
+    const { service } = args;
+    if (!service) throw new Error('service is required');
+    const { execSync } = await import('child_process');
+    try {
+      const out = execSync(`systemctl status ${service} 2>&1`, { encoding: 'utf-8' });
+      return { service, output: out };
+    } catch (e) {
+      return { service, output: e.stdout || e.message };
+    }
+  }
+  if (tool === 'local_systemctl_restart') {
+    const { service } = args;
+    if (!service) throw new Error('service is required');
+    const { execSync } = await import('child_process');
+    execSync(`sudo systemctl restart ${service}`, { encoding: 'utf-8' });
+    return { success: true, service, action: 'restart' };
+  }
+  if (tool === 'local_systemctl_logs') {
+    const { service, lines = 50, since } = args;
+    if (!service) throw new Error('service is required');
+    const { execSync } = await import('child_process');
+    let cmd = `journalctl -u ${service} -n ${lines} --no-pager`;
+    if (since) cmd += ` --since="${since}"`;
+    return { service, logs: execSync(cmd, { encoding: 'utf-8' }) };
+  }
+
+  throw new Error(`Unknown Local tool: ${tool}`);
 }
 
 export default { execute };

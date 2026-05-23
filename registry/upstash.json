@@ -490,7 +490,7 @@
   },
   {
     "name": "upstash_redis_get",
-    "description": "GET \u2014 retrieve the value of a Redis key",
+    "description": "GET — retrieve the value of a Redis key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -514,7 +514,7 @@
   },
   {
     "name": "upstash_redis_set",
-    "description": "SET \u2014 set a Redis key to a value, optionally with TTL",
+    "description": "SET — set a Redis key to a value, optionally with TTL",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -559,7 +559,7 @@
   },
   {
     "name": "upstash_redis_mget",
-    "description": "MGET \u2014 get values for multiple Redis keys at once",
+    "description": "MGET — get values for multiple Redis keys at once",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -586,7 +586,7 @@
   },
   {
     "name": "upstash_redis_mset",
-    "description": "MSET \u2014 set multiple Redis key-value pairs atomically",
+    "description": "MSET — set multiple Redis key-value pairs atomically",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -611,7 +611,7 @@
   },
   {
     "name": "upstash_redis_del",
-    "description": "DEL \u2014 delete one or more Redis keys",
+    "description": "DEL — delete one or more Redis keys",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -638,7 +638,7 @@
   },
   {
     "name": "upstash_redis_exists",
-    "description": "EXISTS \u2014 check if one or more Redis keys exist",
+    "description": "EXISTS — check if one or more Redis keys exist",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -664,7 +664,7 @@
   },
   {
     "name": "upstash_redis_incr",
-    "description": "INCR \u2014 increment a numeric Redis key by 1",
+    "description": "INCR — increment a numeric Redis key by 1",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -687,7 +687,7 @@
   },
   {
     "name": "upstash_redis_decr",
-    "description": "DECR \u2014 decrement a numeric Redis key by 1",
+    "description": "DECR — decrement a numeric Redis key by 1",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -710,7 +710,7 @@
   },
   {
     "name": "upstash_redis_incrby",
-    "description": "INCRBY \u2014 increment a Redis key by a specified amount",
+    "description": "INCRBY — increment a Redis key by a specified amount",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -738,7 +738,7 @@
   },
   {
     "name": "upstash_redis_decrby",
-    "description": "DECRBY \u2014 decrement a Redis key by a specified amount",
+    "description": "DECRBY — decrement a Redis key by a specified amount",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -766,7 +766,7 @@
   },
   {
     "name": "upstash_redis_incrbyfloat",
-    "description": "INCRBYFLOAT \u2014 increment a Redis key by a float value",
+    "description": "INCRBYFLOAT — increment a Redis key by a float value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -793,7 +793,7 @@
   },
   {
     "name": "upstash_redis_append",
-    "description": "APPEND \u2014 append a string to a Redis key's value",
+    "description": "APPEND — append a string to a Redis key's value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -819,7 +819,7 @@
   },
   {
     "name": "upstash_redis_getrange",
-    "description": "GETRANGE \u2014 get a substring of a Redis string value",
+    "description": "GETRANGE — get a substring of a Redis string value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -850,7 +850,7 @@
   },
   {
     "name": "upstash_redis_setrange",
-    "description": "SETRANGE \u2014 overwrite part of a Redis string at an offset",
+    "description": "SETRANGE — overwrite part of a Redis string at an offset",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -881,7 +881,7 @@
   },
   {
     "name": "upstash_redis_strlen",
-    "description": "STRLEN \u2014 get the length of a Redis string value",
+    "description": "STRLEN — get the length of a Redis string value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -904,7 +904,7 @@
   },
   {
     "name": "upstash_redis_getset",
-    "description": "GETSET \u2014 atomically set a key and return its old value",
+    "description": "GETSET — atomically set a key and return its old value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -931,7 +931,7 @@
   },
   {
     "name": "upstash_redis_setnx",
-    "description": "SETNX \u2014 set a key only if it does not already exist",
+    "description": "SETNX — set a key only if it does not already exist",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -959,7 +959,7 @@
   },
   {
     "name": "upstash_redis_setex",
-    "description": "SETEX \u2014 set a key with an expiry in seconds",
+    "description": "SETEX — set a key with an expiry in seconds",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -992,7 +992,7 @@
   },
   {
     "name": "upstash_redis_psetex",
-    "description": "PSETEX \u2014 set a key with an expiry in milliseconds",
+    "description": "PSETEX — set a key with an expiry in milliseconds",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1024,7 +1024,7 @@
   },
   {
     "name": "upstash_redis_expire",
-    "description": "EXPIRE \u2014 set a time-to-live (TTL) on a Redis key in seconds",
+    "description": "EXPIRE — set a time-to-live (TTL) on a Redis key in seconds",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1052,7 +1052,7 @@
   },
   {
     "name": "upstash_redis_expireat",
-    "description": "EXPIREAT \u2014 set expiry as a Unix timestamp",
+    "description": "EXPIREAT — set expiry as a Unix timestamp",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1080,7 +1080,7 @@
   },
   {
     "name": "upstash_redis_ttl",
-    "description": "TTL \u2014 get remaining time-to-live of a key in seconds",
+    "description": "TTL — get remaining time-to-live of a key in seconds",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1104,7 +1104,7 @@
   },
   {
     "name": "upstash_redis_pttl",
-    "description": "PTTL \u2014 get remaining TTL of a key in milliseconds",
+    "description": "PTTL — get remaining TTL of a key in milliseconds",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1127,7 +1127,7 @@
   },
   {
     "name": "upstash_redis_persist",
-    "description": "PERSIST \u2014 remove the expiry from a key (make it permanent)",
+    "description": "PERSIST — remove the expiry from a key (make it permanent)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1150,7 +1150,7 @@
   },
   {
     "name": "upstash_redis_keys",
-    "description": "KEYS \u2014 find all keys matching a pattern (use carefully in production)",
+    "description": "KEYS — find all keys matching a pattern (use carefully in production)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1175,7 +1175,7 @@
   },
   {
     "name": "upstash_redis_scan",
-    "description": "SCAN \u2014 iterate keys with a cursor (safe alternative to KEYS)",
+    "description": "SCAN — iterate keys with a cursor (safe alternative to KEYS)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1205,7 +1205,7 @@
   },
   {
     "name": "upstash_redis_type",
-    "description": "TYPE \u2014 get the data type of a Redis key",
+    "description": "TYPE — get the data type of a Redis key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1229,7 +1229,7 @@
   },
   {
     "name": "upstash_redis_rename",
-    "description": "RENAME \u2014 rename a Redis key",
+    "description": "RENAME — rename a Redis key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1256,7 +1256,7 @@
   },
   {
     "name": "upstash_redis_dbsize",
-    "description": "DBSIZE \u2014 get the total number of keys in the database",
+    "description": "DBSIZE — get the total number of keys in the database",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1273,7 +1273,7 @@
   },
   {
     "name": "upstash_redis_flushdb",
-    "description": "FLUSHDB \u2014 delete all keys in the current database (DESTRUCTIVE)",
+    "description": "FLUSHDB — delete all keys in the current database (DESTRUCTIVE)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1290,7 +1290,7 @@
   },
   {
     "name": "upstash_redis_flushall",
-    "description": "FLUSHALL \u2014 delete all keys in all databases (DESTRUCTIVE)",
+    "description": "FLUSHALL — delete all keys in all databases (DESTRUCTIVE)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1307,7 +1307,7 @@
   },
   {
     "name": "upstash_redis_ping",
-    "description": "PING \u2014 test connectivity to the Redis instance",
+    "description": "PING — test connectivity to the Redis instance",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1328,7 +1328,7 @@
   },
   {
     "name": "upstash_redis_echo",
-    "description": "ECHO \u2014 echo a message back from the Redis server",
+    "description": "ECHO — echo a message back from the Redis server",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1350,7 +1350,7 @@
   },
   {
     "name": "upstash_redis_info",
-    "description": "INFO \u2014 get server info and stats from Redis",
+    "description": "INFO — get server info and stats from Redis",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1372,7 +1372,7 @@
   },
   {
     "name": "upstash_redis_time",
-    "description": "TIME \u2014 get the current Redis server time",
+    "description": "TIME — get the current Redis server time",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1388,7 +1388,7 @@
   },
   {
     "name": "upstash_redis_save",
-    "description": "SAVE \u2014 synchronously save the Redis dataset to disk",
+    "description": "SAVE — synchronously save the Redis dataset to disk",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1405,7 +1405,7 @@
   },
   {
     "name": "upstash_redis_bgsave",
-    "description": "BGSAVE \u2014 asynchronously save the Redis dataset to disk",
+    "description": "BGSAVE — asynchronously save the Redis dataset to disk",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1422,7 +1422,7 @@
   },
   {
     "name": "upstash_redis_hset",
-    "description": "HSET \u2014 set one or more fields in a Redis hash",
+    "description": "HSET — set one or more fields in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1452,7 +1452,7 @@
   },
   {
     "name": "upstash_redis_hget",
-    "description": "HGET \u2014 get the value of a field in a Redis hash",
+    "description": "HGET — get the value of a field in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1480,7 +1480,7 @@
   },
   {
     "name": "upstash_redis_hgetall",
-    "description": "HGETALL \u2014 get all fields and values in a Redis hash",
+    "description": "HGETALL — get all fields and values in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1505,7 +1505,7 @@
   },
   {
     "name": "upstash_redis_hdel",
-    "description": "HDEL \u2014 delete one or more fields from a Redis hash",
+    "description": "HDEL — delete one or more fields from a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1536,7 +1536,7 @@
   },
   {
     "name": "upstash_redis_hexists",
-    "description": "HEXISTS \u2014 check if a field exists in a Redis hash",
+    "description": "HEXISTS — check if a field exists in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1564,7 +1564,7 @@
   },
   {
     "name": "upstash_redis_hkeys",
-    "description": "HKEYS \u2014 get all field names in a Redis hash",
+    "description": "HKEYS — get all field names in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1588,7 +1588,7 @@
   },
   {
     "name": "upstash_redis_hvals",
-    "description": "HVALS \u2014 get all values in a Redis hash",
+    "description": "HVALS — get all values in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1612,7 +1612,7 @@
   },
   {
     "name": "upstash_redis_hlen",
-    "description": "HLEN \u2014 get the number of fields in a Redis hash",
+    "description": "HLEN — get the number of fields in a Redis hash",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1636,7 +1636,7 @@
   },
   {
     "name": "upstash_redis_hincrby",
-    "description": "HINCRBY \u2014 increment a hash field's integer value",
+    "description": "HINCRBY — increment a hash field's integer value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1668,7 +1668,7 @@
   },
   {
     "name": "upstash_redis_hincrbyfloat",
-    "description": "HINCRBYFLOAT \u2014 increment a hash field's float value",
+    "description": "HINCRBYFLOAT — increment a hash field's float value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1700,7 +1700,7 @@
   },
   {
     "name": "upstash_redis_hmget",
-    "description": "HMGET \u2014 get values for multiple hash fields at once",
+    "description": "HMGET — get values for multiple hash fields at once",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1731,7 +1731,7 @@
   },
   {
     "name": "upstash_redis_hmset",
-    "description": "HMSET \u2014 set multiple hash fields at once (legacy, prefer HSET)",
+    "description": "HMSET — set multiple hash fields at once (legacy, prefer HSET)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1759,7 +1759,7 @@
   },
   {
     "name": "upstash_redis_hsetnx",
-    "description": "HSETNX \u2014 set a hash field only if it doesn't already exist",
+    "description": "HSETNX — set a hash field only if it doesn't already exist",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1791,7 +1791,7 @@
   },
   {
     "name": "upstash_redis_hstrlen",
-    "description": "HSTRLEN \u2014 get the string length of a hash field value",
+    "description": "HSTRLEN — get the string length of a hash field value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1819,7 +1819,7 @@
   },
   {
     "name": "upstash_redis_hscan",
-    "description": "HSCAN \u2014 iterate fields in a hash with a cursor",
+    "description": "HSCAN — iterate fields in a hash with a cursor",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1853,7 +1853,7 @@
   },
   {
     "name": "upstash_redis_lpush",
-    "description": "LPUSH \u2014 prepend values to a Redis list",
+    "description": "LPUSH — prepend values to a Redis list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1885,7 +1885,7 @@
   },
   {
     "name": "upstash_redis_rpush",
-    "description": "RPUSH \u2014 append values to a Redis list",
+    "description": "RPUSH — append values to a Redis list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1917,7 +1917,7 @@
   },
   {
     "name": "upstash_redis_lpop",
-    "description": "LPOP \u2014 remove and return the first element of a list",
+    "description": "LPOP — remove and return the first element of a list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1945,7 +1945,7 @@
   },
   {
     "name": "upstash_redis_rpop",
-    "description": "RPOP \u2014 remove and return the last element of a list",
+    "description": "RPOP — remove and return the last element of a list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -1972,7 +1972,7 @@
   },
   {
     "name": "upstash_redis_lrange",
-    "description": "LRANGE \u2014 get a range of elements from a Redis list",
+    "description": "LRANGE — get a range of elements from a Redis list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2005,7 +2005,7 @@
   },
   {
     "name": "upstash_redis_llen",
-    "description": "LLEN \u2014 get the length of a Redis list",
+    "description": "LLEN — get the length of a Redis list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2029,7 +2029,7 @@
   },
   {
     "name": "upstash_redis_lindex",
-    "description": "LINDEX \u2014 get an element from a list by index",
+    "description": "LINDEX — get an element from a list by index",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2057,7 +2057,7 @@
   },
   {
     "name": "upstash_redis_lset",
-    "description": "LSET \u2014 set the value of a list element by index",
+    "description": "LSET — set the value of a list element by index",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2089,7 +2089,7 @@
   },
   {
     "name": "upstash_redis_lrem",
-    "description": "LREM \u2014 remove elements from a list matching a value",
+    "description": "LREM — remove elements from a list matching a value",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2121,7 +2121,7 @@
   },
   {
     "name": "upstash_redis_ltrim",
-    "description": "LTRIM \u2014 trim a list to a specified range (remove elements outside range)",
+    "description": "LTRIM — trim a list to a specified range (remove elements outside range)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2153,7 +2153,7 @@
   },
   {
     "name": "upstash_redis_linsert",
-    "description": "LINSERT \u2014 insert a value before or after an element in a list",
+    "description": "LINSERT — insert a value before or after an element in a list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2194,7 +2194,7 @@
   },
   {
     "name": "upstash_redis_rpoplpush",
-    "description": "RPOPLPUSH \u2014 atomically pop from one list and push to another",
+    "description": "RPOPLPUSH — atomically pop from one list and push to another",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2223,7 +2223,7 @@
   },
   {
     "name": "upstash_redis_lpos",
-    "description": "LPOS \u2014 find the position of an element in a list",
+    "description": "LPOS — find the position of an element in a list",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2258,7 +2258,7 @@
   },
   {
     "name": "upstash_redis_lmove",
-    "description": "LMOVE \u2014 atomically move an element between two lists",
+    "description": "LMOVE — atomically move an element between two lists",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2303,7 +2303,7 @@
   },
   {
     "name": "upstash_redis_sadd",
-    "description": "SADD \u2014 add members to a Redis set",
+    "description": "SADD — add members to a Redis set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2335,7 +2335,7 @@
   },
   {
     "name": "upstash_redis_smembers",
-    "description": "SMEMBERS \u2014 get all members of a Redis set",
+    "description": "SMEMBERS — get all members of a Redis set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2360,7 +2360,7 @@
   },
   {
     "name": "upstash_redis_srem",
-    "description": "SREM \u2014 remove members from a Redis set",
+    "description": "SREM — remove members from a Redis set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2391,7 +2391,7 @@
   },
   {
     "name": "upstash_redis_sismember",
-    "description": "SISMEMBER \u2014 check if a value is a member of a Redis set",
+    "description": "SISMEMBER — check if a value is a member of a Redis set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2420,7 +2420,7 @@
   },
   {
     "name": "upstash_redis_scard",
-    "description": "SCARD \u2014 get the number of members in a Redis set",
+    "description": "SCARD — get the number of members in a Redis set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2444,7 +2444,7 @@
   },
   {
     "name": "upstash_redis_spop",
-    "description": "SPOP \u2014 remove and return random member(s) from a set",
+    "description": "SPOP — remove and return random member(s) from a set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2471,7 +2471,7 @@
   },
   {
     "name": "upstash_redis_srandmember",
-    "description": "SRANDMEMBER \u2014 get random member(s) from a set without removing",
+    "description": "SRANDMEMBER — get random member(s) from a set without removing",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2498,7 +2498,7 @@
   },
   {
     "name": "upstash_redis_smove",
-    "description": "SMOVE \u2014 move a member from one set to another atomically",
+    "description": "SMOVE — move a member from one set to another atomically",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2530,7 +2530,7 @@
   },
   {
     "name": "upstash_redis_sunion",
-    "description": "SUNION \u2014 get the union of multiple sets",
+    "description": "SUNION — get the union of multiple sets",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2557,7 +2557,7 @@
   },
   {
     "name": "upstash_redis_sinter",
-    "description": "SINTER \u2014 get the intersection of multiple sets",
+    "description": "SINTER — get the intersection of multiple sets",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2584,7 +2584,7 @@
   },
   {
     "name": "upstash_redis_sdiff",
-    "description": "SDIFF \u2014 get the difference between sets (members in first but not others)",
+    "description": "SDIFF — get the difference between sets (members in first but not others)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2611,7 +2611,7 @@
   },
   {
     "name": "upstash_redis_sunionstore",
-    "description": "SUNIONSTORE \u2014 compute set union and store result in a destination key",
+    "description": "SUNIONSTORE — compute set union and store result in a destination key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2642,7 +2642,7 @@
   },
   {
     "name": "upstash_redis_sinterstore",
-    "description": "SINTERSTORE \u2014 compute set intersection and store result",
+    "description": "SINTERSTORE — compute set intersection and store result",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2673,7 +2673,7 @@
   },
   {
     "name": "upstash_redis_sdiffstore",
-    "description": "SDIFFSTORE \u2014 compute set difference and store result",
+    "description": "SDIFFSTORE — compute set difference and store result",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2704,7 +2704,7 @@
   },
   {
     "name": "upstash_redis_sscan",
-    "description": "SSCAN \u2014 iterate over set members with a cursor",
+    "description": "SSCAN — iterate over set members with a cursor",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2738,7 +2738,7 @@
   },
   {
     "name": "upstash_redis_zadd",
-    "description": "ZADD \u2014 add members with scores to a sorted set",
+    "description": "ZADD — add members with scores to a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2768,7 +2768,7 @@
   },
   {
     "name": "upstash_redis_zrange",
-    "description": "ZRANGE \u2014 get a range of members from a sorted set by rank",
+    "description": "ZRANGE — get a range of members from a sorted set by rank",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2804,7 +2804,7 @@
   },
   {
     "name": "upstash_redis_zrem",
-    "description": "ZREM \u2014 remove members from a sorted set",
+    "description": "ZREM — remove members from a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2835,7 +2835,7 @@
   },
   {
     "name": "upstash_redis_zscore",
-    "description": "ZSCORE \u2014 get the score of a member in a sorted set",
+    "description": "ZSCORE — get the score of a member in a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2864,7 +2864,7 @@
   },
   {
     "name": "upstash_redis_zcard",
-    "description": "ZCARD \u2014 get the number of members in a sorted set",
+    "description": "ZCARD — get the number of members in a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2888,7 +2888,7 @@
   },
   {
     "name": "upstash_redis_zrank",
-    "description": "ZRANK \u2014 get the rank (0-based position) of a member in a sorted set (ascending)",
+    "description": "ZRANK — get the rank (0-based position) of a member in a sorted set (ascending)",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2917,7 +2917,7 @@
   },
   {
     "name": "upstash_redis_zrevrank",
-    "description": "ZREVRANK \u2014 get the rank of a member in descending order",
+    "description": "ZREVRANK — get the rank of a member in descending order",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2946,7 +2946,7 @@
   },
   {
     "name": "upstash_redis_zrangebyscore",
-    "description": "ZRANGEBYSCORE \u2014 get members in a sorted set within a score range",
+    "description": "ZRANGEBYSCORE — get members in a sorted set within a score range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -2985,7 +2985,7 @@
   },
   {
     "name": "upstash_redis_zrevrangebyscore",
-    "description": "ZREVRANGEBYSCORE \u2014 get members in score range, descending order",
+    "description": "ZREVRANGEBYSCORE — get members in score range, descending order",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3017,7 +3017,7 @@
   },
   {
     "name": "upstash_redis_zremrangebyrank",
-    "description": "ZREMRANGEBYRANK \u2014 remove members in a rank range from a sorted set",
+    "description": "ZREMRANGEBYRANK — remove members in a rank range from a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3049,7 +3049,7 @@
   },
   {
     "name": "upstash_redis_zremrangebyscore",
-    "description": "ZREMRANGEBYSCORE \u2014 remove members in a score range from a sorted set",
+    "description": "ZREMRANGEBYSCORE — remove members in a score range from a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3081,7 +3081,7 @@
   },
   {
     "name": "upstash_redis_zpopmin",
-    "description": "ZPOPMIN \u2014 remove and return members with the lowest scores",
+    "description": "ZPOPMIN — remove and return members with the lowest scores",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3110,7 +3110,7 @@
   },
   {
     "name": "upstash_redis_zpopmax",
-    "description": "ZPOPMAX \u2014 remove and return members with the highest scores",
+    "description": "ZPOPMAX — remove and return members with the highest scores",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3139,7 +3139,7 @@
   },
   {
     "name": "upstash_redis_zincrby",
-    "description": "ZINCRBY \u2014 increment the score of a member in a sorted set",
+    "description": "ZINCRBY — increment the score of a member in a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3172,7 +3172,7 @@
   },
   {
     "name": "upstash_redis_zcount",
-    "description": "ZCOUNT \u2014 count members in a sorted set within a score range",
+    "description": "ZCOUNT — count members in a sorted set within a score range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3205,7 +3205,7 @@
   },
   {
     "name": "upstash_redis_zunionstore",
-    "description": "ZUNIONSTORE \u2014 compute sorted set union and store with optional weights",
+    "description": "ZUNIONSTORE — compute sorted set union and store with optional weights",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3243,7 +3243,7 @@
   },
   {
     "name": "upstash_redis_zinterstore",
-    "description": "ZINTERSTORE \u2014 compute sorted set intersection and store",
+    "description": "ZINTERSTORE — compute sorted set intersection and store",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3274,7 +3274,7 @@
   },
   {
     "name": "upstash_redis_zscan",
-    "description": "ZSCAN \u2014 iterate over sorted set members with a cursor",
+    "description": "ZSCAN — iterate over sorted set members with a cursor",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3308,7 +3308,7 @@
   },
   {
     "name": "upstash_redis_zrangebylex",
-    "description": "ZRANGEBYLEX \u2014 get sorted set members between lexicographic range",
+    "description": "ZRANGEBYLEX — get sorted set members between lexicographic range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3340,7 +3340,7 @@
   },
   {
     "name": "upstash_redis_zrevrangebylex",
-    "description": "ZREVRANGEBYLEX \u2014 get members in reverse lexicographic range",
+    "description": "ZREVRANGEBYLEX — get members in reverse lexicographic range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3372,7 +3372,7 @@
   },
   {
     "name": "upstash_redis_zremrangebylex",
-    "description": "ZREMRANGEBYLEX \u2014 remove members in a lexicographic range",
+    "description": "ZREMRANGEBYLEX — remove members in a lexicographic range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3404,7 +3404,7 @@
   },
   {
     "name": "upstash_redis_zlexcount",
-    "description": "ZLEXCOUNT \u2014 count members in a lexicographic range in a sorted set",
+    "description": "ZLEXCOUNT — count members in a lexicographic range in a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3436,7 +3436,7 @@
   },
   {
     "name": "upstash_redis_zmscore",
-    "description": "ZMSCORE \u2014 get scores for multiple members in a sorted set",
+    "description": "ZMSCORE — get scores for multiple members in a sorted set",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3467,7 +3467,7 @@
   },
   {
     "name": "upstash_redis_geoadd",
-    "description": "GEOADD \u2014 add geographic locations (lat/lng) to a geo key",
+    "description": "GEOADD — add geographic locations (lat/lng) to a geo key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3497,7 +3497,7 @@
   },
   {
     "name": "upstash_redis_geodist",
-    "description": "GEODIST \u2014 get distance between two geo locations in a Redis key",
+    "description": "GEODIST — get distance between two geo locations in a Redis key",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3540,7 +3540,7 @@
   },
   {
     "name": "upstash_redis_geopos",
-    "description": "GEOPOS \u2014 get coordinates of geo members",
+    "description": "GEOPOS — get coordinates of geo members",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3571,7 +3571,7 @@
   },
   {
     "name": "upstash_redis_geohash",
-    "description": "GEOHASH \u2014 get Geohash strings for geo members",
+    "description": "GEOHASH — get Geohash strings for geo members",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3602,7 +3602,7 @@
   },
   {
     "name": "upstash_redis_geosearch",
-    "description": "GEOSEARCH \u2014 search for geo members within a radius or bounding box",
+    "description": "GEOSEARCH — search for geo members within a radius or bounding box",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3643,7 +3643,7 @@
   },
   {
     "name": "upstash_redis_pfadd",
-    "description": "PFADD \u2014 add elements to a HyperLogLog for approximate cardinality counting",
+    "description": "PFADD — add elements to a HyperLogLog for approximate cardinality counting",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3675,7 +3675,7 @@
   },
   {
     "name": "upstash_redis_pfcount",
-    "description": "PFCOUNT \u2014 estimate the cardinality (unique count) of a HyperLogLog",
+    "description": "PFCOUNT — estimate the cardinality (unique count) of a HyperLogLog",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3704,7 +3704,7 @@
   },
   {
     "name": "upstash_redis_pfmerge",
-    "description": "PFMERGE \u2014 merge multiple HyperLogLogs into one",
+    "description": "PFMERGE — merge multiple HyperLogLogs into one",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3735,7 +3735,7 @@
   },
   {
     "name": "upstash_redis_setbit",
-    "description": "SETBIT \u2014 set a bit in a bitmap at a given offset",
+    "description": "SETBIT — set a bit in a bitmap at a given offset",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3771,7 +3771,7 @@
   },
   {
     "name": "upstash_redis_getbit",
-    "description": "GETBIT \u2014 get the value of a bit at a given offset",
+    "description": "GETBIT — get the value of a bit at a given offset",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3799,7 +3799,7 @@
   },
   {
     "name": "upstash_redis_bitcount",
-    "description": "BITCOUNT \u2014 count the number of set bits in a string",
+    "description": "BITCOUNT — count the number of set bits in a string",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3829,7 +3829,7 @@
   },
   {
     "name": "upstash_redis_bitpos",
-    "description": "BITPOS \u2014 find the first set or clear bit in a string",
+    "description": "BITPOS — find the first set or clear bit in a string",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3868,7 +3868,7 @@
   },
   {
     "name": "upstash_redis_bitop",
-    "description": "BITOP \u2014 perform bitwise AND, OR, XOR, or NOT on strings",
+    "description": "BITOP — perform bitwise AND, OR, XOR, or NOT on strings",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3912,7 +3912,7 @@
   },
   {
     "name": "upstash_redis_publish",
-    "description": "PUBLISH \u2014 publish a message to a Redis pub/sub channel",
+    "description": "PUBLISH — publish a message to a Redis pub/sub channel",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3941,7 +3941,7 @@
   },
   {
     "name": "upstash_redis_pubsub_channels",
-    "description": "PUBSUB CHANNELS \u2014 list active pub/sub channels",
+    "description": "PUBSUB CHANNELS — list active pub/sub channels",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3962,7 +3962,7 @@
   },
   {
     "name": "upstash_redis_xadd",
-    "description": "XADD \u2014 append an entry to a Redis stream",
+    "description": "XADD — append an entry to a Redis stream",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -3995,7 +3995,7 @@
   },
   {
     "name": "upstash_redis_xread",
-    "description": "XREAD \u2014 read entries from one or more Redis streams",
+    "description": "XREAD — read entries from one or more Redis streams",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4027,7 +4027,7 @@
   },
   {
     "name": "upstash_redis_xrange",
-    "description": "XRANGE \u2014 get stream entries in an ID range",
+    "description": "XRANGE — get stream entries in an ID range",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4062,7 +4062,7 @@
   },
   {
     "name": "upstash_redis_xrevrange",
-    "description": "XREVRANGE \u2014 get stream entries in reverse order",
+    "description": "XREVRANGE — get stream entries in reverse order",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4097,7 +4097,7 @@
   },
   {
     "name": "upstash_redis_xlen",
-    "description": "XLEN \u2014 get the number of entries in a Redis stream",
+    "description": "XLEN — get the number of entries in a Redis stream",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4121,7 +4121,7 @@
   },
   {
     "name": "upstash_redis_xdel",
-    "description": "XDEL \u2014 delete entries from a Redis stream by ID",
+    "description": "XDEL — delete entries from a Redis stream by ID",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4152,7 +4152,7 @@
   },
   {
     "name": "upstash_redis_xtrim",
-    "description": "XTRIM \u2014 trim a Redis stream to a maximum length",
+    "description": "XTRIM — trim a Redis stream to a maximum length",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4185,7 +4185,7 @@
   },
   {
     "name": "upstash_redis_xinfo",
-    "description": "XINFO \u2014 get info about a Redis stream, its groups, and consumers",
+    "description": "XINFO — get info about a Redis stream, its groups, and consumers",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4236,7 +4236,7 @@
   },
   {
     "name": "upstash_vector_info",
-    "description": "Get Upstash Vector index info \u2014 dimensions, similarity metric, vector count, and pending vector count.",
+    "description": "Get Upstash Vector index info — dimensions, similarity metric, vector count, and pending vector count.",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4278,7 +4278,7 @@
   },
   {
     "name": "upstash_vector_upsert_data",
-    "description": "Upsert text data into Upstash Vector \u2014 the index automatically generates embeddings using its configured embedding model.",
+    "description": "Upsert text data into Upstash Vector — the index automatically generates embeddings using its configured embedding model.",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4342,7 +4342,7 @@
   },
   {
     "name": "upstash_vector_query_data",
-    "description": "Search Upstash Vector by text query \u2014 the index auto-embeds the query using its configured model. No embedding call needed.",
+    "description": "Search Upstash Vector by text query — the index auto-embeds the query using its configured model. No embedding call needed.",
     "namespace": "upstash",
     "tags": [
       "upstash",
@@ -4583,7 +4583,7 @@
           "type": "string"
         },
         "value": {
-          "description": "Message value (string or object \u2014 objects are JSON-serialized)"
+          "description": "Message value (string or object — objects are JSON-serialized)"
         },
         "key": {
           "type": "string",
@@ -4726,6 +4726,751 @@
       },
       "required": [
         "consumer_group"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_publish",
+    "description": "Publish a message to a URL via Upstash QStash (serverless job queue with retries and delay).",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "publish",
+      "message",
+      "queue",
+      "webhook"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Destination URL to POST to"
+        },
+        "body": {
+          "type": "object",
+          "description": "JSON payload"
+        },
+        "delay": {
+          "type": "string",
+          "description": "Delay e.g. 30s, 1m, 1h"
+        },
+        "retries": {
+          "type": "number",
+          "description": "Max retries (default 3)"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "failure_callback": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_publish_to_topic",
+    "description": "Publish a message to a QStash topic (fan-out to multiple endpoints).",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topic",
+      "publish",
+      "fan-out"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic_name": {
+          "type": "string"
+        },
+        "body": {
+          "type": "object"
+        },
+        "delay": {
+          "type": "string"
+        },
+        "retries": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "topic_name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_list_messages",
+    "description": "List pending QStash messages.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "messages",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_qstash_get_message",
+    "description": "Get a specific QStash message by ID.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "message",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_cancel_message",
+    "description": "Cancel a pending QStash message before it is delivered.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "message",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_list_schedules",
+    "description": "List all QStash cron schedules.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "schedules",
+      "cron",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_qstash_get_schedule",
+    "description": "Get a specific QStash schedule by ID.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "schedule",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_create_schedule",
+    "description": "Create a recurring QStash schedule using a cron expression.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "schedule",
+      "cron",
+      "create",
+      "recurring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "cron": {
+          "type": "string",
+          "description": "Cron expression e.g. 0 9 * * 1"
+        },
+        "body": {
+          "type": "object"
+        },
+        "retries": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "destination",
+        "cron"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_delete_schedule",
+    "description": "Delete a QStash cron schedule.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "schedule",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schedule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schedule_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_list_dlq",
+    "description": "List messages in the QStash Dead Letter Queue (failed deliveries).",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "dlq",
+      "dead-letter",
+      "failed"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_qstash_delete_dlq_message",
+    "description": "Delete a message from the QStash Dead Letter Queue.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "dlq",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dlq_message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dlq_message_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_list_topics",
+    "description": "List QStash topics (fan-out endpoint groups).",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topics",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_qstash_create_topic",
+    "description": "Create a QStash topic with multiple endpoint URLs for fan-out delivery.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topic",
+      "create",
+      "fan-out"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic_name": {
+          "type": "string"
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "[{url: 'https://...'}]"
+        }
+      },
+      "required": [
+        "topic_name",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_delete_topic",
+    "description": "Delete a QStash topic.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topic",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic_name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_add_endpoint",
+    "description": "Add an endpoint URL to an existing QStash topic.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topic",
+      "endpoint",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic_name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic_name",
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_remove_endpoint",
+    "description": "Remove an endpoint URL from a QStash topic.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "topic",
+      "endpoint",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "topic_name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic_name",
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "upstash_qstash_get_api_keys",
+    "description": "List API keys for Upstash QStash.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "qstash",
+      "api-keys",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_kafka_list_clusters",
+    "description": "List Kafka clusters in the Upstash account.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "clusters",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_kafka_get_cluster",
+    "description": "Get details of a specific Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "cluster",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_create_cluster",
+    "description": "Create a new Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "cluster",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string",
+          "description": "e.g. us-east-1, eu-west-1"
+        },
+        "multizone": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "region"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_delete_cluster",
+    "description": "Delete an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "cluster",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_list_topics",
+    "description": "List topics in an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "topics",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_create_topic",
+    "description": "Create a Kafka topic in an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "topic",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "partitions": {
+          "type": "number"
+        },
+        "retention_size": {
+          "type": "number"
+        },
+        "retention_time": {
+          "type": "number"
+        },
+        "cleanup_policy": {
+          "type": "string",
+          "description": "delete or compact"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_delete_topic",
+    "description": "Delete a Kafka topic from an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "topic",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "topic_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_get_topic",
+    "description": "Get details of a Kafka topic in an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "topic",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "topic_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "topic_name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_list_consumer_groups",
+    "description": "List consumer groups in an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "consumer-groups",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_list_credentials",
+    "description": "List credentials for an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "credentials",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster_id"
+      ]
+    }
+  },
+  {
+    "name": "upstash_kafka_create_credentials",
+    "description": "Create access credentials for an Upstash Kafka cluster.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "kafka",
+      "credentials",
+      "create",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "cluster_id": {
+          "type": "string"
+        },
+        "credential_name": {
+          "type": "string"
+        },
+        "topic_name": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "string",
+          "description": "All, Produce, or Consume"
+        }
+      },
+      "required": [
+        "cluster_id",
+        "credential_name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_list_api_keys",
+    "description": "List all API keys in the Upstash account.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "api-keys",
+      "list",
+      "management"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "upstash_create_api_key",
+    "description": "Create a new API key for the Upstash account.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "api-key",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "upstash_delete_api_key",
+    "description": "Delete an Upstash account API key.",
+    "namespace": "upstash",
+    "tags": [
+      "upstash",
+      "api-key",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "api_key_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "api_key_id"
       ]
     }
   }

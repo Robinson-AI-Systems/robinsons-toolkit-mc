@@ -1376,6 +1376,150 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Neon tool: ${tool}`);
+
+  // ── IP ALLOWLIST MANAGEMENT ────────────────────────────────────────────────
+  if (tool === 'neon_update_ip_allowlist') {
+    const { project_id, allowed_ips, primary_branch_only = false } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await n('PATCH', `/projects/${project_id}`, {
+      project: { settings: { allowed_ips: { ips: allowed_ips || [], protected_branches_only: primary_branch_only } } }
+    });
+  }
+  if (tool === 'neon_add_ip_to_allowlist') {
+    const { project_id, ip } = args;
+    if (!project_id || !ip) throw new Error('project_id and ip are required');
+    const proj = await n('GET', `/projects/${project_id}`);
+    const existing = proj.project?.settings?.allowed_ips?.ips || [];
+    if (existing.includes(ip)) return { success: true, message: `${ip} already in allowlist`, ips: existing };
+    const updated = [...existing, ip];
+    return await n('PATCH', `/projects/${project_id}`, {
+      project: { settings: { allowed_ips: { ips: updated } } }
+    });
+  }
+  if (tool === 'neon_remove_ip_from_allowlist') {
+    const { project_id, ip } = args;
+    if (!project_id || !ip) throw new Error('project_id and ip are required');
+    const proj = await n('GET', `/projects/${project_id}`);
+    const existing = proj.project?.settings?.allowed_ips?.ips || [];
+    const updated = existing.filter(i => i !== ip);
+    return await n('PATCH', `/projects/${project_id}`, {
+      project: { settings: { allowed_ips: { ips: updated } } }
+    });
+  }
+
+  // ── LOGICAL REPLICATION ────────────────────────────────────────────────────
+  if (tool === 'neon_enable_logical_replication') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await n('PATCH', `/projects/${project_id}`, {
+      project: { settings: { enable_logical_replication: true } }
+    });
+  }
+  if (tool === 'neon_list_replication_slots') {
+    const { connection_string, project_id, branch_id } = args;
+    if (!connection_string && !project_id) throw new Error('connection_string or project_id is required');
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, 'SELECT slot_name, plugin, slot_type, active, restart_lsn, confirmed_flush_lsn FROM pg_replication_slots', 'neondb', branch_id);
+  }
+  if (tool === 'neon_create_replication_slot') {
+    const { slot_name, plugin = 'pgoutput', project_id, branch_id } = args;
+    if (!slot_name) throw new Error('slot_name is required');
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, `SELECT pg_create_logical_replication_slot('${slot_name}', '${plugin}')`, 'neondb', branch_id);
+  }
+  if (tool === 'neon_drop_replication_slot') {
+    const { slot_name, project_id, branch_id } = args;
+    if (!slot_name) throw new Error('slot_name is required');
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, `SELECT pg_drop_replication_slot('${slot_name}')`, 'neondb', branch_id);
+  }
+  if (tool === 'neon_list_publications') {
+    const { project_id, branch_id } = args;
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, 'SELECT pubname, puballtables, pubinsert, pubupdate, pubdelete FROM pg_publication', 'neondb', branch_id);
+  }
+  if (tool === 'neon_create_publication') {
+    const { publication_name, for_all_tables = true, tables, project_id, branch_id } = args;
+    if (!publication_name) throw new Error('publication_name is required');
+    let sql;
+    if (for_all_tables) {
+      sql = `CREATE PUBLICATION ${publication_name} FOR ALL TABLES`;
+    } else if (tables?.length) {
+      sql = `CREATE PUBLICATION ${publication_name} FOR TABLE ${tables.join(', ')}`;
+    } else {
+      throw new Error('Either for_all_tables or tables array is required');
+    }
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, sql, 'neondb', branch_id);
+  }
+  if (tool === 'neon_drop_publication') {
+    const { publication_name, project_id, branch_id } = args;
+    if (!publication_name) throw new Error('publication_name is required');
+    return await runSQL(project_id || process.env.NEON_PROJECT_ID, `DROP PUBLICATION IF EXISTS ${publication_name}`, 'neondb', branch_id);
+  }
+
+  // ── ORGANIZATION BILLING ───────────────────────────────────────────────────
+  if (tool === 'neon_get_org_billing') {
+    const { org_id } = args;
+    if (!org_id) throw new Error('org_id is required');
+    return await n('GET', `/organizations/${org_id}/billing`);
+  }
+  if (tool === 'neon_list_org_projects') {
+    const { org_id } = args;
+    if (!org_id) throw new Error('org_id is required');
+    return await n('GET', `/organizations/${org_id}/projects`);
+  }
+  if (tool === 'neon_list_org_members') {
+    const { org_id } = args;
+    if (!org_id) throw new Error('org_id is required');
+    return await n('GET', `/organizations/${org_id}/members`);
+  }
+  if (tool === 'neon_get_org_consumption') {
+    const { org_id } = args;
+    if (!org_id) throw new Error('org_id is required');
+    return await n('GET', `/organizations/${org_id}/consumption`);
+  }
+
+  // ── NEON AUTH (JWT integration) ────────────────────────────────────────────
+  if (tool === 'neon_get_auth_config') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await n('GET', `/projects/${project_id}/auth`);
+  }
+  if (tool === 'neon_update_auth_config') {
+    const { project_id, jwks_url, role_names } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const body = {};
+    if (jwks_url) body.jwks_url = jwks_url;
+    if (role_names) body.role_names = role_names;
+    return await n('PATCH', `/projects/${project_id}/auth`, body);
+  }
+
+  // ── SUPER TOOL: Full project security audit ───────────────────────────────
+  if (tool === 'neon_project_security_audit') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const [proj, roles, policies] = await Promise.all([
+      neon('GET', `/projects/${project_id}`),
+      neon('GET', `/projects/${project_id}/branches`).then(async (b) => {
+        const primaryBranch = (b.branches || []).find(br => br.primary) || b.branches?.[0];
+        if (!primaryBranch) return [];
+        return neon('GET', `/projects/${project_id}/branches/${primaryBranch.id}/roles`).then(r => r.roles || []).catch(() => []);
+      }),
+      runSQL(project_id || process.env.NEON_PROJECT_ID, 'SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname = \'public\' ORDER BY tablename', 'neondb').catch(() => [])
+    ]);
+    const project = proj.project;
+    const allowedIps = project?.settings?.allowed_ips?.ips || [];
+    const tables = Array.isArray(policies) ? policies : [];
+    return {
+      project_id,
+      name: project?.name,
+      region: project?.region_id,
+      ip_allowlist: { enabled: allowedIps.length > 0, ips: allowedIps },
+      logical_replication: project?.settings?.enable_logical_replication || false,
+      roles_count: Array.isArray(roles) ? roles.length : 0,
+      tables_with_rls: tables.filter(t => t.rowsecurity).length,
+      tables_without_rls: tables.filter(t => !t.rowsecurity).map(t => t.tablename),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Neon tool: ${tool}`);
 }
 
 export default { execute };

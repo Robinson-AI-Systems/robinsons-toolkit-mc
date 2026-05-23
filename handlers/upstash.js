@@ -44,6 +44,24 @@ async function mgmt(method, path, body) {
   return data;
 }
 
+function qstashToken() {
+  const t = process.env.UPSTASH_QSTASH_TOKEN;
+  if (!t) throw new Error("UPSTASH_QSTASH_TOKEN not set in .env");
+  return t;
+}
+
+async function qstash(method, path, body) {
+  const res = await fetch(`https://qstash.upstash.io${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${qstashToken()}`, "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (res.status === 204) return { success: true };
+  const data = await res.json();
+  if (!res.ok) throw new Error(`QStash ${res.status}: ${JSON.stringify(data)}`);
+  return data;
+}
+
 async function execute(tool, args) {
   const { key, keys, value, ttl, pattern, field, member, score, database_id } = args;
 
@@ -397,6 +415,170 @@ async function execute(tool, args) {
     let path = `/offsets/${encodeURIComponent(consumer_group)}`;
     if (topic) path += `?topic=${encodeURIComponent(topic)}`;
     return await kafka('GET', path);
+  }
+
+  throw new Error(`Unknown Upstash tool: ${tool}`);
+
+  // ── QSTASH (Serverless Message Queue) ─────────────────────────────────────
+  if (tool === 'upstash_qstash_publish') {
+    const { url, body, headers: msgHeaders, delay, not_before, retries, callback, failure_callback } = args;
+    if (!url) throw new Error('url (destination) is required');
+    const qHeaders = { 'Authorization': `Bearer ${qstashToken()}`, 'Content-Type': 'application/json' };
+    if (delay) qHeaders['Upstash-Delay'] = String(delay);
+    if (not_before) qHeaders['Upstash-Not-Before'] = String(not_before);
+    if (retries !== undefined) qHeaders['Upstash-Retries'] = String(retries);
+    if (callback) qHeaders['Upstash-Callback'] = callback;
+    if (failure_callback) qHeaders['Upstash-Failure-Callback'] = failure_callback;
+    if (msgHeaders) Object.entries(msgHeaders).forEach(([k, v]) => qHeaders[`Upstash-Forward-${k}`] = v);
+    const res = await fetch(`https://qstash.upstash.io/v2/publish/${encodeURIComponent(url)}`, {
+      method: 'POST', headers: qHeaders,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`QStash ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+  if (tool === 'upstash_qstash_publish_to_topic') {
+    const { topic_name, body, delay, retries } = args;
+    if (!topic_name) throw new Error('topic_name is required');
+    const qHeaders = { 'Authorization': `Bearer ${qstashToken()}`, 'Content-Type': 'application/json' };
+    if (delay) qHeaders['Upstash-Delay'] = String(delay);
+    if (retries !== undefined) qHeaders['Upstash-Retries'] = String(retries);
+    const res = await fetch(`https://qstash.upstash.io/v2/publish/${encodeURIComponent(`upstash-qstash-topic:${topic_name}`)}`, {
+      method: 'POST', headers: qHeaders,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`QStash topic ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+  if (tool === 'upstash_qstash_list_messages') {
+    return await qstash('GET', '/v2/messages');
+  }
+  if (tool === 'upstash_qstash_get_message') {
+    return await qstash('GET', `/v2/messages/${args.message_id}`);
+  }
+  if (tool === 'upstash_qstash_cancel_message') {
+    return await qstash('DELETE', `/v2/messages/${args.message_id}`);
+  }
+  if (tool === 'upstash_qstash_list_schedules') {
+    return await qstash('GET', '/v2/schedules');
+  }
+  if (tool === 'upstash_qstash_get_schedule') {
+    return await qstash('GET', `/v2/schedules/${args.schedule_id}`);
+  }
+  if (tool === 'upstash_qstash_create_schedule') {
+    const { destination, cron, body, retries } = args;
+    if (!destination || !cron) throw new Error('destination and cron are required');
+    const qHeaders = { 'Authorization': `Bearer ${qstashToken()}`, 'Content-Type': 'application/json', 'Upstash-Cron': cron };
+    if (retries !== undefined) qHeaders['Upstash-Retries'] = String(retries);
+    const res = await fetch(`https://qstash.upstash.io/v2/schedules/${encodeURIComponent(destination)}`, {
+      method: 'POST', headers: qHeaders,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`QStash schedule ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+  if (tool === 'upstash_qstash_delete_schedule') {
+    return await qstash('DELETE', `/v2/schedules/${args.schedule_id}`);
+  }
+  if (tool === 'upstash_qstash_list_dlq') {
+    return await qstash('GET', '/v2/dlq');
+  }
+  if (tool === 'upstash_qstash_delete_dlq_message') {
+    return await qstash('DELETE', `/v2/dlq/${args.dlq_message_id}`);
+  }
+  if (tool === 'upstash_qstash_list_topics') {
+    return await qstash('GET', '/v2/topics');
+  }
+  if (tool === 'upstash_qstash_create_topic') {
+    const { topic_name, endpoints } = args;
+    if (!topic_name || !endpoints?.length) throw new Error('topic_name and endpoints array are required');
+    return await qstash('POST', `/v2/topics/${topic_name}/endpoints`, { endpoints });
+  }
+  if (tool === 'upstash_qstash_delete_topic') {
+    return await qstash('DELETE', `/v2/topics/${args.topic_name}`);
+  }
+  if (tool === 'upstash_qstash_add_endpoint') {
+    const { topic_name, url } = args;
+    if (!topic_name || !url) throw new Error('topic_name and url are required');
+    return await qstash('POST', `/v2/topics/${topic_name}/endpoints`, { endpoints: [{ url }] });
+  }
+  if (tool === 'upstash_qstash_remove_endpoint') {
+    const { topic_name, url } = args;
+    if (!topic_name || !url) throw new Error('topic_name and url are required');
+    return await qstash('DELETE', `/v2/topics/${topic_name}/endpoints`, { endpoints: [{ url }] });
+  }
+  if (tool === 'upstash_qstash_get_api_keys') {
+    return await qstash('GET', '/v2/keys');
+  }
+
+  // ── KAFKA TOPIC MANAGEMENT ────────────────────────────────────────────────
+  if (tool === 'upstash_kafka_list_topics') {
+    const { cluster_id } = args;
+    if (!cluster_id) throw new Error('cluster_id is required');
+    return await mgmt('GET', `/kafka/clusters/${cluster_id}/topics`);
+  }
+  if (tool === 'upstash_kafka_create_topic') {
+    const { cluster_id, name, partitions = 1, retention_size = -1, retention_time = 604800000, cleanup_policy = 'delete' } = args;
+    if (!cluster_id || !name) throw new Error('cluster_id and name are required');
+    return await mgmt('POST', `/kafka/clusters/${cluster_id}/topic`, { name, partitions, retention_size, retention_time, cleanup_policy });
+  }
+  if (tool === 'upstash_kafka_delete_topic') {
+    const { cluster_id, topic_name } = args;
+    if (!cluster_id || !topic_name) throw new Error('cluster_id and topic_name are required');
+    return await mgmt('DELETE', `/kafka/clusters/${cluster_id}/topic/${topic_name}`);
+  }
+  if (tool === 'upstash_kafka_get_topic') {
+    const { cluster_id, topic_name } = args;
+    if (!cluster_id || !topic_name) throw new Error('cluster_id and topic_name are required');
+    return await mgmt('GET', `/kafka/clusters/${cluster_id}/topic/${topic_name}`);
+  }
+  if (tool === 'upstash_kafka_list_consumer_groups') {
+    const { cluster_id } = args;
+    if (!cluster_id) throw new Error('cluster_id is required');
+    return await mgmt('GET', `/kafka/clusters/${cluster_id}/consumer-groups`);
+  }
+  if (tool === 'upstash_kafka_list_credentials') {
+    const { cluster_id } = args;
+    if (!cluster_id) throw new Error('cluster_id is required');
+    return await mgmt('GET', `/kafka/clusters/${cluster_id}/credentials`);
+  }
+  if (tool === 'upstash_kafka_create_credentials') {
+    const { cluster_id, credential_name, topic_name, permissions } = args;
+    if (!cluster_id || !credential_name) throw new Error('cluster_id and credential_name are required');
+    const body = { credential_name };
+    if (topic_name) body.topic = topic_name;
+    if (permissions) body.permissions = permissions;
+    return await mgmt('POST', `/kafka/clusters/${cluster_id}/credentials`, body);
+  }
+  if (tool === 'upstash_kafka_list_clusters') {
+    return await mgmt('GET', '/kafka/clusters');
+  }
+  if (tool === 'upstash_kafka_get_cluster') {
+    return await mgmt('GET', `/kafka/clusters/${args.cluster_id}`);
+  }
+  if (tool === 'upstash_kafka_create_cluster') {
+    const { name, region, multizone = false } = args;
+    if (!name || !region) throw new Error('name and region are required');
+    return await mgmt('POST', '/kafka/clusters', { name, region, multizone });
+  }
+  if (tool === 'upstash_kafka_delete_cluster') {
+    return await mgmt('DELETE', `/kafka/clusters/${args.cluster_id}`);
+  }
+
+  // ── REDIS API KEYS ────────────────────────────────────────────────────────
+  if (tool === 'upstash_list_api_keys') {
+    return await mgmt('GET', '/apikeys');
+  }
+  if (tool === 'upstash_create_api_key') {
+    const { name } = args;
+    if (!name) throw new Error('name is required');
+    return await mgmt('POST', '/apikeys', { name });
+  }
+  if (tool === 'upstash_delete_api_key') {
+    return await mgmt('DELETE', `/apikeys/${args.api_key_id}`);
   }
 
   throw new Error(`Unknown Upstash tool: ${tool}`);

@@ -255,7 +255,7 @@
   },
   {
     "name": "qdrant_create_alias",
-    "description": "Create an alias for a Qdrant collection \u2014 enables hot-swap without changing client code.",
+    "description": "Create an alias for a Qdrant collection — enables hot-swap without changing client code.",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -303,7 +303,7 @@
   },
   {
     "name": "qdrant_rename_alias",
-    "description": "Rename a Qdrant alias (atomic swap \u2014 no downtime).",
+    "description": "Rename a Qdrant alias (atomic swap — no downtime).",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1010,7 +1010,7 @@
   },
   {
     "name": "qdrant_discover",
-    "description": "Discovery search \u2014 find points in an area of the vector space using context pairs (positive+negative examples).",
+    "description": "Discovery search — find points in an area of the vector space using context pairs (positive+negative examples).",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1216,7 +1216,7 @@
   },
   {
     "name": "qdrant_upsert_documents",
-    "description": "SUPER TOOL: Upsert a batch of documents into Qdrant \u2014 automatically maps document fields to point id, vector, and payload.",
+    "description": "SUPER TOOL: Upsert a batch of documents into Qdrant — automatically maps document fields to point id, vector, and payload.",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1285,7 +1285,7 @@
   },
   {
     "name": "qdrant_collection_status",
-    "description": "SUPER TOOL: Get a comprehensive status snapshot for a collection \u2014 info, exact point count, and all aliases in one call.",
+    "description": "SUPER TOOL: Get a comprehensive status snapshot for a collection — info, exact point count, and all aliases in one call.",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1310,7 +1310,7 @@
   },
   {
     "name": "qdrant_upsert_sparse_points",
-    "description": "Upsert points with sparse vectors into a Qdrant collection. Sparse vectors use index/value pairs (like BM25 term frequencies) instead of dense float arrays \u2014 ideal for keyword search or hybrid dense+sparse retrieval pipelines.",
+    "description": "Upsert points with sparse vectors into a Qdrant collection. Sparse vectors use index/value pairs (like BM25 term frequencies) instead of dense float arrays — ideal for keyword search or hybrid dense+sparse retrieval pipelines.",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1386,7 +1386,7 @@
   },
   {
     "name": "qdrant_create_collection_multi_vector",
-    "description": "Create a Qdrant collection with multiple named vector spaces \u2014 for example a 'dense' space (1536-dim OpenAI embeddings) and a 'sparse' space for BM25 keyword vectors. Required setup step before hybrid search with qdrant_hybrid_search.",
+    "description": "Create a Qdrant collection with multiple named vector spaces — for example a 'dense' space (1536-dim OpenAI embeddings) and a 'sparse' space for BM25 keyword vectors. Required setup step before hybrid search with qdrant_hybrid_search.",
     "namespace": "qdrant",
     "tags": [
       "qdrant",
@@ -1403,7 +1403,7 @@
         },
         "vectors_config": {
           "type": "object",
-          "description": "Map of vector_name \u2192 {size, distance}. E.g. {dense: {size: 1536, distance: 'Cosine'}, sparse: {size: 0, distance: 'Dot'}}"
+          "description": "Map of vector_name → {size, distance}. E.g. {dense: {size: 1536, distance: 'Cosine'}, sparse: {size: 0, distance: 'Dot'}}"
         },
         "on_disk_payload": {
           "type": "boolean",
@@ -1490,6 +1490,526 @@
       "required": [
         "collection_name"
       ]
+    }
+  },
+  {
+    "name": "qdrant_list_collection_shards",
+    "description": "List shards in a Qdrant collection with their status and peer assignments.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collection",
+      "shards",
+      "list",
+      "cluster"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_create_shard_key",
+    "description": "Create a custom shard key for a Qdrant collection (for user-based sharding).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shard",
+      "key",
+      "create",
+      "sharding"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "shard_key": {
+          "type": "string"
+        },
+        "shards_number": {
+          "type": "number"
+        },
+        "replication_factor": {
+          "type": "number"
+        },
+        "placement": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "collection_name",
+        "shard_key"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_delete_shard_key",
+    "description": "Delete a custom shard key from a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shard",
+      "key",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "shard_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "shard_key"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_quantization",
+    "description": "Enable or update vector quantization for a Qdrant collection (scalar int8, binary, or product quantization).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "quantization",
+      "scalar",
+      "binary",
+      "product",
+      "memory"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "quantization_type": {
+          "type": "string",
+          "description": "scalar, binary, or product"
+        },
+        "quantile": {
+          "type": "number",
+          "description": "For scalar: 0.95-1.0"
+        },
+        "always_ram": {
+          "type": "boolean"
+        },
+        "compression": {
+          "type": "string",
+          "description": "For product: x4, x8, x16, x32, x64"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_disable_quantization",
+    "description": "Disable quantization on a Qdrant collection (restores full precision vectors).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "quantization",
+      "disable",
+      "full-precision"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_optimizer_config",
+    "description": "Update the optimizer configuration for a Qdrant collection (indexing and segment settings).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "optimizer",
+      "config",
+      "update",
+      "performance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "indexing_threshold": {
+          "type": "number"
+        },
+        "memmap_threshold": {
+          "type": "number"
+        },
+        "max_segment_size": {
+          "type": "number"
+        },
+        "default_segment_number": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_hnsw_config",
+    "description": "Update HNSW index configuration for a Qdrant collection (m, ef_construct, on_disk).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "hnsw",
+      "config",
+      "update",
+      "index"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "m": {
+          "type": "number",
+          "description": "HNSW M parameter — connections per node"
+        },
+        "ef_construct": {
+          "type": "number",
+          "description": "HNSW ef_construct — build-time search width"
+        },
+        "full_scan_threshold": {
+          "type": "number"
+        },
+        "on_disk": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_update_wal_config",
+    "description": "Update WAL (Write-Ahead Log) configuration for a Qdrant collection.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "wal",
+      "config",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "wal_capacity_mb": {
+          "type": "number"
+        },
+        "wal_segments_ahead": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_download_snapshot",
+    "description": "Get the download URL for a collection snapshot.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "download",
+      "backup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "snapshot_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "snapshot_name"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_upload_snapshot",
+    "description": "Upload and restore a collection snapshot from a URL.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "upload",
+      "restore"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "snapshot_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "snapshot_url"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_recover_from_snapshot",
+    "description": "Recover a Qdrant collection from a snapshot URL.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "snapshot",
+      "recover",
+      "restore",
+      "disaster-recovery"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "snapshot_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "collection_name",
+        "snapshot_url"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_move_shard",
+    "description": "Move a shard from one Qdrant cluster peer to another.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shard",
+      "move",
+      "cluster",
+      "rebalance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "shard_id": {
+          "type": "number"
+        },
+        "from_peer_id": {
+          "type": "number"
+        },
+        "to_peer_id": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string",
+          "description": "stream_records or snapshot"
+        }
+      },
+      "required": [
+        "collection_name",
+        "shard_id",
+        "from_peer_id",
+        "to_peer_id"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_replicate_shard",
+    "description": "Replicate a shard to an additional Qdrant cluster peer.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shard",
+      "replicate",
+      "cluster",
+      "redundancy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "shard_id": {
+          "type": "number"
+        },
+        "from_peer_id": {
+          "type": "number"
+        },
+        "to_peer_id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name",
+        "shard_id",
+        "from_peer_id",
+        "to_peer_id"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_abort_transfer",
+    "description": "Abort an in-progress shard transfer in a Qdrant cluster.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "shard",
+      "transfer",
+      "abort",
+      "cluster"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "collection_name": {
+          "type": "string"
+        },
+        "shard_id": {
+          "type": "number"
+        },
+        "from_peer_id": {
+          "type": "number"
+        },
+        "to_peer_id": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "collection_name",
+        "shard_id",
+        "from_peer_id",
+        "to_peer_id"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_remove_peer",
+    "description": "Remove a peer node from the Qdrant cluster.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "cluster",
+      "peer",
+      "remove",
+      "node"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "peer_id": {
+          "type": "number"
+        },
+        "force": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "peer_id"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_set_lock",
+    "description": "Set a write lock on the Qdrant instance to prevent write operations (maintenance mode).",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "lock",
+      "write",
+      "maintenance",
+      "protection"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "write": {
+          "type": "boolean",
+          "description": "true to lock writes, false to unlock"
+        },
+        "error_message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "write"
+      ]
+    }
+  },
+  {
+    "name": "qdrant_get_locks",
+    "description": "Get the current lock status of the Qdrant instance.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "locks",
+      "status",
+      "maintenance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "qdrant_collection_health_summary",
+    "description": "SUPER TOOL: Health summary of all Qdrant collections — point counts, segment counts, vector counts, disk/RAM usage, and cluster status.",
+    "namespace": "qdrant",
+    "tags": [
+      "qdrant",
+      "collections",
+      "health",
+      "summary",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
     }
   }
 ]

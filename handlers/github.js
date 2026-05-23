@@ -33,6 +33,17 @@ async function gh(method, path, body) {
   return data;
 }
 
+async function ghGraphQL(query, variables = {}) {
+  const res = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({ query, variables })
+  });
+  const data = await res.json();
+  if (data.errors?.length) throw new Error(`GitHub GraphQL: ${data.errors.map(e => e.message).join('; ')}`);
+  return data.data;
+}
+
 // Minimal mappers to reduce response size
 const minRepo = r => ({ id:r.id, name:r.name, full_name:r.full_name, private:r.private,
   description:r.description, html_url:r.html_url, default_branch:r.default_branch,
@@ -721,6 +732,232 @@ async function execute(tool, args) {
       catch (e) { results.push({ branch: name, deleted: false, error: e.message }); }
     }
     return { dry_run: false, deleted_count: results.filter(r => r.deleted).length, results };
+  }
+
+  throw new Error(`Unknown GitHub tool: ${tool}`);
+
+  // ── GITHUB APPS ───────────────────────────────────────────────────────────
+  if (tool === 'github_get_app') {
+    return await gh('GET', `/apps/${args.app_slug}`);
+  }
+  if (tool === 'github_list_installations') {
+    return await gh('GET', `/app/installations?per_page=${args.limit || 30}`);
+  }
+  if (tool === 'github_get_installation') {
+    return await gh('GET', `/app/installations/${args.installation_id}`);
+  }
+  if (tool === 'github_list_app_repos') {
+    return await gh('GET', `/installation/repositories?per_page=${args.limit || 30}`);
+  }
+
+  // ── ORG RULESETS ──────────────────────────────────────────────────────────
+  if (tool === 'github_list_org_rulesets') {
+    const { org } = args;
+    if (!org) throw new Error('org is required');
+    return await gh('GET', `/orgs/${org}/rulesets?per_page=${args.limit || 30}`);
+  }
+  if (tool === 'github_get_org_ruleset') {
+    const { org, ruleset_id } = args;
+    if (!org || !ruleset_id) throw new Error('org and ruleset_id are required');
+    return await gh('GET', `/orgs/${org}/rulesets/${ruleset_id}`);
+  }
+  if (tool === 'github_create_org_ruleset') {
+    const { org, name, target = 'branch', enforcement = 'active', conditions, rules, bypass_actors } = args;
+    if (!org || !name) throw new Error('org and name are required');
+    const body = { name, target, enforcement };
+    if (conditions) body.conditions = conditions;
+    if (rules) body.rules = rules;
+    if (bypass_actors) body.bypass_actors = bypass_actors;
+    return await gh('POST', `/orgs/${org}/rulesets`, body);
+  }
+  if (tool === 'github_update_org_ruleset') {
+    const { org, ruleset_id, ...updates } = args;
+    if (!org || !ruleset_id) throw new Error('org and ruleset_id are required');
+    return await gh('PUT', `/orgs/${org}/rulesets/${ruleset_id}`, updates);
+  }
+  if (tool === 'github_delete_org_ruleset') {
+    return await gh('DELETE', `/orgs/${args.org}/rulesets/${args.ruleset_id}`);
+  }
+  if (tool === 'github_create_repo_ruleset') {
+    const { owner, repo, name, target = 'branch', enforcement = 'active', conditions, rules, bypass_actors } = args;
+    if (!owner || !repo || !name) throw new Error('owner, repo, and name are required');
+    const body = { name, target, enforcement };
+    if (conditions) body.conditions = conditions;
+    if (rules) body.rules = rules;
+    if (bypass_actors) body.bypass_actors = bypass_actors;
+    return await gh('POST', `/repos/${owner}/${repo}/rulesets`, body);
+  }
+  if (tool === 'github_update_repo_ruleset') {
+    const { owner, repo, ruleset_id, ...updates } = args;
+    if (!owner || !repo || !ruleset_id) throw new Error('owner, repo, and ruleset_id are required');
+    return await gh('PUT', `/repos/${owner}/${repo}/rulesets/${ruleset_id}`, updates);
+  }
+  if (tool === 'github_delete_repo_ruleset') {
+    return await gh('DELETE', `/repos/${args.owner}/${args.repo}/rulesets/${args.ruleset_id}`);
+  }
+
+  // ── ORG AUDIT LOG ─────────────────────────────────────────────────────────
+  if (tool === 'github_get_org_audit_log') {
+    const { org, phrase, include, after, before, order = 'desc', per_page = 30 } = args;
+    if (!org) throw new Error('org is required');
+    let path = `/orgs/${org}/audit-log?per_page=${per_page}&order=${order}`;
+    if (phrase) path += `&phrase=${encodeURIComponent(phrase)}`;
+    if (include) path += `&include=${include}`;
+    if (after) path += `&after=${after}`;
+    if (before) path += `&before=${before}`;
+    return await gh('GET', path);
+  }
+
+  // ── DISCUSSIONS ───────────────────────────────────────────────────────────
+  if (tool === 'github_list_discussions') {
+    const { owner, repo, category_id, limit = 20 } = args;
+    if (!owner || !repo) throw new Error('owner and repo are required');
+    const query = `query($owner:String!,$repo:String!,$first:Int!${category_id ? ',$cat:ID' : ''}) {
+      repository(owner:$owner,name:$repo) {
+        discussions(first:$first${category_id ? ',categoryId:$cat' : ''}) {
+          nodes { id number title url createdAt author { login } comments { totalCount } }
+        }
+      }
+    }`;
+    const vars = { owner, repo, first: limit };
+    if (category_id) vars.cat = category_id;
+    return await ghGraphQL(query, vars);
+  }
+  if (tool === 'github_get_discussion') {
+    const { owner, repo, discussion_number } = args;
+    if (!owner || !repo || !discussion_number) throw new Error('owner, repo, and discussion_number are required');
+    const query = `query($owner:String!,$repo:String!,$number:Int!) {
+      repository(owner:$owner,name:$repo) {
+        discussion(number:$number) { id number title body url createdAt updatedAt author { login } category { name } comments(first:20) { nodes { id body author { login } } } }
+      }
+    }`;
+    return await ghGraphQL(query, { owner, repo, number: discussion_number });
+  }
+  if (tool === 'github_list_discussion_categories') {
+    const { owner, repo } = args;
+    if (!owner || !repo) throw new Error('owner and repo are required');
+    const query = `query($owner:String!,$repo:String!) {
+      repository(owner:$owner,name:$repo) {
+        discussionCategories(first:25) { nodes { id name description emoji isAnswerable } }
+      }
+    }`;
+    return await ghGraphQL(query, { owner, repo });
+  }
+
+  // ── CODE SCANNING SARIF UPLOAD ─────────────────────────────────────────────
+  if (tool === 'github_upload_sarif') {
+    const { owner, repo, commit_sha, ref, sarif, tool_name } = args;
+    if (!owner || !repo || !commit_sha || !ref || !sarif) throw new Error('owner, repo, commit_sha, ref, and sarif are required');
+    // sarif must be gzip-compressed base64
+    const body = { commit_sha, ref, sarif };
+    if (tool_name) body.tool = { name: tool_name };
+    return await gh('POST', `/repos/${owner}/${repo}/code-scanning/sarifs`, body);
+  }
+  if (tool === 'github_get_sarif_upload') {
+    return await gh('GET', `/repos/${args.owner}/${args.repo}/code-scanning/sarifs/${args.sarif_id}`);
+  }
+
+  // ── DEPENDABOT (advanced) ─────────────────────────────────────────────────
+  if (tool === 'github_check_dependabot_enabled') {
+    const { owner, repo } = args;
+    if (!owner || !repo) throw new Error('owner and repo are required');
+    try {
+      const alerts = await gh('GET', `/repos/${owner}/${repo}/vulnerability-alerts`);
+      return { enabled: true, status: 'active' };
+    } catch {
+      return { enabled: false };
+    }
+  }
+  if (tool === 'github_list_dependabot_org_alerts') {
+    const { org, state, severity, ecosystem, limit = 30 } = args;
+    if (!org) throw new Error('org is required');
+    let path = `/orgs/${org}/dependabot/alerts?per_page=${limit}`;
+    if (state) path += `&state=${state}`;
+    if (severity) path += `&severity=${severity}`;
+    if (ecosystem) path += `&ecosystem=${ecosystem}`;
+    return await gh('GET', path);
+  }
+
+  // ── COPILOT SEAT MANAGEMENT ───────────────────────────────────────────────
+  if (tool === 'github_get_copilot_billing') {
+    const { org } = args;
+    if (!org) throw new Error('org is required');
+    return await gh('GET', `/orgs/${org}/copilot/billing`);
+  }
+  if (tool === 'github_list_copilot_seats') {
+    const { org, per_page = 50 } = args;
+    if (!org) throw new Error('org is required');
+    return await gh('GET', `/orgs/${org}/copilot/billing/seats?per_page=${per_page}`);
+  }
+  if (tool === 'github_add_copilot_seats') {
+    const { org, selected_usernames } = args;
+    if (!org || !selected_usernames?.length) throw new Error('org and selected_usernames array are required');
+    return await gh('POST', `/orgs/${org}/copilot/billing/selected_users`, { selected_usernames });
+  }
+  if (tool === 'github_remove_copilot_seats') {
+    const { org, selected_usernames } = args;
+    if (!org || !selected_usernames?.length) throw new Error('org and selected_usernames array are required');
+    return await gh('DELETE', `/orgs/${org}/copilot/billing/selected_users`, { selected_usernames });
+  }
+
+  // ── REQUIRED WORKFLOWS ────────────────────────────────────────────────────
+  if (tool === 'github_list_required_workflows') {
+    const { org } = args;
+    if (!org) throw new Error('org is required');
+    return await gh('GET', `/orgs/${org}/required_workflows`);
+  }
+  if (tool === 'github_create_required_workflow') {
+    const { org, workflow_file_path, repository_id, scope = 'selected', selected_repository_ids } = args;
+    if (!org || !workflow_file_path || !repository_id) throw new Error('org, workflow_file_path, and repository_id are required');
+    const body = { workflow_file_path, repository_id, scope };
+    if (selected_repository_ids) body.selected_repository_ids = selected_repository_ids;
+    return await gh('POST', `/orgs/${org}/required_workflows`, body);
+  }
+  if (tool === 'github_delete_required_workflow') {
+    return await gh('DELETE', `/orgs/${args.org}/required_workflows/${args.required_workflow_id}`);
+  }
+
+  // ── SUPER TOOL: Security posture ──────────────────────────────────────────
+  if (tool === 'github_org_security_posture') {
+    const { org } = args;
+    if (!org) throw new Error('org is required');
+    const [orgData, codeScanningAlerts, secretAlerts, dependabotAlerts, members] = await Promise.all([
+      gh('GET', `/orgs/${org}`),
+      gh('GET', `/orgs/${org}/code-scanning/alerts?state=open&per_page=5`).catch(() => []),
+      gh('GET', `/orgs/${org}/secret-scanning/alerts?state=open&per_page=5`).catch(() => []),
+      gh('GET', `/orgs/${org}/dependabot/alerts?state=open&severity=critical&per_page=5`).catch(() => []),
+      gh('GET', `/orgs/${org}/members?per_page=5&filter=2fa_disabled`).catch(() => [])
+    ]);
+    return {
+      org: { name: orgData.name, login: orgData.login, plan: orgData.plan?.name, members_count: orgData.members_count, repos: orgData.public_repos + (orgData.total_private_repos || 0) },
+      open_code_scanning_alerts: Array.isArray(codeScanningAlerts) ? codeScanningAlerts.length : 0,
+      open_secret_scanning_alerts: Array.isArray(secretAlerts) ? secretAlerts.length : 0,
+      open_critical_dependabot_alerts: Array.isArray(dependabotAlerts) ? dependabotAlerts.length : 0,
+      members_without_2fa: Array.isArray(members) ? members.length : 0,
+      two_factor_requirement: orgData.two_factor_requirement_enabled,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Repo dependency audit ─────────────────────────────────────
+  if (tool === 'github_repo_dependency_audit') {
+    const { owner, repo } = args;
+    if (!owner || !repo) throw new Error('owner and repo are required');
+    const [dependabot, codeScanning, secretScanning] = await Promise.all([
+      gh('GET', `/repos/${owner}/${repo}/dependabot/alerts?state=open&per_page=30`).catch(() => []),
+      gh('GET', `/repos/${owner}/${repo}/code-scanning/alerts?state=open&per_page=30`).catch(() => []),
+      gh('GET', `/repos/${owner}/${repo}/secret-scanning/alerts?state=open&per_page=30`).catch(() => [])
+    ]);
+    const depArr = Array.isArray(dependabot) ? dependabot : [];
+    const codeArr = Array.isArray(codeScanning) ? codeScanning : [];
+    const secretArr = Array.isArray(secretScanning) ? secretScanning : [];
+    return {
+      repo: `${owner}/${repo}`,
+      dependabot_alerts: { total: depArr.length, critical: depArr.filter(a => a.security_advisory?.severity === 'critical').length, high: depArr.filter(a => a.security_advisory?.severity === 'high').length },
+      code_scanning_alerts: { total: codeArr.length, by_severity: codeArr.reduce((acc, a) => { acc[a.rule?.severity || 'unknown'] = (acc[a.rule?.severity || 'unknown'] || 0) + 1; return acc; }, {}) },
+      secret_scanning_alerts: { total: secretArr.length, types: [...new Set(secretArr.map(a => a.secret_type_display_name))].slice(0, 5) },
+      generated_at: new Date().toISOString()
+    };
   }
 
   throw new Error(`Unknown GitHub tool: ${tool}`);

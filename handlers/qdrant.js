@@ -386,6 +386,162 @@ async function execute(tool, args) {
 
 
     throw new Error(`Unknown Qdrant tool: ${tool}`);
+
+  // ── SHARD MANAGEMENT ─────────────────────────────────────────────────────
+  if (tool === 'qdrant_list_collection_shards') {
+    const { collection_name } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    return await qdrant('GET', `/collections/${collection_name}/shards`);
+  }
+  if (tool === 'qdrant_create_shard_key') {
+    const { collection_name, shard_key, shards_number, replication_factor, placement } = args;
+    if (!collection_name || !shard_key) throw new Error('collection_name and shard_key are required');
+    const body = { shard_key };
+    if (shards_number) body.shards_number = shards_number;
+    if (replication_factor) body.replication_factor = replication_factor;
+    if (placement) body.placement = placement;
+    return await qdrant('PUT', `/collections/${collection_name}/shards`, body);
+  }
+  if (tool === 'qdrant_delete_shard_key') {
+    const { collection_name, shard_key } = args;
+    if (!collection_name || !shard_key) throw new Error('collection_name and shard_key are required');
+    return await qdrant('POST', `/collections/${collection_name}/shards/delete`, { shard_key });
+  }
+
+  // ── QUANTIZATION CONFIG ───────────────────────────────────────────────────
+  if (tool === 'qdrant_update_quantization') {
+    const { collection_name, quantization_type = 'scalar', quantile = 0.99, always_ram = false } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    let quantization_config;
+    if (quantization_type === 'scalar') {
+      quantization_config = { scalar: { type: 'int8', quantile, always_ram } };
+    } else if (quantization_type === 'binary') {
+      quantization_config = { binary: { always_ram } };
+    } else if (quantization_type === 'product') {
+      quantization_config = { product: { compression: args.compression || 'x4', always_ram } };
+    }
+    return await qdrant('PATCH', `/collections/${collection_name}`, { quantization_config });
+  }
+  if (tool === 'qdrant_disable_quantization') {
+    const { collection_name } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    return await qdrant('PATCH', `/collections/${collection_name}`, { quantization_config: null });
+  }
+
+  // ── COLLECTION MAINTENANCE ────────────────────────────────────────────────
+  if (tool === 'qdrant_update_optimizer_config') {
+    const { collection_name, indexing_threshold, memmap_threshold, max_segment_size, default_segment_number } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    const optimizers_config = {};
+    if (indexing_threshold !== undefined) optimizers_config.indexing_threshold = indexing_threshold;
+    if (memmap_threshold !== undefined) optimizers_config.memmap_threshold = memmap_threshold;
+    if (max_segment_size !== undefined) optimizers_config.max_segment_size = max_segment_size;
+    if (default_segment_number !== undefined) optimizers_config.default_segment_number = default_segment_number;
+    return await qdrant('PATCH', `/collections/${collection_name}`, { optimizers_config });
+  }
+  if (tool === 'qdrant_update_hnsw_config') {
+    const { collection_name, m, ef_construct, full_scan_threshold, on_disk } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    const hnsw_config = {};
+    if (m !== undefined) hnsw_config.m = m;
+    if (ef_construct !== undefined) hnsw_config.ef_construct = ef_construct;
+    if (full_scan_threshold !== undefined) hnsw_config.full_scan_threshold = full_scan_threshold;
+    if (on_disk !== undefined) hnsw_config.on_disk = on_disk;
+    return await qdrant('PATCH', `/collections/${collection_name}`, { hnsw_config });
+  }
+  if (tool === 'qdrant_update_wal_config') {
+    const { collection_name, wal_capacity_mb, wal_segments_ahead } = args;
+    if (!collection_name) throw new Error('collection_name is required');
+    const wal_config = {};
+    if (wal_capacity_mb !== undefined) wal_config.wal_capacity_mb = wal_capacity_mb;
+    if (wal_segments_ahead !== undefined) wal_config.wal_segments_ahead = wal_segments_ahead;
+    return await qdrant('PATCH', `/collections/${collection_name}`, { wal_config });
+  }
+
+  // ── SNAPSHOT MANAGEMENT ───────────────────────────────────────────────────
+  if (tool === 'qdrant_download_snapshot') {
+    const { collection_name, snapshot_name } = args;
+    if (!collection_name || !snapshot_name) throw new Error('collection_name and snapshot_name are required');
+    // Returns the download URL path
+    return { download_url: `${process.env.QDRANT_URL || 'http://localhost:6333'}/collections/${collection_name}/snapshots/${snapshot_name}`, message: 'Use this URL with Authorization header to download the snapshot file.' };
+  }
+  if (tool === 'qdrant_upload_snapshot') {
+    const { collection_name, snapshot_url, wait = true } = args;
+    if (!collection_name || !snapshot_url) throw new Error('collection_name and snapshot_url are required');
+    return await qdrant('POST', `/collections/${collection_name}/snapshots/upload?wait=${wait}`, { location: snapshot_url });
+  }
+  if (tool === 'qdrant_recover_from_snapshot') {
+    const { collection_name, snapshot_url, wait = true } = args;
+    if (!collection_name || !snapshot_url) throw new Error('collection_name and snapshot_url are required');
+    return await qdrant('PUT', `/collections/${collection_name}/snapshots/recover`, { location: snapshot_url, wait });
+  }
+
+  // ── CLUSTER OPERATIONS ────────────────────────────────────────────────────
+  if (tool === 'qdrant_move_shard') {
+    const { collection_name, shard_id, from_peer_id, to_peer_id, method = 'stream_records' } = args;
+    if (!collection_name || shard_id === undefined || !from_peer_id || !to_peer_id) throw new Error('collection_name, shard_id, from_peer_id, and to_peer_id are required');
+    return await qdrant('POST', `/collections/${collection_name}/cluster`, {
+      move_shard: { shard_id, from_peer_id, to_peer_id, method }
+    });
+  }
+  if (tool === 'qdrant_replicate_shard') {
+    const { collection_name, shard_id, from_peer_id, to_peer_id } = args;
+    if (!collection_name || shard_id === undefined || !from_peer_id || !to_peer_id) throw new Error('all fields are required');
+    return await qdrant('POST', `/collections/${collection_name}/cluster`, {
+      replicate_shard: { shard_id, from_peer_id, to_peer_id }
+    });
+  }
+  if (tool === 'qdrant_abort_transfer') {
+    const { collection_name, shard_id, from_peer_id, to_peer_id } = args;
+    if (!collection_name || shard_id === undefined || !from_peer_id || !to_peer_id) throw new Error('all fields are required');
+    return await qdrant('POST', `/collections/${collection_name}/cluster`, {
+      abort_transfer: { shard_id, from_peer_id, to_peer_id }
+    });
+  }
+  if (tool === 'qdrant_remove_peer') {
+    const { peer_id, force = false } = args;
+    if (!peer_id) throw new Error('peer_id is required');
+    return await qdrant('DELETE', `/cluster/peer/${peer_id}?force=${force}`);
+  }
+
+  // ── LOCKS & WRITE PROTECTION ──────────────────────────────────────────────
+  if (tool === 'qdrant_set_lock') {
+    const { write = false, error_message } = args;
+    const body = { write };
+    if (error_message) body.error_message = error_message;
+    return await qdrant('POST', '/locks', body);
+  }
+  if (tool === 'qdrant_get_locks') {
+    return await qdrant('GET', '/locks');
+  }
+
+  // ── SUPER TOOL: Collection health summary ────────────────────────────────
+  if (tool === 'qdrant_collection_health_summary') {
+    const collections = await qdrant('GET', '/collections');
+    const colList = collections.result?.collections || [];
+    const details = await Promise.all(colList.map(c =>
+      qdrant('GET', `/collections/${c.name}`).then(r => ({
+        name: c.name,
+        status: r.result?.status,
+        vectors_count: r.result?.vectors_count,
+        points_count: r.result?.points_count,
+        segments_count: r.result?.segments_count,
+        disk_data_size: r.result?.disk_data_size,
+        ram_data_size: r.result?.ram_data_size,
+        indexed_vectors_count: r.result?.indexed_vectors_count
+      })).catch(e => ({ name: c.name, status: 'error', error: e.message }))
+    ));
+    const cluster = await qdrant('GET', '/cluster').catch(() => null);
+    return {
+      total_collections: colList.length,
+      collections: details,
+      cluster_status: cluster?.result?.status,
+      peer_count: cluster?.result?.peers ? Object.keys(cluster.result.peers).length : null,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Qdrant tool: ${tool}`);
 }
 
 export default { execute };
