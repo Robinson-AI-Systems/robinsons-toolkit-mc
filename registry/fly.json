@@ -2724,5 +2724,402 @@
         "value"
       ]
     }
+  },
+  {
+    "name": "fly_get_autoscale_config",
+    "description": "Get the autoscaling configuration for a Fly.io app.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "autoscale",
+      "config",
+      "get",
+      "scaling"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_set_autoscale_config",
+    "description": "Configure autoscaling for a Fly.io app — min/max machine count and region balancing.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "autoscale",
+      "config",
+      "set",
+      "scaling"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        },
+        "min_count": {
+          "type": "number"
+        },
+        "max_count": {
+          "type": "number"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "balance_regions": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_reset_autoscale_config",
+    "description": "Reset the autoscaling configuration for a Fly.io app to defaults.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "autoscale",
+      "reset",
+      "scaling"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_list_private_network_peers",
+    "description": "List private WireGuard VPN peer connections for a Fly.io organization.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "networking",
+      "vpn",
+      "wireguard",
+      "peers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "org_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "org_slug"
+      ]
+    }
+  },
+  {
+    "name": "fly_get_app_network",
+    "description": "Get network details for a Fly.io app — private network name and all IP addresses by region.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "app",
+      "network",
+      "ips",
+      "regions"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_list_dns_records",
+    "description": "List IP addresses (A/AAAA records) allocated to a Fly.io app.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "dns",
+      "ips",
+      "records",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_restore_volume_from_snapshot",
+    "description": "Restore a Fly.io volume from a specific snapshot.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "volume",
+      "snapshot",
+      "restore",
+      "recovery"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "volume_id": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "volume_id",
+        "snapshot_id"
+      ]
+    }
+  },
+  {
+    "name": "fly_get_volume_snapshot",
+    "description": "Get details of a specific snapshot for a Fly.io volume.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "volume",
+      "snapshot",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "volume_id": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "volume_id",
+        "snapshot_id"
+      ]
+    }
+  },
+  {
+    "name": "fly_list_process_groups",
+    "description": "List process groups and machine summary for a Fly.io app.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "machines",
+      "process-groups",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_scale_process_group",
+    "description": "Scale a specific process group to a target machine count for a Fly.io app.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "scale",
+      "process-group",
+      "machines",
+      "count"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        },
+        "process_group": {
+          "type": "string",
+          "description": "e.g. app, worker, web"
+        },
+        "count": {
+          "type": "number"
+        },
+        "region": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name",
+        "process_group",
+        "count"
+      ]
+    }
+  },
+  {
+    "name": "fly_get_org_usage",
+    "description": "Get billable resource usage breakdown per app for a Fly.io organization.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "billing",
+      "usage",
+      "org",
+      "cost"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "org_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "org_slug"
+      ]
+    }
+  },
+  {
+    "name": "fly_get_app_usage",
+    "description": "Get billable resource usage (GB-hours, compute time, cost) for a specific Fly.io app.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "billing",
+      "usage",
+      "app",
+      "cost"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name"
+      ]
+    }
+  },
+  {
+    "name": "fly_update_machine_resources",
+    "description": "Update the CPU, memory, or GPU configuration for a Fly.io machine.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "machine",
+      "resources",
+      "cpu",
+      "memory",
+      "resize"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        },
+        "machine_id": {
+          "type": "string"
+        },
+        "cpu_kind": {
+          "type": "string",
+          "description": "shared or performance"
+        },
+        "cpus": {
+          "type": "number"
+        },
+        "memory_mb": {
+          "type": "number"
+        },
+        "gpu_kind": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name",
+        "machine_id"
+      ]
+    }
+  },
+  {
+    "name": "fly_org_cost_breakdown",
+    "description": "SUPER TOOL: Organization cost breakdown — all apps with machine counts and status in one call.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "org",
+      "cost",
+      "breakdown",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "org_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "org_slug"
+      ]
+    }
+  },
+  {
+    "name": "fly_org_deployment_status",
+    "description": "SUPER TOOL: Deployment status across all apps in a Fly.io org — running vs stopped machines, unhealthy apps, and regions.",
+    "namespace": "fly",
+    "tags": [
+      "fly",
+      "org",
+      "deployment",
+      "status",
+      "health",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "org_slug": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "org_slug"
+      ]
+    }
   }
 ]

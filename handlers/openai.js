@@ -664,6 +664,200 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown OpenAI tool: ${tool}`);
+
+  // ── ORG ADMIN: RATE LIMITS ────────────────────────────────────────────────
+  if (tool === 'openai_list_project_rate_limits') {
+    const { project_id, limit = 100 } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await oai('GET', `/organization/projects/${project_id}/rate_limits?limit=${limit}`, null, { admin: true });
+  }
+  if (tool === 'openai_update_project_rate_limit') {
+    const { project_id, rate_limit_id, max_requests_per_1_minute, max_tokens_per_1_minute, max_images_per_1_minute, max_audio_megabytes_per_1_minute, max_requests_per_1_day, max_tokens_per_1_day } = args;
+    if (!project_id || !rate_limit_id) throw new Error('project_id and rate_limit_id are required');
+    const body = {};
+    if (max_requests_per_1_minute !== undefined) body.max_requests_per_1_minute = max_requests_per_1_minute;
+    if (max_tokens_per_1_minute !== undefined) body.max_tokens_per_1_minute = max_tokens_per_1_minute;
+    if (max_images_per_1_minute !== undefined) body.max_images_per_1_minute = max_images_per_1_minute;
+    if (max_audio_megabytes_per_1_minute !== undefined) body.max_audio_megabytes_per_1_minute = max_audio_megabytes_per_1_minute;
+    if (max_requests_per_1_day !== undefined) body.max_requests_per_1_day = max_requests_per_1_day;
+    if (max_tokens_per_1_day !== undefined) body.max_tokens_per_1_day = max_tokens_per_1_day;
+    return await oai('POST', `/organization/projects/${project_id}/rate_limits/${rate_limit_id}`, body, { admin: true });
+  }
+
+  // ── ORG ADMIN: SERVICE ACCOUNTS ───────────────────────────────────────────
+  if (tool === 'openai_list_project_service_accounts') {
+    const { project_id, limit = 20 } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await oai('GET', `/organization/projects/${project_id}/service_accounts?limit=${limit}`, null, { admin: true });
+  }
+  if (tool === 'openai_create_project_service_account') {
+    const { project_id, name } = args;
+    if (!project_id || !name) throw new Error('project_id and name are required');
+    return await oai('POST', `/organization/projects/${project_id}/service_accounts`, { name }, { admin: true });
+  }
+  if (tool === 'openai_delete_project_service_account') {
+    const { project_id, service_account_id } = args;
+    if (!project_id || !service_account_id) throw new Error('project_id and service_account_id are required');
+    return await oai('DELETE', `/organization/projects/${project_id}/service_accounts/${service_account_id}`, null, { admin: true });
+  }
+
+  // ── ORG ADMIN: AUDIT LOGS ─────────────────────────────────────────────────
+  if (tool === 'openai_list_audit_logs') {
+    const { limit = 20, after, before, actor_id, event_type, project_id } = args;
+    let path = `/organization/audit_logs?limit=${limit}`;
+    if (after) path += `&after=${after}`;
+    if (before) path += `&before=${before}`;
+    if (actor_id) path += `&actor_ids[]=${actor_id}`;
+    if (event_type) path += `&event_types[]=${event_type}`;
+    if (project_id) path += `&project_ids[]=${project_id}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+
+  // ── USAGE & COST ANALYTICS ────────────────────────────────────────────────
+  if (tool === 'openai_get_usage_completions') {
+    const { start_time, end_time, bucket_width = '1d', group_by, project_id, model, limit = 7 } = args;
+    if (!start_time) throw new Error('start_time (Unix timestamp) is required');
+    let path = `/organization/usage/completions?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    if (project_id) path += `&project_ids[]=${project_id}`;
+    if (model) path += `&models[]=${model}`;
+    if (group_by) (Array.isArray(group_by) ? group_by : [group_by]).forEach(g => path += `&group_by[]=${g}`);
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_embeddings') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/embeddings?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_images') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/images?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_audio_speeches') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/audio_speeches?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_audio_transcriptions') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/audio_transcriptions?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_moderations') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/moderations?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_vector_stores') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/vector_stores?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+  if (tool === 'openai_get_usage_code_interpreter') {
+    const { start_time, end_time, bucket_width = '1d', limit = 7 } = args;
+    if (!start_time) throw new Error('start_time is required');
+    let path = `/organization/usage/code_interpreter_sessions?start_time=${start_time}&bucket_width=${bucket_width}&limit=${limit}`;
+    if (end_time) path += `&end_time=${end_time}`;
+    return await oai('GET', path, null, { admin: true });
+  }
+
+  // ── MODEL DEPRECATION & LIFECYCLE ─────────────────────────────────────────
+  if (tool === 'openai_check_model_deprecation') {
+    const { model } = args;
+    if (!model) throw new Error('model is required');
+    const models = await oai('GET', '/models', null);
+    const found = (models.data || []).find(m => m.id === model);
+    if (!found) return { model, status: 'not_found', message: `Model ${model} not found in available models` };
+    // Models in deprecation typically have specific IDs - check naming convention
+    const isLegacy = model.includes('instruct') || model.includes('0301') || model.includes('0314') || model.includes('0613') || /davinci|curie|babbage|ada/.test(model);
+    const isCurrent = model.includes('gpt-4o') || model.includes('gpt-4-turbo') || model.includes('o1') || model.includes('o3');
+    return {
+      model,
+      found: true,
+      object: found.object,
+      created: new Date(found.created * 1000).toISOString(),
+      owned_by: found.owned_by,
+      deprecation_risk: isLegacy ? 'high' : (isCurrent ? 'low' : 'medium'),
+      recommendation: isLegacy ? `Consider migrating from ${model} to gpt-4o or gpt-4o-mini` : (isCurrent ? 'Current generation model — low deprecation risk' : 'Monitor OpenAI announcements for deprecation schedule')
+    };
+  }
+
+  // ── FINE-TUNING ADVANCED ──────────────────────────────────────────────────
+  if (tool === 'openai_list_fine_tuning_jobs_for_model') {
+    const { base_model, limit = 20 } = args;
+    const jobs = await oai('GET', `/fine_tuning/jobs?limit=${limit}`, null);
+    if (!base_model) return jobs;
+    return { ...jobs, data: (jobs.data || []).filter(j => j.model === base_model || j.fine_tuned_model?.startsWith(base_model)) };
+  }
+
+  // ── SUPER TOOL: Full org cost report ─────────────────────────────────────
+  if (tool === 'openai_org_cost_report') {
+    const now = Math.floor(Date.now() / 1000);
+    const thirtyDaysAgo = now - (30 * 24 * 3600);
+    const [costs, completionsUsage, projects] = await Promise.all([
+      oai('GET', `/organization/costs?start_time=${thirtyDaysAgo}&bucket_width=1d&limit=30`, null, { admin: true }).catch(() => null),
+      oai('GET', `/organization/usage/completions?start_time=${thirtyDaysAgo}&bucket_width=1d&group_by[]=model&limit=30`, null, { admin: true }).catch(() => null),
+      oai('GET', '/organization/projects?limit=20', null, { admin: true }).catch(() => null)
+    ]);
+    const totalCost = costs?.data?.reduce((sum, b) => sum + (b.results?.[0]?.amount?.value || 0), 0) || 0;
+    return {
+      period: '30 days',
+      start: new Date(thirtyDaysAgo * 1000).toISOString(),
+      end: new Date(now * 1000).toISOString(),
+      total_cost_usd: Math.round(totalCost * 100) / 100,
+      daily_breakdown: costs?.data?.map(b => ({ date: b.start_time, cost_usd: b.results?.[0]?.amount?.value || 0 })) || [],
+      projects_count: projects?.data?.length || 0,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Model usage breakdown ─────────────────────────────────────
+  if (tool === 'openai_model_usage_breakdown') {
+    const now = Math.floor(Date.now() / 1000);
+    const start_time = args.start_time || (now - 7 * 24 * 3600);
+    const [completions, embeddings, images, tts] = await Promise.all([
+      oai('GET', `/organization/usage/completions?start_time=${start_time}&bucket_width=1d&group_by[]=model&limit=7`, null, { admin: true }).catch(() => null),
+      oai('GET', `/organization/usage/embeddings?start_time=${start_time}&bucket_width=1d&group_by[]=model&limit=7`, null, { admin: true }).catch(() => null),
+      oai('GET', `/organization/usage/images?start_time=${start_time}&bucket_width=1d&group_by[]=model&limit=7`, null, { admin: true }).catch(() => null),
+      oai('GET', `/organization/usage/audio_speeches?start_time=${start_time}&bucket_width=1d&group_by[]=model&limit=7`, null, { admin: true }).catch(() => null)
+    ]);
+    const summarize = (data, label) => {
+      const modelMap = {};
+      for (const bucket of (data?.data || [])) {
+        for (const r of (bucket.results || [])) {
+          const m = r.model || 'unknown';
+          if (!modelMap[m]) modelMap[m] = { requests: 0, input_tokens: 0, output_tokens: 0 };
+          modelMap[m].requests += r.num_model_requests || 0;
+          modelMap[m].input_tokens += r.input_tokens || 0;
+          modelMap[m].output_tokens += r.output_tokens || 0;
+        }
+      }
+      return modelMap;
+    };
+    return {
+      period_days: 7,
+      completions_by_model: summarize(completions),
+      embeddings_by_model: summarize(embeddings),
+      images_by_model: summarize(images),
+      tts_by_model: summarize(tts),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown OpenAI tool: ${tool}`);
 }
 
 export default { execute };

@@ -798,6 +798,149 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Fly.io tool: ${tool}`);
+
+  // ── AUTOSCALING ───────────────────────────────────────────────────────────
+  if (tool === 'fly_get_autoscale_config') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`query GetAutoscale($name: String!) { app(name: $name) { autoscaling { enabled minCount maxCount balanceRegions balancedRegions { region count } } } }`, { name: app_name });
+  }
+  if (tool === 'fly_set_autoscale_config') {
+    const { app_name, min_count, max_count, enabled = true, balance_regions } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`mutation SetAutoscale($input: AutoscaleConfigInput!) { setAutoscaleConfig(input: $input) { app { name autoscaling { enabled minCount maxCount } } } }`, {
+      input: { appId: app_name, enabled, minCount: min_count, maxCount: max_count, balanceRegions: balance_regions }
+    });
+  }
+  if (tool === 'fly_reset_autoscale_config') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`mutation ResetAutoscale($appId: ID!) { resetAutoscaleConfig(appId: $appId) { app { name } } }`, { appId: app_name });
+  }
+
+  // ── PRIVATE NETWORKING / VPC ──────────────────────────────────────────────
+  if (tool === 'fly_list_private_network_peers') {
+    const { org_slug } = args;
+    if (!org_slug) throw new Error('org_slug is required');
+    return await flyGraphQL(`query ListPeers($slug: String!) { organization(slug: $slug) { peerVpnConnections { nodes { id name network { name } region status } } } }`, { slug: org_slug });
+  }
+  if (tool === 'fly_get_app_network') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`query AppNetwork($name: String!) { app(name: $name) { network { name } ipAddresses { nodes { address type region } } } }`, { name: app_name });
+  }
+  if (tool === 'fly_list_dns_records') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`query DnsRecords($name: String!) { app(name: $name) { ipAddresses { nodes { address type region } } } }`, { name: app_name });
+  }
+
+  // ── VOLUME SNAPSHOTS ADVANCED ─────────────────────────────────────────────
+  if (tool === 'fly_restore_volume_from_snapshot') {
+    const { volume_id, snapshot_id, name } = args;
+    if (!volume_id || !snapshot_id) throw new Error('volume_id and snapshot_id are required');
+    return await fly('POST', `/volumes/${volume_id}/snapshots/${snapshot_id}/restore`, { name });
+  }
+  if (tool === 'fly_get_volume_snapshot') {
+    const { volume_id, snapshot_id } = args;
+    if (!volume_id || !snapshot_id) throw new Error('volume_id and snapshot_id are required');
+    return await fly('GET', `/volumes/${volume_id}/snapshots/${snapshot_id}`);
+  }
+
+  // ── MACHINE PROCESS GROUPS ────────────────────────────────────────────────
+  if (tool === 'fly_list_process_groups') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await fly('GET', `/apps/${app_name}/machines?summary=true`);
+  }
+  if (tool === 'fly_scale_process_group') {
+    const { app_name, process_group, count, region } = args;
+    if (!app_name || !process_group || count === undefined) throw new Error('app_name, process_group, and count are required');
+    const body = { [process_group]: count };
+    if (region) body.region = region;
+    return await fly('POST', `/apps/${app_name}/machines/scale`, body);
+  }
+
+  // ── BILLING ADVANCED ─────────────────────────────────────────────────────
+  if (tool === 'fly_get_org_usage') {
+    const { org_slug } = args;
+    if (!org_slug) throw new Error('org_slug is required');
+    return await flyGraphQL(`query OrgUsage($slug: String!) { organization(slug: $slug) { billable { apps { name totalBillableGbHours computeTime costUsd } } } }`, { slug: org_slug });
+  }
+  if (tool === 'fly_get_app_usage') {
+    const { app_name } = args;
+    if (!app_name) throw new Error('app_name is required');
+    return await flyGraphQL(`query AppUsage($name: String!) { app(name: $name) { billable { totalBillableGbHours computeTime costUsd } } }`, { name: app_name });
+  }
+
+  // ── MACHINE RESOURCES ─────────────────────────────────────────────────────
+  if (tool === 'fly_update_machine_resources') {
+    const { app_name, machine_id, cpu_kind, cpus, memory_mb, gpu_kind } = args;
+    if (!app_name || !machine_id) throw new Error('app_name and machine_id are required');
+    const machine = await fly('GET', `/apps/${app_name}/machines/${machine_id}`);
+    const config = machine.config || {};
+    if (!config.guest) config.guest = {};
+    if (cpu_kind) config.guest.cpu_kind = cpu_kind;
+    if (cpus) config.guest.cpus = cpus;
+    if (memory_mb) config.guest.memory_mb = memory_mb;
+    if (gpu_kind) config.guest.gpu_kind = gpu_kind;
+    return await fly('POST', `/apps/${app_name}/machines/${machine_id}`, { config });
+  }
+
+  // ── SUPER TOOL: Full org cost breakdown ──────────────────────────────────
+  if (tool === 'fly_org_cost_breakdown') {
+    const { org_slug } = args;
+    if (!org_slug) throw new Error('org_slug is required');
+    const [org, apps] = await Promise.all([
+      flyGraphQL(`query Org($slug: String!) { organization(slug: $slug) { name slug } }`, { slug: org_slug }),
+      fly('GET', `/apps?org_slug=${org_slug}`)
+    ]);
+    const appList = apps.apps || [];
+    const appHealthPromises = appList.slice(0, 10).map(a =>
+      fly('GET', `/apps/${a.name}/machines`).then(m => ({
+        name: a.name,
+        machine_count: Array.isArray(m) ? m.length : 0,
+        status: a.status
+      })).catch(() => ({ name: a.name, machine_count: 0, status: 'unknown' }))
+    );
+    const appDetails = await Promise.all(appHealthPromises);
+    return {
+      org: org?.organization?.name,
+      total_apps: appList.length,
+      apps_checked: appDetails,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Deployment status across all apps ─────────────────────────
+  if (tool === 'fly_org_deployment_status') {
+    const { org_slug } = args;
+    if (!org_slug) throw new Error('org_slug is required');
+    const apps = await fly('GET', `/apps?org_slug=${org_slug}`);
+    const appList = (apps.apps || []).slice(0, 15);
+    const statuses = await Promise.all(appList.map(a =>
+      fly('GET', `/apps/${a.name}/machines`).then(machines => {
+        const m = Array.isArray(machines) ? machines : [];
+        return {
+          app: a.name,
+          status: a.status,
+          machines: m.length,
+          running: m.filter(x => x.state === 'started').length,
+          stopped: m.filter(x => x.state === 'stopped').length,
+          regions: [...new Set(m.map(x => x.region))].filter(Boolean)
+        };
+      }).catch(() => ({ app: a.name, status: 'unknown', machines: 0 }))
+    ));
+    return {
+      org_slug,
+      apps_checked: statuses.length,
+      unhealthy: statuses.filter(s => s.status !== 'running' && s.machines > 0 && s.running < s.machines),
+      all_statuses: statuses,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Fly.io tool: ${tool}`);
 }
 
 export default { execute };

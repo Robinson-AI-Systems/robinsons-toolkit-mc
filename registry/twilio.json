@@ -1,96 +1,2923 @@
 [
-  {"name":"twilio_send_sms","description":"Send an SMS text message via Twilio. Critical for YardSync driver dispatch notifications.","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"body":{"type":"string"},"from":{"type":"string"},"status_callback":{"type":"string"}},"required":["to","body"]},"tags":["sms","text","message","twilio","notify","dispatch"]},
-  {"name":"twilio_send_whatsapp","description":"Send a WhatsApp message via Twilio","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string","description":"Phone number, e.g. +15555551234"},"body":{"type":"string"},"from":{"type":"string"},"media_url":{"type":"string"}},"required":["to","body"]},"tags":["whatsapp","message","twilio","messaging"]},
-  {"name":"twilio_list_messages","description":"List sent and received SMS messages in the Twilio account","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"from":{"type":"string"},"date_sent":{"type":"string"},"limit":{"type":"number"}}},"tags":["sms","messages","list","twilio","history"]},
-  {"name":"twilio_get_message","description":"Get details of a specific Twilio message by its SID","namespace":"twilio","inputSchema":{"type":"object","properties":{"message_sid":{"type":"string"}},"required":["message_sid"]},"tags":["message","sms","twilio","status"]},
-  {"name":"twilio_delete_message","description":"Delete a message record from Twilio","namespace":"twilio","inputSchema":{"type":"object","properties":{"message_sid":{"type":"string"}},"required":["message_sid"]},"tags":["message","delete","twilio"]},
-  {"name":"twilio_send_bulk_sms","description":"Send the same SMS message to multiple phone numbers at once","namespace":"twilio","inputSchema":{"type":"object","properties":{"recipients":{"type":"array","items":{"type":"string"}},"body":{"type":"string"},"from":{"type":"string"}},"required":["recipients","body"]},"tags":["sms","bulk","broadcast","notify","twilio","dispatch"]},
-  {"name":"twilio_make_call","description":"Make an outbound voice call via Twilio. Can speak a message or point to a TwiML URL.","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"from":{"type":"string"},"say":{"type":"string"},"url":{"type":"string"},"twiml":{"type":"string"},"record":{"type":"boolean"}},"required":["to"]},"tags":["call","voice","phone","twilio"]},
-  {"name":"twilio_list_calls","description":"List recent voice calls in the Twilio account","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"from":{"type":"string"},"status":{"type":"string"},"limit":{"type":"number"}}},"tags":["calls","voice","list","twilio"]},
-  {"name":"twilio_get_call","description":"Get details of a specific Twilio voice call by SID","namespace":"twilio","inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"}},"required":["call_sid"]},"tags":["call","voice","twilio","details"]},
-  {"name":"twilio_hangup_call","description":"Hang up an active phone call","namespace":"twilio","inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"}},"required":["call_sid"]},"tags":["call","hangup","end","twilio"]},
-  {"name":"twilio_list_phone_numbers","description":"List all Twilio phone numbers in the account","namespace":"twilio","inputSchema":{"type":"object","properties":{"limit":{"type":"number"}}},"tags":["phone numbers","list","twilio"]},
-  {"name":"twilio_search_available_numbers","description":"Search for available Twilio phone numbers to purchase by area code or pattern","namespace":"twilio","inputSchema":{"type":"object","properties":{"country":{"type":"string"},"area_code":{"type":"string"},"contains":{"type":"string"},"limit":{"type":"number"}}},"tags":["phone numbers","search","buy","twilio","purchase"]},
-  {"name":"twilio_buy_phone_number","description":"Purchase a Twilio phone number","namespace":"twilio","inputSchema":{"type":"object","properties":{"phone_number":{"type":"string"},"friendly_name":{"type":"string"}},"required":["phone_number"]},"tags":["phone number","buy","purchase","twilio"]},
-  {"name":"twilio_release_phone_number","description":"Release and stop paying for a Twilio phone number","namespace":"twilio","inputSchema":{"type":"object","properties":{"phone_number_sid":{"type":"string"}},"required":["phone_number_sid"]},"tags":["phone number","release","cancel","twilio"]},
-  {"name":"twilio_update_phone_number","description":"Update the SMS URL, voice URL, or friendly name of a Twilio phone number","namespace":"twilio","inputSchema":{"type":"object","properties":{"phone_number_sid":{"type":"string"},"friendly_name":{"type":"string"},"sms_url":{"type":"string"},"voice_url":{"type":"string"}},"required":["phone_number_sid"]},"tags":["phone number","webhook","update","twilio"]},
-  {"name":"twilio_list_recordings","description":"List call recordings in the Twilio account","namespace":"twilio","inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"limit":{"type":"number"}}},"tags":["recordings","calls","twilio","audio"]},
-  {"name":"twilio_get_recording","description":"Get a specific call recording by SID","namespace":"twilio","inputSchema":{"type":"object","properties":{"recording_sid":{"type":"string"}},"required":["recording_sid"]},"tags":["recording","call","twilio"]},
-  {"name":"twilio_delete_recording","description":"Delete a call recording from Twilio","namespace":"twilio","inputSchema":{"type":"object","properties":{"recording_sid":{"type":"string"}},"required":["recording_sid"]},"tags":["recording","delete","twilio"]},
-  {"name":"twilio_send_verification_code","description":"Send a one-time passcode (OTP) for two-factor authentication via SMS or voice using Twilio Verify","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"channel":{"type":"string","description":"sms or call"},"service_sid":{"type":"string"}},"required":["to"]},"tags":["otp","2fa","verify","sms","twilio","authentication"]},
-  {"name":"twilio_check_verification_code","description":"Verify a one-time passcode entered by a user for 2FA using Twilio Verify","namespace":"twilio","inputSchema":{"type":"object","properties":{"to":{"type":"string"},"code":{"type":"string"},"service_sid":{"type":"string"}},"required":["to","code"]},"tags":["otp","verify","2fa","code","twilio"]},
-  {"name":"twilio_lookup_phone_number","description":"Look up carrier info, line type, and caller name for a phone number using Twilio Lookup","namespace":"twilio","inputSchema":{"type":"object","properties":{"phone_number":{"type":"string"},"fields":{"type":"string"}},"required":["phone_number"]},"tags":["lookup","phone","carrier","validation","twilio"]},
-  {"name":"twilio_get_account","description":"Get the Twilio account details and balance","namespace":"twilio","inputSchema":{"type":"object","properties":{}},"tags":["account","balance","twilio"]},
-  {"name":"twilio_get_balance","description":"Get current Twilio account balance in USD","namespace":"twilio","tags":["twilio","balance","billing"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"twilio_list_subaccounts","description":"List Twilio sub-accounts under the master account","namespace":"twilio","tags":["twilio","subaccount","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_subaccount","description":"Create a new Twilio sub-account (per-customer billing isolation)","namespace":"twilio","tags":["twilio","subaccount","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"}},"required":["friendly_name"]}},
-  {"name":"twilio_get_subaccount","description":"Get details of a Twilio sub-account","namespace":"twilio","tags":["twilio","subaccount","get"],"inputSchema":{"type":"object","properties":{"subaccount_sid":{"type":"string"}},"required":["subaccount_sid"]}},
-  {"name":"twilio_close_subaccount","description":"Close (suspend) a Twilio sub-account","namespace":"twilio","tags":["twilio","subaccount","close","suspend"],"inputSchema":{"type":"object","properties":{"subaccount_sid":{"type":"string"}},"required":["subaccount_sid"]}},
-  {"name":"twilio_list_messaging_services","description":"List Twilio Messaging Services (sender pools, sticky sender)","namespace":"twilio","tags":["twilio","messaging","service","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_messaging_service","description":"Get details of a Twilio Messaging Service","namespace":"twilio","tags":["twilio","messaging","service","get"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"}},"required":["service_sid"]}},
-  {"name":"twilio_create_messaging_service","description":"Create a Twilio Messaging Service with webhook URLs and sticky-sender behavior","namespace":"twilio","tags":["twilio","messaging","service","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"inbound_request_url":{"type":"string"},"fallback_url":{"type":"string"},"status_callback":{"type":"string"},"use_inbound_webhook_on_number":{"type":"boolean"}},"required":["friendly_name"]}},
-  {"name":"twilio_update_messaging_service","description":"Update a Twilio Messaging Service's configuration","namespace":"twilio","tags":["twilio","messaging","service","update"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"},"config":{"type":"object"}},"required":["service_sid"]}},
-  {"name":"twilio_delete_messaging_service","description":"Delete a Twilio Messaging Service","namespace":"twilio","tags":["twilio","messaging","service","delete"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"}},"required":["service_sid"]}},
-  {"name":"twilio_add_number_to_messaging_service","description":"Add a phone number to a Twilio Messaging Service pool","namespace":"twilio","tags":["twilio","messaging","service","number","add"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"},"phone_number_sid":{"type":"string"}},"required":["service_sid","phone_number_sid"]}},
-  {"name":"twilio_remove_number_from_messaging_service","description":"Remove a phone number from a Messaging Service pool","namespace":"twilio","tags":["twilio","messaging","service","number","remove"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"},"phone_number_sid":{"type":"string"}},"required":["service_sid","phone_number_sid"]}},
-  {"name":"twilio_list_messaging_service_numbers","description":"List phone numbers attached to a Messaging Service","namespace":"twilio","tags":["twilio","messaging","numbers","list"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"},"limit":{"type":"number","default":20}},"required":["service_sid"]}},
-  {"name":"twilio_list_verify_services","description":"List Twilio Verify (OTP/2FA) services","namespace":"twilio","tags":["twilio","verify","otp","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_verify_service","description":"Get details of a Twilio Verify service","namespace":"twilio","tags":["twilio","verify","otp","get"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"}},"required":["service_sid"]}},
-  {"name":"twilio_create_verify_service","description":"Create a Twilio Verify service for OTP/2FA delivery","namespace":"twilio","tags":["twilio","verify","otp","create","2fa"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"code_length":{"type":"number"},"lookup_enabled":{"type":"boolean"},"psd2_enabled":{"type":"boolean"}},"required":["friendly_name"]}},
-  {"name":"twilio_update_verify_service","description":"Update a Twilio Verify service's configuration","namespace":"twilio","tags":["twilio","verify","otp","update"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"},"config":{"type":"object"}},"required":["service_sid"]}},
-  {"name":"twilio_delete_verify_service","description":"Delete a Twilio Verify service","namespace":"twilio","tags":["twilio","verify","otp","delete"],"inputSchema":{"type":"object","properties":{"service_sid":{"type":"string"}},"required":["service_sid"]}},
-  {"name":"twilio_update_call","description":"Update a live call: redirect via URL/TwiML, hang up, or change status","namespace":"twilio","tags":["twilio","voice","call","update","redirect"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"twiml":{"type":"string"},"url":{"type":"string"},"status":{"type":"string"},"method":{"type":"string"}},"required":["call_sid"]}},
-  {"name":"twilio_get_call_recordings","description":"List all recordings made during a specific call","namespace":"twilio","tags":["twilio","voice","recordings","call"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"}},"required":["call_sid"]}},
-  {"name":"twilio_create_recording_for_call","description":"Start recording a live call","namespace":"twilio","tags":["twilio","voice","record","start"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"channels":{"type":"string","default":"mono"},"status_callback":{"type":"string"},"trim":{"type":"string","default":"trim-silence"}},"required":["call_sid"]}},
-  {"name":"twilio_pause_recording","description":"Pause an in-progress call recording","namespace":"twilio","tags":["twilio","voice","record","pause"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"recording_sid":{"type":"string"}},"required":["call_sid","recording_sid"]}},
-  {"name":"twilio_resume_recording","description":"Resume a paused call recording","namespace":"twilio","tags":["twilio","voice","record","resume"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"recording_sid":{"type":"string"}},"required":["call_sid","recording_sid"]}},
-  {"name":"twilio_stop_recording","description":"Stop and finalize a call recording","namespace":"twilio","tags":["twilio","voice","record","stop"],"inputSchema":{"type":"object","properties":{"call_sid":{"type":"string"},"recording_sid":{"type":"string"}},"required":["call_sid","recording_sid"]}},
-  {"name":"twilio_list_conferences","description":"List active or recent voice conferences","namespace":"twilio","tags":["twilio","voice","conference","list"],"inputSchema":{"type":"object","properties":{"status":{"type":"string"},"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_conference","description":"Get details of a conference","namespace":"twilio","tags":["twilio","voice","conference","get"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"}},"required":["conference_sid"]}},
-  {"name":"twilio_update_conference","description":"Update a conference (end it, play an announce URL)","namespace":"twilio","tags":["twilio","voice","conference","update"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"},"status":{"type":"string"},"announce_url":{"type":"string"}},"required":["conference_sid"]}},
-  {"name":"twilio_list_conference_participants","description":"List participants in a conference","namespace":"twilio","tags":["twilio","voice","conference","participants"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"}},"required":["conference_sid"]}},
-  {"name":"twilio_add_conference_participant","description":"Dial a number and add the caller to an active conference","namespace":"twilio","tags":["twilio","voice","conference","participant","add"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"},"from":{"type":"string"},"to":{"type":"string"},"muted":{"type":"boolean"},"beep":{"type":"string"}},"required":["conference_sid","from","to"]}},
-  {"name":"twilio_remove_conference_participant","description":"Remove (hang up) a participant from a conference","namespace":"twilio","tags":["twilio","voice","conference","participant","remove"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"},"call_sid":{"type":"string"}},"required":["conference_sid","call_sid"]}},
-  {"name":"twilio_update_conference_participant","description":"Mute, unmute, hold, or unhold a conference participant","namespace":"twilio","tags":["twilio","voice","conference","participant","update"],"inputSchema":{"type":"object","properties":{"conference_sid":{"type":"string"},"call_sid":{"type":"string"},"muted":{"type":"boolean"},"hold":{"type":"boolean"}},"required":["conference_sid","call_sid"]}},
-  {"name":"twilio_list_content_templates","description":"List Twilio Content API templates (WhatsApp & rich messaging)","namespace":"twilio","tags":["twilio","content","templates","whatsapp"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_content_template","description":"Get a Content API template by SID","namespace":"twilio","tags":["twilio","content","template","get"],"inputSchema":{"type":"object","properties":{"content_sid":{"type":"string"}},"required":["content_sid"]}},
-  {"name":"twilio_create_content_template","description":"Create a Content API template with variables and channel-specific types","namespace":"twilio","tags":["twilio","content","template","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"language":{"type":"string","default":"en"},"variables":{"type":"object"},"types":{"type":"object"}},"required":["friendly_name","types"]}},
-  {"name":"twilio_delete_content_template","description":"Delete a Content API template","namespace":"twilio","tags":["twilio","content","template","delete"],"inputSchema":{"type":"object","properties":{"content_sid":{"type":"string"}},"required":["content_sid"]}},
-  {"name":"twilio_send_content_message","description":"Send a message using a Content template with variable substitution","namespace":"twilio","tags":["twilio","content","send","message"],"inputSchema":{"type":"object","properties":{"to":{"type":"string"},"content_sid":{"type":"string"},"content_variables":{"type":"object"},"messaging_service_sid":{"type":"string"},"from":{"type":"string"}},"required":["to","content_sid"]}},
-  {"name":"twilio_list_studio_flows","description":"List Twilio Studio flows (visual workflow automation)","namespace":"twilio","tags":["twilio","studio","flows","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_studio_flow","description":"Get details of a Twilio Studio flow","namespace":"twilio","tags":["twilio","studio","flow","get"],"inputSchema":{"type":"object","properties":{"flow_sid":{"type":"string"}},"required":["flow_sid"]}},
-  {"name":"twilio_trigger_studio_flow","description":"Start a Studio flow execution for a contact, with optional parameters","namespace":"twilio","tags":["twilio","studio","flow","trigger","execute"],"inputSchema":{"type":"object","properties":{"flow_sid":{"type":"string"},"to":{"type":"string"},"from":{"type":"string"},"parameters":{"type":"object"}},"required":["flow_sid","to","from"]}},
-  {"name":"twilio_list_studio_executions","description":"List Studio flow executions","namespace":"twilio","tags":["twilio","studio","executions","list"],"inputSchema":{"type":"object","properties":{"flow_sid":{"type":"string"},"limit":{"type":"number","default":20}},"required":["flow_sid"]}},
-  {"name":"twilio_get_studio_execution","description":"Get the status of a Studio flow execution","namespace":"twilio","tags":["twilio","studio","execution","get"],"inputSchema":{"type":"object","properties":{"flow_sid":{"type":"string"},"execution_sid":{"type":"string"}},"required":["flow_sid","execution_sid"]}},
-  {"name":"twilio_end_studio_execution","description":"Terminate a Studio flow execution","namespace":"twilio","tags":["twilio","studio","execution","end"],"inputSchema":{"type":"object","properties":{"flow_sid":{"type":"string"},"execution_sid":{"type":"string"}},"required":["flow_sid","execution_sid"]}},
-  {"name":"twilio_list_conversations","description":"List Twilio Conversations (multi-party messaging across SMS/WhatsApp/Chat)","namespace":"twilio","tags":["twilio","conversations","list","multi-party"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_conversation","description":"Create a new multi-party conversation","namespace":"twilio","tags":["twilio","conversation","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"messaging_service_sid":{"type":"string"}}}},
-  {"name":"twilio_get_conversation","description":"Get details of a Twilio Conversation","namespace":"twilio","tags":["twilio","conversation","get"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"}},"required":["conversation_sid"]}},
-  {"name":"twilio_delete_conversation","description":"Delete a Twilio Conversation","namespace":"twilio","tags":["twilio","conversation","delete"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"}},"required":["conversation_sid"]}},
-  {"name":"twilio_add_conversation_participant","description":"Add a participant to a Conversation by identity (Chat) or phone (SMS/WhatsApp)","namespace":"twilio","tags":["twilio","conversation","participant","add"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"},"identity":{"type":"string"},"address":{"type":"string"},"proxy_address":{"type":"string"}},"required":["conversation_sid"]}},
-  {"name":"twilio_list_conversation_participants","description":"List participants in a Conversation","namespace":"twilio","tags":["twilio","conversation","participants"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"}},"required":["conversation_sid"]}},
-  {"name":"twilio_send_conversation_message","description":"Send a message into a Conversation","namespace":"twilio","tags":["twilio","conversation","message","send"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"},"body":{"type":"string"},"author":{"type":"string"}},"required":["conversation_sid","body"]}},
-  {"name":"twilio_list_conversation_messages","description":"List messages in a Conversation","namespace":"twilio","tags":["twilio","conversation","messages","list"],"inputSchema":{"type":"object","properties":{"conversation_sid":{"type":"string"},"limit":{"type":"number","default":50}},"required":["conversation_sid"]}},
-  {"name":"twilio_list_addresses","description":"List regulatory addresses (required for purchasing certain numbers internationally)","namespace":"twilio","tags":["twilio","address","compliance","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_address","description":"Create a regulatory address for number purchasing in countries requiring local registration","namespace":"twilio","tags":["twilio","address","compliance","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"customer_name":{"type":"string"},"street":{"type":"string"},"city":{"type":"string"},"region":{"type":"string"},"postal_code":{"type":"string"},"iso_country":{"type":"string","default":"US"}},"required":["customer_name","street","city","region","postal_code"]}},
-  {"name":"twilio_get_address","description":"Get a regulatory address by SID","namespace":"twilio","tags":["twilio","address","get"],"inputSchema":{"type":"object","properties":{"address_sid":{"type":"string"}},"required":["address_sid"]}},
-  {"name":"twilio_delete_address","description":"Delete a regulatory address","namespace":"twilio","tags":["twilio","address","delete"],"inputSchema":{"type":"object","properties":{"address_sid":{"type":"string"}},"required":["address_sid"]}},
-  {"name":"twilio_get_phone_number","description":"Get details of a specific Twilio phone number by SID","namespace":"twilio","tags":["twilio","phone","number","get"],"inputSchema":{"type":"object","properties":{"phone_number_sid":{"type":"string"}},"required":["phone_number_sid"]}},
-  {"name":"twilio_search_toll_free_numbers","description":"Search for available toll-free numbers","namespace":"twilio","tags":["twilio","phone","number","search","toll-free"],"inputSchema":{"type":"object","properties":{"country":{"type":"string","default":"US"},"contains":{"type":"string"},"sms_enabled":{"type":"boolean"},"limit":{"type":"number","default":10}}}},
-  {"name":"twilio_search_mobile_numbers","description":"Search for available mobile numbers (UK, etc)","namespace":"twilio","tags":["twilio","phone","number","search","mobile"],"inputSchema":{"type":"object","properties":{"country":{"type":"string","default":"GB"},"contains":{"type":"string"},"limit":{"type":"number","default":10}}}},
-  {"name":"twilio_get_usage_records","description":"Get Twilio usage records with category filter and date range","namespace":"twilio","tags":["twilio","usage","records","billing"],"inputSchema":{"type":"object","properties":{"category":{"type":"string"},"start_date":{"type":"string"},"end_date":{"type":"string"},"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_get_daily_usage","description":"Get daily Twilio usage breakdown","namespace":"twilio","tags":["twilio","usage","daily","billing"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":30}}}},
-  {"name":"twilio_list_usage_triggers","description":"List Twilio usage-based webhook triggers","namespace":"twilio","tags":["twilio","usage","trigger","list","webhook"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_usage_trigger","description":"Create a usage-based webhook trigger (notify when spend hits a threshold)","namespace":"twilio","tags":["twilio","usage","trigger","create","alerts"],"inputSchema":{"type":"object","properties":{"callback_url":{"type":"string"},"trigger_value":{"type":"string"},"usage_category":{"type":"string"},"recurring":{"type":"string"},"trigger_by":{"type":"string","default":"usage"}},"required":["callback_url","trigger_value","usage_category"]}},
-  {"name":"twilio_delete_usage_trigger","description":"Delete a usage-based trigger","namespace":"twilio","tags":["twilio","usage","trigger","delete"],"inputSchema":{"type":"object","properties":{"trigger_sid":{"type":"string"}},"required":["trigger_sid"]}},
-  {"name":"twilio_list_api_keys","description":"List Twilio API keys (scoped credentials)","namespace":"twilio","tags":["twilio","api-key","list","credentials"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_api_key","description":"Create a new scoped Twilio API key","namespace":"twilio","tags":["twilio","api-key","create","credentials"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"}},"required":["friendly_name"]}},
-  {"name":"twilio_delete_api_key","description":"Delete (revoke) a Twilio API key","namespace":"twilio","tags":["twilio","api-key","delete","revoke"],"inputSchema":{"type":"object","properties":{"key_sid":{"type":"string"}},"required":["key_sid"]}},
-  {"name":"twilio_list_applications","description":"List TwiML Applications (reusable voice/SMS configurations)","namespace":"twilio","tags":["twilio","application","twiml","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"twilio_create_application","description":"Create a TwiML Application with voice/SMS webhook URLs","namespace":"twilio","tags":["twilio","application","twiml","create"],"inputSchema":{"type":"object","properties":{"friendly_name":{"type":"string"},"voice_url":{"type":"string"},"sms_url":{"type":"string"},"status_callback":{"type":"string"}},"required":["friendly_name"]}},
-  {"name":"twilio_delete_application","description":"Delete a TwiML Application","namespace":"twilio","tags":["twilio","application","twiml","delete"],"inputSchema":{"type":"object","properties":{"application_sid":{"type":"string"}},"required":["application_sid"]}},
-  {"name":"twilio_dispatch_notification","description":"SUPER TOOL: Send dispatch SMS to a driver/customer with automatic voice-call fallback if SMS fails. Returns delivery status of both channels.","namespace":"twilio","tags":["twilio","super-tool","dispatch","sms","voice","fallback","yardsync"],"inputSchema":{"type":"object","properties":{"to":{"type":"string"},"body":{"type":"string"},"fallback_voice":{"type":"boolean","default":false},"voice_message":{"type":"string"},"from":{"type":"string"}},"required":["to","body"]}},
-  {"name":"twilio_send_otp_and_wait","description":"SUPER TOOL: Send a verification code AND optionally check it in one call. If check_code provided, returns verified status; otherwise returns sent status.","namespace":"twilio","tags":["twilio","super-tool","verify","otp","2fa"],"inputSchema":{"type":"object","properties":{"to":{"type":"string"},"channel":{"type":"string","default":"sms"},"service_sid":{"type":"string"},"wait_seconds":{"type":"number","default":60},"check_code":{"type":"string"}},"required":["to"]}},
-  {"name":"twilio_setup_number_with_webhooks","description":"SUPER TOOL: Search + buy a phone number with specified area code + wire SMS/voice webhooks + optionally send test message — all in one call.","namespace":"twilio","tags":["twilio","super-tool","number","webhook","setup"],"inputSchema":{"type":"object","properties":{"sms_webhook":{"type":"string"},"voice_webhook":{"type":"string"},"area_code":{"type":"string"},"country":{"type":"string","default":"US"},"test_message_to":{"type":"string"}}}},
-  {"name":"twilio_broadcast_with_status","description":"SUPER TOOL: Send the same SMS to a list of recipients AND poll each message status after a configurable delay. Returns delivered/failed/pending counts.","namespace":"twilio","tags":["twilio","super-tool","broadcast","bulk","status"],"inputSchema":{"type":"object","properties":{"recipients":{"type":"array","items":{"type":"string"}},"body":{"type":"string"},"from":{"type":"string"},"status_check_delay_ms":{"type":"number","default":5000}},"required":["recipients","body"]}}
+  {
+    "name": "twilio_send_sms",
+    "description": "Send an SMS text message via Twilio. Critical for YardSync driver dispatch notifications.",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "status_callback": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "body"
+      ]
+    },
+    "tags": [
+      "sms",
+      "text",
+      "message",
+      "twilio",
+      "notify",
+      "dispatch"
+    ]
+  },
+  {
+    "name": "twilio_send_whatsapp",
+    "description": "Send a WhatsApp message via Twilio",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string",
+          "description": "Phone number, e.g. +15555551234"
+        },
+        "body": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "media_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "body"
+      ]
+    },
+    "tags": [
+      "whatsapp",
+      "message",
+      "twilio",
+      "messaging"
+    ]
+  },
+  {
+    "name": "twilio_list_messages",
+    "description": "List sent and received SMS messages in the Twilio account",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "date_sent": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "sms",
+      "messages",
+      "list",
+      "twilio",
+      "history"
+    ]
+  },
+  {
+    "name": "twilio_get_message",
+    "description": "Get details of a specific Twilio message by its SID",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message_sid"
+      ]
+    },
+    "tags": [
+      "message",
+      "sms",
+      "twilio",
+      "status"
+    ]
+  },
+  {
+    "name": "twilio_delete_message",
+    "description": "Delete a message record from Twilio",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "message_sid"
+      ]
+    },
+    "tags": [
+      "message",
+      "delete",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_send_bulk_sms",
+    "description": "Send the same SMS message to multiple phone numbers at once",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "recipients",
+        "body"
+      ]
+    },
+    "tags": [
+      "sms",
+      "bulk",
+      "broadcast",
+      "notify",
+      "twilio",
+      "dispatch"
+    ]
+  },
+  {
+    "name": "twilio_make_call",
+    "description": "Make an outbound voice call via Twilio. Can speak a message or point to a TwiML URL.",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "say": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "twiml": {
+          "type": "string"
+        },
+        "record": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "to"
+      ]
+    },
+    "tags": [
+      "call",
+      "voice",
+      "phone",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_list_calls",
+    "description": "List recent voice calls in the Twilio account",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "calls",
+      "voice",
+      "list",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_get_call",
+    "description": "Get details of a specific Twilio voice call by SID",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid"
+      ]
+    },
+    "tags": [
+      "call",
+      "voice",
+      "twilio",
+      "details"
+    ]
+  },
+  {
+    "name": "twilio_hangup_call",
+    "description": "Hang up an active phone call",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid"
+      ]
+    },
+    "tags": [
+      "call",
+      "hangup",
+      "end",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_list_phone_numbers",
+    "description": "List all Twilio phone numbers in the account",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "phone numbers",
+      "list",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_search_available_numbers",
+    "description": "Search for available Twilio phone numbers to purchase by area code or pattern",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string"
+        },
+        "area_code": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "phone numbers",
+      "search",
+      "buy",
+      "twilio",
+      "purchase"
+    ]
+  },
+  {
+    "name": "twilio_buy_phone_number",
+    "description": "Purchase a Twilio phone number",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number": {
+          "type": "string"
+        },
+        "friendly_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number"
+      ]
+    },
+    "tags": [
+      "phone number",
+      "buy",
+      "purchase",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_release_phone_number",
+    "description": "Release and stop paying for a Twilio phone number",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number_sid"
+      ]
+    },
+    "tags": [
+      "phone number",
+      "release",
+      "cancel",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_update_phone_number",
+    "description": "Update the SMS URL, voice URL, or friendly name of a Twilio phone number",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number_sid": {
+          "type": "string"
+        },
+        "friendly_name": {
+          "type": "string"
+        },
+        "sms_url": {
+          "type": "string"
+        },
+        "voice_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number_sid"
+      ]
+    },
+    "tags": [
+      "phone number",
+      "webhook",
+      "update",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_list_recordings",
+    "description": "List call recordings in the Twilio account",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      }
+    },
+    "tags": [
+      "recordings",
+      "calls",
+      "twilio",
+      "audio"
+    ]
+  },
+  {
+    "name": "twilio_get_recording",
+    "description": "Get a specific call recording by SID",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "recording_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "recording_sid"
+      ]
+    },
+    "tags": [
+      "recording",
+      "call",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_delete_recording",
+    "description": "Delete a call recording from Twilio",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "recording_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "recording_sid"
+      ]
+    },
+    "tags": [
+      "recording",
+      "delete",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_send_verification_code",
+    "description": "Send a one-time passcode (OTP) for two-factor authentication via SMS or voice using Twilio Verify",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "description": "sms or call"
+        },
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to"
+      ]
+    },
+    "tags": [
+      "otp",
+      "2fa",
+      "verify",
+      "sms",
+      "twilio",
+      "authentication"
+    ]
+  },
+  {
+    "name": "twilio_check_verification_code",
+    "description": "Verify a one-time passcode entered by a user for 2FA using Twilio Verify",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "code"
+      ]
+    },
+    "tags": [
+      "otp",
+      "verify",
+      "2fa",
+      "code",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_lookup_phone_number",
+    "description": "Look up carrier info, line type, and caller name for a phone number using Twilio Lookup",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number"
+      ]
+    },
+    "tags": [
+      "lookup",
+      "phone",
+      "carrier",
+      "validation",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_get_account",
+    "description": "Get the Twilio account details and balance",
+    "namespace": "twilio",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "tags": [
+      "account",
+      "balance",
+      "twilio"
+    ]
+  },
+  {
+    "name": "twilio_get_balance",
+    "description": "Get current Twilio account balance in USD",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "balance",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "twilio_list_subaccounts",
+    "description": "List Twilio sub-accounts under the master account",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "subaccount",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_subaccount",
+    "description": "Create a new Twilio sub-account (per-customer billing isolation)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "subaccount",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_subaccount",
+    "description": "Get details of a Twilio sub-account",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "subaccount",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subaccount_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subaccount_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_close_subaccount",
+    "description": "Close (suspend) a Twilio sub-account",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "subaccount",
+      "close",
+      "suspend"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "subaccount_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subaccount_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_messaging_services",
+    "description": "List Twilio Messaging Services (sender pools, sticky sender)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_messaging_service",
+    "description": "Get details of a Twilio Messaging Service",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_create_messaging_service",
+    "description": "Create a Twilio Messaging Service with webhook URLs and sticky-sender behavior",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "inbound_request_url": {
+          "type": "string"
+        },
+        "fallback_url": {
+          "type": "string"
+        },
+        "status_callback": {
+          "type": "string"
+        },
+        "use_inbound_webhook_on_number": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_messaging_service",
+    "description": "Update a Twilio Messaging Service's configuration",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_messaging_service",
+    "description": "Delete a Twilio Messaging Service",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_add_number_to_messaging_service",
+    "description": "Add a phone number to a Twilio Messaging Service pool",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "number",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        },
+        "phone_number_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid",
+        "phone_number_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_remove_number_from_messaging_service",
+    "description": "Remove a phone number from a Messaging Service pool",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "service",
+      "number",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        },
+        "phone_number_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid",
+        "phone_number_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_messaging_service_numbers",
+    "description": "List phone numbers attached to a Messaging Service",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "messaging",
+      "numbers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_verify_services",
+    "description": "List Twilio Verify (OTP/2FA) services",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "verify",
+      "otp",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_verify_service",
+    "description": "Get details of a Twilio Verify service",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "verify",
+      "otp",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_create_verify_service",
+    "description": "Create a Twilio Verify service for OTP/2FA delivery",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "verify",
+      "otp",
+      "create",
+      "2fa"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "code_length": {
+          "type": "number"
+        },
+        "lookup_enabled": {
+          "type": "boolean"
+        },
+        "psd2_enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_verify_service",
+    "description": "Update a Twilio Verify service's configuration",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "verify",
+      "otp",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_verify_service",
+    "description": "Delete a Twilio Verify service",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "verify",
+      "otp",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "service_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_call",
+    "description": "Update a live call: redirect via URL/TwiML, hang up, or change status",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "call",
+      "update",
+      "redirect"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "twiml": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_call_recordings",
+    "description": "List all recordings made during a specific call",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "recordings",
+      "call"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_create_recording_for_call",
+    "description": "Start recording a live call",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "record",
+      "start"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "channels": {
+          "type": "string",
+          "default": "mono"
+        },
+        "status_callback": {
+          "type": "string"
+        },
+        "trim": {
+          "type": "string",
+          "default": "trim-silence"
+        }
+      },
+      "required": [
+        "call_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_pause_recording",
+    "description": "Pause an in-progress call recording",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "record",
+      "pause"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "recording_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid",
+        "recording_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_resume_recording",
+    "description": "Resume a paused call recording",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "record",
+      "resume"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "recording_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid",
+        "recording_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_stop_recording",
+    "description": "Stop and finalize a call recording",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "record",
+      "stop"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "call_sid": {
+          "type": "string"
+        },
+        "recording_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_sid",
+        "recording_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_conferences",
+    "description": "List active or recent voice conferences",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_conference",
+    "description": "Get details of a conference",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conference_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_conference",
+    "description": "Update a conference (end it, play an announce URL)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "announce_url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conference_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_conference_participants",
+    "description": "List participants in a conference",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "participants"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conference_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_add_conference_participant",
+    "description": "Dial a number and add the caller to an active conference",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "participant",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "beep": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conference_sid",
+        "from",
+        "to"
+      ]
+    }
+  },
+  {
+    "name": "twilio_remove_conference_participant",
+    "description": "Remove (hang up) a participant from a conference",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "participant",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        },
+        "call_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conference_sid",
+        "call_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_conference_participant",
+    "description": "Mute, unmute, hold, or unhold a conference participant",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "voice",
+      "conference",
+      "participant",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conference_sid": {
+          "type": "string"
+        },
+        "call_sid": {
+          "type": "string"
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "hold": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "conference_sid",
+        "call_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_content_templates",
+    "description": "List Twilio Content API templates (WhatsApp & rich messaging)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "content",
+      "templates",
+      "whatsapp"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_content_template",
+    "description": "Get a Content API template by SID",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "content",
+      "template",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "content_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "content_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_create_content_template",
+    "description": "Create a Content API template with variables and channel-specific types",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "content",
+      "template",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string",
+          "default": "en"
+        },
+        "variables": {
+          "type": "object"
+        },
+        "types": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "friendly_name",
+        "types"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_content_template",
+    "description": "Delete a Content API template",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "content",
+      "template",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "content_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "content_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_send_content_message",
+    "description": "Send a message using a Content template with variable substitution",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "content",
+      "send",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "content_sid": {
+          "type": "string"
+        },
+        "content_variables": {
+          "type": "object"
+        },
+        "messaging_service_sid": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "content_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_studio_flows",
+    "description": "List Twilio Studio flows (visual workflow automation)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "flows",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_studio_flow",
+    "description": "Get details of a Twilio Studio flow",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "flow",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "flow_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_trigger_studio_flow",
+    "description": "Start a Studio flow execution for a contact, with optional parameters",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "flow",
+      "trigger",
+      "execute"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_sid": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "flow_sid",
+        "to",
+        "from"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_studio_executions",
+    "description": "List Studio flow executions",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "executions",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_sid": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "flow_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_studio_execution",
+    "description": "Get the status of a Studio flow execution",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "execution",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_sid": {
+          "type": "string"
+        },
+        "execution_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "flow_sid",
+        "execution_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_end_studio_execution",
+    "description": "Terminate a Studio flow execution",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "studio",
+      "execution",
+      "end"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "flow_sid": {
+          "type": "string"
+        },
+        "execution_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "flow_sid",
+        "execution_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_conversations",
+    "description": "List Twilio Conversations (multi-party messaging across SMS/WhatsApp/Chat)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversations",
+      "list",
+      "multi-party"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_conversation",
+    "description": "Create a new multi-party conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "messaging_service_sid": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_conversation",
+    "description": "Get details of a Twilio Conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conversation_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_conversation",
+    "description": "Delete a Twilio Conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conversation_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_add_conversation_participant",
+    "description": "Add a participant to a Conversation by identity (Chat) or phone (SMS/WhatsApp)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "participant",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        },
+        "identity": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "proxy_address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conversation_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_conversation_participants",
+    "description": "List participants in a Conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "participants"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conversation_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_send_conversation_message",
+    "description": "Send a message into a Conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "message",
+      "send"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "conversation_sid",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_conversation_messages",
+    "description": "List messages in a Conversation",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "conversation",
+      "messages",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "conversation_sid": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 50
+        }
+      },
+      "required": [
+        "conversation_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_addresses",
+    "description": "List regulatory addresses (required for purchasing certain numbers internationally)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "address",
+      "compliance",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_address",
+    "description": "Create a regulatory address for number purchasing in countries requiring local registration",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "address",
+      "compliance",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "customer_name": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "iso_country": {
+          "type": "string",
+          "default": "US"
+        }
+      },
+      "required": [
+        "customer_name",
+        "street",
+        "city",
+        "region",
+        "postal_code"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_address",
+    "description": "Get a regulatory address by SID",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "address",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_address",
+    "description": "Delete a regulatory address",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "address",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_phone_number",
+    "description": "Get details of a specific Twilio phone number by SID",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "phone",
+      "number",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_search_toll_free_numbers",
+    "description": "Search for available toll-free numbers",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "phone",
+      "number",
+      "search",
+      "toll-free"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string",
+          "default": "US"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "sms_enabled": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_search_mobile_numbers",
+    "description": "Search for available mobile numbers (UK, etc)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "phone",
+      "number",
+      "search",
+      "mobile"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string",
+          "default": "GB"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 10
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_usage_records",
+    "description": "Get Twilio usage records with category filter and date range",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "usage",
+      "records",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string"
+        },
+        "start_date": {
+          "type": "string"
+        },
+        "end_date": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_get_daily_usage",
+    "description": "Get daily Twilio usage breakdown",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "usage",
+      "daily",
+      "billing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 30
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_list_usage_triggers",
+    "description": "List Twilio usage-based webhook triggers",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "usage",
+      "trigger",
+      "list",
+      "webhook"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_usage_trigger",
+    "description": "Create a usage-based webhook trigger (notify when spend hits a threshold)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "usage",
+      "trigger",
+      "create",
+      "alerts"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "callback_url": {
+          "type": "string"
+        },
+        "trigger_value": {
+          "type": "string"
+        },
+        "usage_category": {
+          "type": "string"
+        },
+        "recurring": {
+          "type": "string"
+        },
+        "trigger_by": {
+          "type": "string",
+          "default": "usage"
+        }
+      },
+      "required": [
+        "callback_url",
+        "trigger_value",
+        "usage_category"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_usage_trigger",
+    "description": "Delete a usage-based trigger",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "usage",
+      "trigger",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "trigger_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "trigger_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_api_keys",
+    "description": "List Twilio API keys (scoped credentials)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-key",
+      "list",
+      "credentials"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_api_key",
+    "description": "Create a new scoped Twilio API key",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-key",
+      "create",
+      "credentials"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_api_key",
+    "description": "Delete (revoke) a Twilio API key",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-key",
+      "delete",
+      "revoke"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_applications",
+    "description": "List TwiML Applications (reusable voice/SMS configurations)",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "application",
+      "twiml",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_create_application",
+    "description": "Create a TwiML Application with voice/SMS webhook URLs",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "application",
+      "twiml",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "voice_url": {
+          "type": "string"
+        },
+        "sms_url": {
+          "type": "string"
+        },
+        "status_callback": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_application",
+    "description": "Delete a TwiML Application",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "application",
+      "twiml",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "application_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "application_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_dispatch_notification",
+    "description": "SUPER TOOL: Send dispatch SMS to a driver/customer with automatic voice-call fallback if SMS fails. Returns delivery status of both channels.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "super-tool",
+      "dispatch",
+      "sms",
+      "voice",
+      "fallback",
+      "yardsync"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "fallback_voice": {
+          "type": "boolean",
+          "default": false
+        },
+        "voice_message": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "twilio_send_otp_and_wait",
+    "description": "SUPER TOOL: Send a verification code AND optionally check it in one call. If check_code provided, returns verified status; otherwise returns sent status.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "super-tool",
+      "verify",
+      "otp",
+      "2fa"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "to": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "default": "sms"
+        },
+        "service_sid": {
+          "type": "string"
+        },
+        "wait_seconds": {
+          "type": "number",
+          "default": 60
+        },
+        "check_code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "to"
+      ]
+    }
+  },
+  {
+    "name": "twilio_setup_number_with_webhooks",
+    "description": "SUPER TOOL: Search + buy a phone number with specified area code + wire SMS/voice webhooks + optionally send test message — all in one call.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "super-tool",
+      "number",
+      "webhook",
+      "setup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sms_webhook": {
+          "type": "string"
+        },
+        "voice_webhook": {
+          "type": "string"
+        },
+        "area_code": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "default": "US"
+        },
+        "test_message_to": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "twilio_broadcast_with_status",
+    "description": "SUPER TOOL: Send the same SMS to a list of recipients AND poll each message status after a configurable delay. Returns delivered/failed/pending counts.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "super-tool",
+      "broadcast",
+      "bulk",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "status_check_delay_ms": {
+          "type": "number",
+          "default": 5000
+        }
+      },
+      "required": [
+        "recipients",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_brands",
+    "description": "List A2P 10DLC brand registrations on the Twilio account.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "brands",
+      "list",
+      "compliance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_get_brand",
+    "description": "Get a specific A2P 10DLC brand registration by SID.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "brand",
+      "get",
+      "compliance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "brand_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "brand_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_campaigns",
+    "description": "List A2P 10DLC messaging campaigns registered on the account.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "campaigns",
+      "list",
+      "compliance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_get_campaign",
+    "description": "Get a specific A2P 10DLC campaign by SID.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "campaign",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "campaign_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "campaign_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_brand_registrations",
+    "description": "List A2P brand registrations via the Twilio Messaging v1 API.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "brand-registrations",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_list_us_app_to_person_campaigns",
+    "description": "List USA2P (10DLC) campaign registrations for a Twilio Messaging Service.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "10dlc",
+      "usa2p",
+      "campaigns",
+      "messaging-service"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "messaging_service_sid": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "messaging_service_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_validate_webhook_signature",
+    "description": "Validate a Twilio webhook request signature to confirm it came from Twilio.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "webhook",
+      "validate",
+      "signature",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "description": "POST params from the webhook request"
+        },
+        "signature": {
+          "type": "string",
+          "description": "X-Twilio-Signature header value"
+        }
+      },
+      "required": [
+        "url",
+        "signature"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_local_numbers",
+    "description": "Search available local phone numbers to buy, with optional area code or pattern filter.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "numbers",
+      "local",
+      "search",
+      "available"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "country_code": {
+          "type": "string",
+          "description": "ISO country code, e.g. US"
+        },
+        "area_code": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string",
+          "description": "Pattern to match, e.g. 800"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_configure_number_webhook",
+    "description": "Set webhook URLs for inbound SMS and voice calls on a Twilio phone number.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "phone-number",
+      "webhook",
+      "configure",
+      "sms",
+      "voice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "phone_number_sid": {
+          "type": "string"
+        },
+        "sms_url": {
+          "type": "string"
+        },
+        "sms_method": {
+          "type": "string"
+        },
+        "voice_url": {
+          "type": "string"
+        },
+        "voice_method": {
+          "type": "string"
+        },
+        "status_callback": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "phone_number_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_account",
+    "description": "Update Twilio account settings (friendly name, status).",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "account",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "active or suspended"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_list_keys",
+    "description": "List API keys on the Twilio account.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-keys",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_get_key",
+    "description": "Get a specific Twilio API key by SID.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-key",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_update_key",
+    "description": "Update the friendly name of a Twilio API key.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "api-key",
+      "update",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "key_sid": {
+          "type": "string"
+        },
+        "friendly_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key_sid",
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_queues",
+    "description": "List call queues on the Twilio account.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "queues",
+      "list",
+      "voice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_create_queue",
+    "description": "Create a new call queue on the Twilio account.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "queue",
+      "create",
+      "voice"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "max_size": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "friendly_name"
+      ]
+    }
+  },
+  {
+    "name": "twilio_get_queue",
+    "description": "Get a Twilio call queue by its SID.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "queue",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_delete_queue",
+    "description": "Delete a Twilio call queue.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "queue",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_queue_members",
+    "description": "List callers currently waiting in a Twilio call queue.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "queue",
+      "members",
+      "callers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_sid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_sid"
+      ]
+    }
+  },
+  {
+    "name": "twilio_list_taskrouter_workspaces",
+    "description": "List Twilio TaskRouter workspaces for contact center routing.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "taskrouter",
+      "workspaces",
+      "contact-center"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_account_health",
+    "description": "SUPER TOOL: Account health overview — account status, balance, phone numbers and capabilities, messaging services.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "account",
+      "health",
+      "overview",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "twilio_compliance_summary",
+    "description": "SUPER TOOL: Compliance summary — phone number capabilities breakdown and last-month usage by category.",
+    "namespace": "twilio",
+    "tags": [
+      "twilio",
+      "compliance",
+      "summary",
+      "10dlc",
+      "usage",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  }
 ]

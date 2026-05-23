@@ -598,6 +598,202 @@ async function execute(tool, args) {
   }
 
 
+
+  // ── DATA SCRUBBING / PII ──────────────────────────────────────────────────
+  if (tool === 'sentry_get_data_scrubbing_config') {
+    return await sentry('GET', `/organizations/${ORG()}/data-scrubbing/`);
+  }
+  if (tool === 'sentry_update_data_scrubbing_config') {
+    const { require_scrub_data, require_scrub_defaults, sensitive_fields, safe_fields, scrub_ip_addresses, scrub_defaults } = args;
+    const body = {};
+    if (require_scrub_data !== undefined) body.requiresScrubData = require_scrub_data;
+    if (require_scrub_defaults !== undefined) body.requiresScrubDefaults = require_scrub_defaults;
+    if (sensitive_fields) body.sensitiveFields = sensitive_fields;
+    if (safe_fields) body.safeFields = safe_fields;
+    if (scrub_ip_addresses !== undefined) body.scrubIPAddresses = scrub_ip_addresses;
+    if (scrub_defaults !== undefined) body.scrubDefaults = scrub_defaults;
+    return await sentry('PUT', `/organizations/${ORG()}/data-scrubbing/`, body);
+  }
+  if (tool === 'sentry_get_project_data_scrubbing') {
+    const p = reqProj(project_slug);
+    return await sentry('GET', `/projects/${ORG()}/${p}/`);
+  }
+
+  // ── RETENTION RULES ───────────────────────────────────────────────────────
+  if (tool === 'sentry_list_org_rules') {
+    return await sentry('GET', `/organizations/${ORG()}/rules/`);
+  }
+  if (tool === 'sentry_create_org_inbound_filter') {
+    const p = reqProj(project_slug);
+    const { filter_id, active = true, subfilters } = args;
+    if (!filter_id) throw new Error('filter_id is required (browser-extensions, localhost, legacy-browsers, web-crawlers)');
+    const body = { active };
+    if (subfilters) body.subfilters = subfilters;
+    return await sentry('PUT', `/projects/${ORG()}/${p}/filters/${filter_id}/`, body);
+  }
+  if (tool === 'sentry_list_inbound_filters') {
+    const p = reqProj(project_slug);
+    return await sentry('GET', `/projects/${ORG()}/${p}/filters/`);
+  }
+
+  // ── CODEOWNERS ────────────────────────────────────────────────────────────
+  if (tool === 'sentry_get_codeowners') {
+    const p = reqProj(project_slug);
+    return await sentry('GET', `/projects/${ORG()}/${p}/codeowners/`);
+  }
+  if (tool === 'sentry_create_codeowners') {
+    const { raw, code_mapping_id } = args;
+    const p = reqProj(project_slug);
+    if (!raw) throw new Error('raw codeowners content is required');
+    return await sentry('POST', `/projects/${ORG()}/${p}/codeowners/`, { raw, codeMappingId: code_mapping_id });
+  }
+  if (tool === 'sentry_update_codeowners') {
+    const { codeowners_id, raw } = args;
+    const p = reqProj(project_slug);
+    if (!codeowners_id || !raw) throw new Error('codeowners_id and raw are required');
+    return await sentry('PUT', `/projects/${ORG()}/${p}/codeowners/${codeowners_id}/`, { raw });
+  }
+
+  // ── DASHBOARDS CRUD ───────────────────────────────────────────────────────
+  if (tool === 'sentry_create_dashboard') {
+    const { title, widgets } = args;
+    if (!title) throw new Error('title is required');
+    const body = { title };
+    if (widgets) body.widgets = widgets;
+    return await sentry('POST', `/organizations/${ORG()}/dashboards/`, body);
+  }
+  if (tool === 'sentry_update_dashboard') {
+    const { dashboard_id, title, widgets } = args;
+    if (!dashboard_id) throw new Error('dashboard_id is required');
+    const body = {};
+    if (title) body.title = title;
+    if (widgets) body.widgets = widgets;
+    return await sentry('PUT', `/organizations/${ORG()}/dashboards/${dashboard_id}/`, body);
+  }
+  if (tool === 'sentry_delete_dashboard') {
+    return await sentry('DELETE', `/organizations/${ORG()}/dashboards/${args.dashboard_id}/`);
+  }
+
+  // ── NOTIFICATION ACTIONS ──────────────────────────────────────────────────
+  if (tool === 'sentry_list_notification_actions') {
+    return await sentry('GET', `/organizations/${ORG()}/notifications/actions/`);
+  }
+  if (tool === 'sentry_create_notification_action') {
+    const { trigger_type, service_type, target_display, target_identifier, target_type, integration_id, sentry_app_id, projects } = args;
+    if (!trigger_type || !service_type || !target_type) throw new Error('trigger_type, service_type, and target_type are required');
+    const body = { triggerType: trigger_type, serviceType: service_type, targetType: target_type };
+    if (target_display) body.targetDisplay = target_display;
+    if (target_identifier) body.targetIdentifier = target_identifier;
+    if (integration_id) body.integrationId = integration_id;
+    if (sentry_app_id) body.sentryAppId = sentry_app_id;
+    if (projects) body.projects = projects;
+    return await sentry('POST', `/organizations/${ORG()}/notifications/actions/`, body);
+  }
+  if (tool === 'sentry_delete_notification_action') {
+    return await sentry('DELETE', `/organizations/${ORG()}/notifications/actions/${args.action_id}/`);
+  }
+
+  // ── ORG SETTINGS ─────────────────────────────────────────────────────────
+  if (tool === 'sentry_get_org') {
+    return await sentry('GET', `/organizations/${ORG()}/`);
+  }
+  if (tool === 'sentry_update_org') {
+    const { name, slug, ...settings } = args;
+    const body = {};
+    if (name) body.name = name;
+    if (slug) body.slug = slug;
+    Object.assign(body, settings);
+    return await sentry('PUT', `/organizations/${ORG()}/`, body);
+  }
+  if (tool === 'sentry_get_org_integrations') {
+    return await sentry('GET', `/organizations/${ORG()}/integrations/`);
+  }
+
+  // ── PROJECT OWNERSHIP ─────────────────────────────────────────────────────
+  if (tool === 'sentry_get_ownership_rules') {
+    const p = reqProj(project_slug);
+    return await sentry('GET', `/projects/${ORG()}/${p}/ownership/`);
+  }
+  if (tool === 'sentry_update_ownership_rules') {
+    const { raw, fallthrough, auto_assignment } = args;
+    const p = reqProj(project_slug);
+    const body = {};
+    if (raw !== undefined) body.raw = raw;
+    if (fallthrough !== undefined) body.fallthrough = fallthrough;
+    if (auto_assignment !== undefined) body.autoAssignment = auto_assignment;
+    return await sentry('PUT', `/projects/${ORG()}/${p}/ownership/`, body);
+  }
+
+  // ── ISSUE GROUPING ────────────────────────────────────────────────────────
+  if (tool === 'sentry_list_grouping_configs') {
+    return await sentry('GET', `/organizations/${ORG()}/grouping-configs/`);
+  }
+  if (tool === 'sentry_update_project_grouping') {
+    const { grouping_config, secondary_grouping_config, secondary_grouping_expiry } = args;
+    const p = reqProj(project_slug);
+    const body = {};
+    if (grouping_config) body.groupingConfig = grouping_config;
+    if (secondary_grouping_config) body.secondaryGroupingConfig = secondary_grouping_config;
+    if (secondary_grouping_expiry) body.secondaryGroupingExpiry = secondary_grouping_expiry;
+    return await sentry('PUT', `/projects/${ORG()}/${p}/`, body);
+  }
+
+  // ── SUPER TOOL: Org security posture ─────────────────────────────────────
+  if (tool === 'sentry_org_security_posture') {
+    const [org, members, projects, integrations] = await Promise.all([
+      sentry('GET', `/organizations/${ORG()}/`),
+      sentry('GET', `/organizations/${ORG()}/members/?limit=25`),
+      sentry('GET', `/organizations/${ORG()}/projects/`),
+      sentry('GET', `/organizations/${ORG()}/integrations/`).catch(() => [])
+    ]);
+    const memberList = Array.isArray(members) ? members : (members.results || []);
+    const projectList = Array.isArray(projects) ? projects : (projects.results || []);
+    const integrationList = Array.isArray(integrations) ? integrations : [];
+    const twoFACount = memberList.filter(m => m.user?.has2fa).length;
+    return {
+      org: { name: org.name, slug: org.slug, plan: org.plan, member_count: org.stats?.members || memberList.length },
+      security: {
+        two_fa_members: twoFACount,
+        total_members: memberList.length,
+        two_fa_coverage_pct: memberList.length > 0 ? Math.round(twoFACount / memberList.length * 100) : 0,
+        require_2fa: org.require2FA,
+        scrub_ip_addresses: org.scrubIPAddresses,
+        safe_fields: org.safeFields,
+        sensitive_fields: org.sensitiveFields
+      },
+      projects_count: projectList.length,
+      integrations: integrationList.map(i => ({ name: i.name, status: i.status })),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Alert coverage audit ─────────────────────────────────────
+  if (tool === 'sentry_alert_coverage_audit') {
+    const [projects, issueAlerts, metricAlerts, monitors] = await Promise.all([
+      sentry('GET', `/organizations/${ORG()}/projects/`),
+      sentry('GET', `/organizations/${ORG()}/combined-rules/?limit=100`).catch(() => []),
+      sentry('GET', `/organizations/${ORG()}/alert-rules/?limit=100`).catch(() => []),
+      sentry('GET', `/organizations/${ORG()}/monitors/?limit=50`).catch(() => [])
+    ]);
+    const projectList = Array.isArray(projects) ? projects : (projects.results || []);
+    const issueAlertList = Array.isArray(issueAlerts) ? issueAlerts : [];
+    const metricAlertList = Array.isArray(metricAlerts) ? metricAlerts : [];
+    const monitorList = Array.isArray(monitors) ? monitors : [];
+    const coveredProjects = new Set([
+      ...issueAlertList.map(a => a.projects?.[0]),
+      ...metricAlertList.map(a => a.projects?.[0])
+    ].filter(Boolean));
+    return {
+      total_projects: projectList.length,
+      projects_with_alerts: coveredProjects.size,
+      uncovered_projects: projectList.filter(p => !coveredProjects.has(p.slug)).map(p => p.slug),
+      issue_alert_count: issueAlertList.length,
+      metric_alert_count: metricAlertList.length,
+      cron_monitor_count: monitorList.length,
+      generated_at: new Date().toISOString()
+    };
+  }
+
     throw new Error(`Unknown Sentry tool: ${tool}`);
 }
 

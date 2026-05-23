@@ -3161,5 +3161,541 @@
         "key_id"
       ]
     }
+  },
+  {
+    "name": "openai_list_project_rate_limits",
+    "description": "List rate limits for a specific OpenAI project (requires admin key).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "rate-limits",
+      "project",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_update_project_rate_limit",
+    "description": "Update rate limits (RPM, TPM, images/min, audio MB/min) for an OpenAI project.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "rate-limits",
+      "project",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "rate_limit_id": {
+          "type": "string"
+        },
+        "max_requests_per_1_minute": {
+          "type": "number"
+        },
+        "max_tokens_per_1_minute": {
+          "type": "number"
+        },
+        "max_images_per_1_minute": {
+          "type": "number"
+        },
+        "max_requests_per_1_day": {
+          "type": "number"
+        },
+        "max_tokens_per_1_day": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id",
+        "rate_limit_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_project_service_accounts",
+    "description": "List service accounts for an OpenAI project (machine-to-machine API access).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "service-accounts",
+      "project",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_create_project_service_account",
+    "description": "Create a service account for an OpenAI project (returns API key — store it securely).",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "service-account",
+      "create",
+      "api-key"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "openai_delete_project_service_account",
+    "description": "Delete a service account from an OpenAI project.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "service-account",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "service_account_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "service_account_id"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_audit_logs",
+    "description": "List organization audit logs — who did what and when across all projects.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "admin",
+      "audit",
+      "logs",
+      "compliance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        },
+        "after": {
+          "type": "string"
+        },
+        "before": {
+          "type": "string"
+        },
+        "actor_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "openai_get_usage_completions",
+    "description": "Get token usage and request counts for chat completions, grouped by model or project.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "completions",
+      "tokens",
+      "cost",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number",
+          "description": "Unix timestamp"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string",
+          "description": "1m, 1h, or 1d"
+        },
+        "group_by": {
+          "description": "model, project_id, user_id, or api_key_id"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_embeddings",
+    "description": "Get usage statistics for the embeddings API over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "embeddings",
+      "tokens",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_images",
+    "description": "Get usage statistics for image generation (DALL-E) over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "images",
+      "dall-e",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_audio_speeches",
+    "description": "Get usage statistics for text-to-speech (TTS) over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "tts",
+      "audio",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_audio_transcriptions",
+    "description": "Get usage statistics for Whisper transcriptions over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "whisper",
+      "transcription",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_moderations",
+    "description": "Get usage statistics for the moderation API over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "moderation",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_vector_stores",
+    "description": "Get vector store storage usage statistics over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "vector-stores",
+      "storage",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_get_usage_code_interpreter",
+    "description": "Get usage statistics for Code Interpreter sessions over a time range.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "code-interpreter",
+      "sessions",
+      "analytics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number"
+        },
+        "end_time": {
+          "type": "number"
+        },
+        "bucket_width": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_time"
+      ]
+    }
+  },
+  {
+    "name": "openai_check_model_deprecation",
+    "description": "Check whether a model is current or at risk of deprecation, with migration recommendations.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "model",
+      "deprecation",
+      "lifecycle",
+      "migration"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model"
+      ]
+    }
+  },
+  {
+    "name": "openai_list_fine_tuning_jobs_for_model",
+    "description": "List fine-tuning jobs filtered by base model name.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "fine-tuning",
+      "jobs",
+      "model",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "base_model": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "openai_org_cost_report",
+    "description": "SUPER TOOL: 30-day org cost report — total spend, daily breakdown, and project count in one call.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "cost",
+      "report",
+      "billing",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "openai_model_usage_breakdown",
+    "description": "SUPER TOOL: 7-day model usage breakdown — requests and tokens per model across completions, embeddings, images, and TTS.",
+    "namespace": "openai",
+    "tags": [
+      "openai",
+      "usage",
+      "breakdown",
+      "models",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "number",
+          "description": "Unix timestamp, defaults to 7 days ago"
+        }
+      },
+      "required": []
+    }
   }
 ]

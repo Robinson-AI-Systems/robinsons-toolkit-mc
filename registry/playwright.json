@@ -1,36 +1,1483 @@
 [
-  {"name":"playwright_goto","description":"Navigate to a URL and wait for it to load. Returns the final URL, page title, and load status.","namespace":"playwright","tags":["playwright","navigate","goto","url","browser","open"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"wait_until":{"type":"string","description":"networkidle (default), domcontentloaded, or load"},"timeout":{"type":"number"},"headless":{"type":"boolean","description":"Run browser headlessly (default true)"}},"required":["url"]}},
-  {"name":"playwright_get_page_info","description":"Load a URL and return its title, current URL, and meta tags (description, og:title, og:image, etc.).","namespace":"playwright","tags":["playwright","page","info","title","meta","url"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"headless":{"type":"boolean"}},"required":["url"]}},
-  {"name":"playwright_navigate_and_wait","description":"Navigate to a URL and wait for a specific element or text to appear before returning.","namespace":"playwright","tags":["playwright","navigate","wait","selector","element","ready"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"CSS selector to wait for"},"wait_for_text":{"type":"string","description":"Text string to wait for in the page body"},"timeout":{"type":"number"}},"required":["url"]}},
-  {"name":"playwright_screenshot","description":"Take a screenshot of a web page and save it to a file. Supports full-page or viewport screenshots.","namespace":"playwright","tags":["playwright","screenshot","image","capture","visual","png"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"path":{"type":"string","description":"Output file path (e.g. /tmp/screenshot.png)"},"full_page":{"type":"boolean","description":"Capture full scrollable page (default false)"},"selector":{"type":"string","description":"If set, screenshot just this element"},"headless":{"type":"boolean"}},"required":["path"]}},
-  {"name":"playwright_screenshot_element","description":"Take a screenshot of a specific page element and save it to a file.","namespace":"playwright","tags":["playwright","screenshot","element","selector","crop","visual"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"CSS selector of the element to capture"},"path":{"type":"string","description":"Output file path"}},"required":["selector","path"]}},
-  {"name":"playwright_generate_pdf","description":"Render a web page to PDF and save it to a file.","namespace":"playwright","tags":["playwright","pdf","print","render","document","export"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"path":{"type":"string","description":"Output PDF file path"},"format":{"type":"string","description":"A4 (default), Letter, A3, etc."},"print_background":{"type":"boolean"},"margin":{"type":"object","description":"{top, right, bottom, left} e.g. {top: '1cm'}"}},"required":["url","path"]}},
-  {"name":"playwright_get_text","description":"Extract the visible text content from a web page or specific element.","namespace":"playwright","tags":["playwright","text","extract","content","scrape","innerText"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"Optional: extract text from this element only"},"headless":{"type":"boolean"}},"required":["url"]}},
-  {"name":"playwright_get_html","description":"Get the HTML source of a page or specific element.","namespace":"playwright","tags":["playwright","html","source","element","innerHTML","outerHTML"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"Optional: get HTML for this element only"},"outer":{"type":"boolean","description":"Return outerHTML instead of innerHTML"}},"required":["url"]}},
-  {"name":"playwright_extract_links","description":"Extract all hyperlinks from a web page with their text, href, and title attributes.","namespace":"playwright","tags":["playwright","links","extract","href","anchor","scrape"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"filter_pattern":{"type":"string","description":"Optional: only return links containing this string"}},"required":["url"]}},
-  {"name":"playwright_extract_table","description":"Extract a table from a web page as structured data with headers and rows.","namespace":"playwright","tags":["playwright","table","extract","data","scrape","rows","columns"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"CSS selector for the table (default: 'table')"},"index":{"type":"number","description":"Which table to extract if multiple (0-indexed)"}},"required":["url"]}},
-  {"name":"playwright_evaluate","description":"Execute JavaScript on a web page and return the result.","namespace":"playwright","tags":["playwright","javascript","evaluate","execute","DOM","custom"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"script":{"type":"string","description":"JavaScript expression to evaluate (wrapped in a function, must return a value)"}},"required":["script"]}},
-  {"name":"playwright_click","description":"Click an element on a web page identified by CSS selector or visible text.","namespace":"playwright","tags":["playwright","click","interact","button","link","element"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"CSS selector of the element to click"},"text":{"type":"string","description":"Visible text of the element to click (alternative to selector)"},"timeout":{"type":"number"}},"required":[]}},
-  {"name":"playwright_fill_form","description":"Fill in form fields on a web page and optionally submit the form.","namespace":"playwright","tags":["playwright","form","fill","input","submit","interact"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"fields":{"type":"object","description":"Object mapping CSS selectors to values (e.g. {'#email': 'user@example.com'})"},"submit_selector":{"type":"string","description":"CSS selector of the submit button"},"wait_after_submit":{"type":"number"}},"required":["fields"]}},
-  {"name":"playwright_type","description":"Type text into an input field character by character (more realistic than fill).","namespace":"playwright","tags":["playwright","type","input","keyboard","text","form"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string"},"text":{"type":"string"},"delay":{"type":"number","description":"Delay in ms between keystrokes (default 50)"}},"required":["selector","text"]}},
-  {"name":"playwright_select","description":"Select an option from a dropdown/select element by value or label.","namespace":"playwright","tags":["playwright","select","dropdown","option","form","interact"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string"},"value":{"type":"string"},"label":{"type":"string"}},"required":["selector"]}},
-  {"name":"playwright_hover","description":"Hover the mouse over an element (useful for revealing tooltips and dropdowns).","namespace":"playwright","tags":["playwright","hover","mouse","tooltip","dropdown","interact"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string"}},"required":["selector"]}},
-  {"name":"playwright_press_key","description":"Press a keyboard key, optionally focused on a specific element.","namespace":"playwright","tags":["playwright","keyboard","key","press","enter","tab","escape"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"key":{"type":"string","description":"Key to press: Enter, Tab, Escape, ArrowDown, etc."},"selector":{"type":"string","description":"Optional: focus this element first"}},"required":["key"]}},
-  {"name":"playwright_scroll","description":"Scroll the page up or down by a specified pixel amount.","namespace":"playwright","tags":["playwright","scroll","page","down","up","navigate"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"direction":{"type":"string","description":"down (default) or up"},"amount":{"type":"number","description":"Pixels to scroll (default 500)"}},"required":[]}},
-  {"name":"playwright_wait_for_selector","description":"Wait for a CSS selector to appear in a specific state on the page.","namespace":"playwright","tags":["playwright","wait","selector","element","appear","visible"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string"},"state":{"type":"string","description":"visible (default), hidden, attached, or detached"},"timeout":{"type":"number"}},"required":["selector"]}},
-  {"name":"playwright_wait_for_navigation","description":"Navigate to a URL and wait until the specified load event fires.","namespace":"playwright","tags":["playwright","wait","navigation","load","ready"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"wait_until":{"type":"string"},"timeout":{"type":"number"}},"required":["url"]}},
-  {"name":"playwright_wait_for_network_idle","description":"Navigate to a URL and wait until all network requests have settled.","namespace":"playwright","tags":["playwright","wait","network","idle","spa","ajax"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"timeout":{"type":"number"}},"required":["url"]}},
-  {"name":"playwright_intercept_requests","description":"Load a URL and capture all network requests made by the page.","namespace":"playwright","tags":["playwright","network","requests","intercept","monitor","debug"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"filter_url_pattern":{"type":"string","description":"Optional: only capture requests matching this substring"}},"required":["url"]}},
-  {"name":"playwright_get_response_body","description":"Intercept a specific API response body while loading a page.","namespace":"playwright","tags":["playwright","network","response","api","intercept","data"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"target_url_pattern":{"type":"string","description":"URL substring that identifies the API call to capture"}},"required":["url","target_url_pattern"]}},
-  {"name":"playwright_mock_route","description":"Load a URL with a mocked network route — intercepts requests matching a pattern and returns a custom response.","namespace":"playwright","tags":["playwright","mock","route","intercept","test","stub","api"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"intercept_pattern":{"type":"string","description":"URL glob or regex to intercept (e.g. '**/api/users**')"},"response_body":{"description":"Response to return (object or string)"},"status":{"type":"number"},"content_type":{"type":"string"}},"required":["url","intercept_pattern","response_body"]}},
-  {"name":"playwright_get_cookies","description":"Load a URL and return the cookies set by the page.","namespace":"playwright","tags":["playwright","cookies","session","auth","storage","browser"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"filter_name":{"type":"string","description":"Optional: only return cookies with names containing this string"}},"required":[]}},
-  {"name":"playwright_get_local_storage","description":"Load a URL and return the contents of localStorage.","namespace":"playwright","tags":["playwright","localStorage","storage","browser","data"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"}},"required":["url"]}},
-  {"name":"playwright_get_accessibility_snapshot","description":"Get the accessibility tree snapshot of a page or element — useful for a11y audits.","namespace":"playwright","tags":["playwright","accessibility","a11y","aria","audit","snapshot"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"Optional: snapshot just this element"}},"required":["url"]}},
-  {"name":"playwright_check_aria","description":"Extract ARIA roles, labels, and attributes from elements on a page for accessibility auditing.","namespace":"playwright","tags":["playwright","aria","accessibility","a11y","roles","audit"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string","description":"CSS selector for elements to check (default: '[role]')"}},"required":["url"]}},
-  {"name":"playwright_run_steps","description":"Execute a sequence of browser automation steps (click, fill, goto, wait, screenshot, press) in a single browser session.","namespace":"playwright","tags":["playwright","steps","sequence","automation","workflow","multi-step"],"inputSchema":{"type":"object","properties":{"url":{"type":"string","description":"Initial URL to navigate to"},"steps":{"type":"array","description":"Array of {action, selector?, value?, url?, key?, path?, abort_on_error?} objects"}},"required":["url","steps"]}},
-  {"name":"playwright_scrape_page","description":"SUPER TOOL: Full page scrape — returns page title, full text content, top 50 links, and meta tags in one call.","namespace":"playwright","tags":["playwright","scrape","extract","text","links","meta","super-tool"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"include_links":{"type":"boolean"},"include_meta":{"type":"boolean"}},"required":["url"]}},
-  {"name":"playwright_capture_and_extract","description":"SUPER TOOL: Navigate to a URL, take a screenshot, and extract text + headings in one call.","namespace":"playwright","tags":["playwright","screenshot","text","extract","capture","super-tool"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"screenshot_path":{"type":"string","description":"Optional: path to save screenshot (e.g. /tmp/page.png)"}},"required":["url"]}},
-  {"name":"playwright_test_form","description":"SUPER TOOL: Navigate to a URL, fill form fields, submit, and verify the result — form testing in one call.","namespace":"playwright","tags":["playwright","form","test","fill","submit","verify","super-tool"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"fields":{"type":"object","description":"CSS selector → value pairs"},"submit_selector":{"type":"string"},"success_selector":{"type":"string","description":"Selector that should appear after successful submission"},"screenshot_path":{"type":"string"}},"required":["url","fields"]}},
-  {"name":"playwright_monitor_element","description":"SUPER TOOL: Navigate to a URL and wait for an element to reach a specific state (visible, hidden) within a timeout — returns immediately with found/not-found status.","namespace":"playwright","tags":["playwright","monitor","wait","element","visible","hidden","super-tool"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"selector":{"type":"string"},"expect_state":{"type":"string","description":"visible (default), hidden, attached, or detached"},"timeout":{"type":"number","description":"Max wait time in ms (default 30000)"}},"required":["url","selector"]}},
-  {"name":"playwright_check_broken_links","description":"SUPER TOOL: Load a page, extract all links, and check each one for HTTP errors — returns broken links list.","namespace":"playwright","tags":["playwright","broken-links","audit","seo","health","check","super-tool"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"timeout_per_link":{"type":"number","description":"Timeout per link check in ms (default 8000)"}},"required":["url"]}}
+  {
+    "name": "playwright_goto",
+    "description": "Navigate to a URL and wait for it to load. Returns the final URL, page title, and load status.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "navigate",
+      "goto",
+      "url",
+      "browser",
+      "open"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "wait_until": {
+          "type": "string",
+          "description": "networkidle (default), domcontentloaded, or load"
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "headless": {
+          "type": "boolean",
+          "description": "Run browser headlessly (default true)"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_page_info",
+    "description": "Load a URL and return its title, current URL, and meta tags (description, og:title, og:image, etc.).",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "page",
+      "info",
+      "title",
+      "meta",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "headless": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_navigate_and_wait",
+    "description": "Navigate to a URL and wait for a specific element or text to appear before returning.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "navigate",
+      "wait",
+      "selector",
+      "element",
+      "ready"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector to wait for"
+        },
+        "wait_for_text": {
+          "type": "string",
+          "description": "Text string to wait for in the page body"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_screenshot",
+    "description": "Take a screenshot of a web page and save it to a file. Supports full-page or viewport screenshots.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "screenshot",
+      "image",
+      "capture",
+      "visual",
+      "png"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "description": "Output file path (e.g. /tmp/screenshot.png)"
+        },
+        "full_page": {
+          "type": "boolean",
+          "description": "Capture full scrollable page (default false)"
+        },
+        "selector": {
+          "type": "string",
+          "description": "If set, screenshot just this element"
+        },
+        "headless": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "playwright_screenshot_element",
+    "description": "Take a screenshot of a specific page element and save it to a file.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "screenshot",
+      "element",
+      "selector",
+      "crop",
+      "visual"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector of the element to capture"
+        },
+        "path": {
+          "type": "string",
+          "description": "Output file path"
+        }
+      },
+      "required": [
+        "selector",
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "playwright_generate_pdf",
+    "description": "Render a web page to PDF and save it to a file.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "pdf",
+      "print",
+      "render",
+      "document",
+      "export"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "description": "Output PDF file path"
+        },
+        "format": {
+          "type": "string",
+          "description": "A4 (default), Letter, A3, etc."
+        },
+        "print_background": {
+          "type": "boolean"
+        },
+        "margin": {
+          "type": "object",
+          "description": "{top, right, bottom, left} e.g. {top: '1cm'}"
+        }
+      },
+      "required": [
+        "url",
+        "path"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_text",
+    "description": "Extract the visible text content from a web page or specific element.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "text",
+      "extract",
+      "content",
+      "scrape",
+      "innerText"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "Optional: extract text from this element only"
+        },
+        "headless": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_html",
+    "description": "Get the HTML source of a page or specific element.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "html",
+      "source",
+      "element",
+      "innerHTML",
+      "outerHTML"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "Optional: get HTML for this element only"
+        },
+        "outer": {
+          "type": "boolean",
+          "description": "Return outerHTML instead of innerHTML"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_extract_links",
+    "description": "Extract all hyperlinks from a web page with their text, href, and title attributes.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "links",
+      "extract",
+      "href",
+      "anchor",
+      "scrape"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "filter_pattern": {
+          "type": "string",
+          "description": "Optional: only return links containing this string"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_extract_table",
+    "description": "Extract a table from a web page as structured data with headers and rows.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "table",
+      "extract",
+      "data",
+      "scrape",
+      "rows",
+      "columns"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector for the table (default: 'table')"
+        },
+        "index": {
+          "type": "number",
+          "description": "Which table to extract if multiple (0-indexed)"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_evaluate",
+    "description": "Execute JavaScript on a web page and return the result.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "javascript",
+      "evaluate",
+      "execute",
+      "DOM",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string",
+          "description": "JavaScript expression to evaluate (wrapped in a function, must return a value)"
+        }
+      },
+      "required": [
+        "script"
+      ]
+    }
+  },
+  {
+    "name": "playwright_click",
+    "description": "Click an element on a web page identified by CSS selector or visible text.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "click",
+      "interact",
+      "button",
+      "link",
+      "element"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector of the element to click"
+        },
+        "text": {
+          "type": "string",
+          "description": "Visible text of the element to click (alternative to selector)"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "playwright_fill_form",
+    "description": "Fill in form fields on a web page and optionally submit the form.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "form",
+      "fill",
+      "input",
+      "submit",
+      "interact"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "description": "Object mapping CSS selectors to values (e.g. {'#email': 'user@example.com'})"
+        },
+        "submit_selector": {
+          "type": "string",
+          "description": "CSS selector of the submit button"
+        },
+        "wait_after_submit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "playwright_type",
+    "description": "Type text into an input field character by character (more realistic than fill).",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "type",
+      "input",
+      "keyboard",
+      "text",
+      "form"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "number",
+          "description": "Delay in ms between keystrokes (default 50)"
+        }
+      },
+      "required": [
+        "selector",
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "playwright_select",
+    "description": "Select an option from a dropdown/select element by value or label.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "select",
+      "dropdown",
+      "option",
+      "form",
+      "interact"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selector"
+      ]
+    }
+  },
+  {
+    "name": "playwright_hover",
+    "description": "Hover the mouse over an element (useful for revealing tooltips and dropdowns).",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "hover",
+      "mouse",
+      "tooltip",
+      "dropdown",
+      "interact"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "selector"
+      ]
+    }
+  },
+  {
+    "name": "playwright_press_key",
+    "description": "Press a keyboard key, optionally focused on a specific element.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "keyboard",
+      "key",
+      "press",
+      "enter",
+      "tab",
+      "escape"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "description": "Key to press: Enter, Tab, Escape, ArrowDown, etc."
+        },
+        "selector": {
+          "type": "string",
+          "description": "Optional: focus this element first"
+        }
+      },
+      "required": [
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "playwright_scroll",
+    "description": "Scroll the page up or down by a specified pixel amount.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "scroll",
+      "page",
+      "down",
+      "up",
+      "navigate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "direction": {
+          "type": "string",
+          "description": "down (default) or up"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Pixels to scroll (default 500)"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "playwright_wait_for_selector",
+    "description": "Wait for a CSS selector to appear in a specific state on the page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "wait",
+      "selector",
+      "element",
+      "appear",
+      "visible"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "description": "visible (default), hidden, attached, or detached"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "selector"
+      ]
+    }
+  },
+  {
+    "name": "playwright_wait_for_navigation",
+    "description": "Navigate to a URL and wait until the specified load event fires.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "wait",
+      "navigation",
+      "load",
+      "ready"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "wait_until": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_wait_for_network_idle",
+    "description": "Navigate to a URL and wait until all network requests have settled.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "wait",
+      "network",
+      "idle",
+      "spa",
+      "ajax"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_intercept_requests",
+    "description": "Load a URL and capture all network requests made by the page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "network",
+      "requests",
+      "intercept",
+      "monitor",
+      "debug"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "filter_url_pattern": {
+          "type": "string",
+          "description": "Optional: only capture requests matching this substring"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_response_body",
+    "description": "Intercept a specific API response body while loading a page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "network",
+      "response",
+      "api",
+      "intercept",
+      "data"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "target_url_pattern": {
+          "type": "string",
+          "description": "URL substring that identifies the API call to capture"
+        }
+      },
+      "required": [
+        "url",
+        "target_url_pattern"
+      ]
+    }
+  },
+  {
+    "name": "playwright_mock_route",
+    "description": "Load a URL with a mocked network route — intercepts requests matching a pattern and returns a custom response.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "mock",
+      "route",
+      "intercept",
+      "test",
+      "stub",
+      "api"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "intercept_pattern": {
+          "type": "string",
+          "description": "URL glob or regex to intercept (e.g. '**/api/users**')"
+        },
+        "response_body": {
+          "description": "Response to return (object or string)"
+        },
+        "status": {
+          "type": "number"
+        },
+        "content_type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "intercept_pattern",
+        "response_body"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_cookies",
+    "description": "Load a URL and return the cookies set by the page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "cookies",
+      "session",
+      "auth",
+      "storage",
+      "browser"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "filter_name": {
+          "type": "string",
+          "description": "Optional: only return cookies with names containing this string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "playwright_get_local_storage",
+    "description": "Load a URL and return the contents of localStorage.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "localStorage",
+      "storage",
+      "browser",
+      "data"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_accessibility_snapshot",
+    "description": "Get the accessibility tree snapshot of a page or element — useful for a11y audits.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "accessibility",
+      "a11y",
+      "aria",
+      "audit",
+      "snapshot"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "Optional: snapshot just this element"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_check_aria",
+    "description": "Extract ARIA roles, labels, and attributes from elements on a page for accessibility auditing.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "aria",
+      "accessibility",
+      "a11y",
+      "roles",
+      "audit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS selector for elements to check (default: '[role]')"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_run_steps",
+    "description": "Execute a sequence of browser automation steps (click, fill, goto, wait, screenshot, press) in a single browser session.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "steps",
+      "sequence",
+      "automation",
+      "workflow",
+      "multi-step"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "Initial URL to navigate to"
+        },
+        "steps": {
+          "type": "array",
+          "description": "Array of {action, selector?, value?, url?, key?, path?, abort_on_error?} objects"
+        }
+      },
+      "required": [
+        "url",
+        "steps"
+      ]
+    }
+  },
+  {
+    "name": "playwright_scrape_page",
+    "description": "SUPER TOOL: Full page scrape — returns page title, full text content, top 50 links, and meta tags in one call.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "scrape",
+      "extract",
+      "text",
+      "links",
+      "meta",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "include_links": {
+          "type": "boolean"
+        },
+        "include_meta": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_capture_and_extract",
+    "description": "SUPER TOOL: Navigate to a URL, take a screenshot, and extract text + headings in one call.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "screenshot",
+      "text",
+      "extract",
+      "capture",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "screenshot_path": {
+          "type": "string",
+          "description": "Optional: path to save screenshot (e.g. /tmp/page.png)"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_test_form",
+    "description": "SUPER TOOL: Navigate to a URL, fill form fields, submit, and verify the result — form testing in one call.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "form",
+      "test",
+      "fill",
+      "submit",
+      "verify",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "description": "CSS selector → value pairs"
+        },
+        "submit_selector": {
+          "type": "string"
+        },
+        "success_selector": {
+          "type": "string",
+          "description": "Selector that should appear after successful submission"
+        },
+        "screenshot_path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "fields"
+      ]
+    }
+  },
+  {
+    "name": "playwright_monitor_element",
+    "description": "SUPER TOOL: Navigate to a URL and wait for an element to reach a specific state (visible, hidden) within a timeout — returns immediately with found/not-found status.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "monitor",
+      "wait",
+      "element",
+      "visible",
+      "hidden",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string"
+        },
+        "expect_state": {
+          "type": "string",
+          "description": "visible (default), hidden, attached, or detached"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Max wait time in ms (default 30000)"
+        }
+      },
+      "required": [
+        "url",
+        "selector"
+      ]
+    }
+  },
+  {
+    "name": "playwright_check_broken_links",
+    "description": "SUPER TOOL: Load a page, extract all links, and check each one for HTTP errors — returns broken links list.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "broken-links",
+      "audit",
+      "seo",
+      "health",
+      "check",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "timeout_per_link": {
+          "type": "number",
+          "description": "Timeout per link check in ms (default 8000)"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_performance_metrics",
+    "description": "Get Core Web Vitals and performance metrics for a URL — LCP, FCP, CLS, TTFB with good/needs improvement/poor ratings.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "performance",
+      "web-vitals",
+      "lcp",
+      "fcp",
+      "cls",
+      "ttfb"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_resource_timing",
+    "description": "Get loading timing for all resources on a page — sorted by slowest first, with size and type.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "performance",
+      "resources",
+      "timing",
+      "network"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "resource_type": {
+          "type": "string",
+          "description": "Filter by: script, link, img, xmlhttprequest, fetch"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_record_video",
+    "description": "Record a video of a web page for a set duration and save it to disk.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "video",
+      "record",
+      "capture",
+      "screen"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Directory path to save the video"
+        },
+        "duration_ms": {
+          "type": "number",
+          "description": "Recording duration in milliseconds"
+        },
+        "viewport_width": {
+          "type": "number"
+        },
+        "viewport_height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "playwright_capture_har",
+    "description": "Capture a full HAR (HTTP Archive) file for a page load — records all network requests and timings.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "har",
+      "network",
+      "capture",
+      "archive",
+      "timing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "output_path": {
+          "type": "string",
+          "description": "File path to write the .har file"
+        }
+      },
+      "required": [
+        "url",
+        "output_path"
+      ]
+    }
+  },
+  {
+    "name": "playwright_click_by_text",
+    "description": "Click an element by its visible text content on a page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "click",
+      "text",
+      "locator",
+      "interact"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "exact": {
+          "type": "boolean"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "playwright_click_by_role",
+    "description": "Click an element by ARIA role and optional name on a page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "click",
+      "role",
+      "aria",
+      "locator",
+      "accessibility"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "description": "button, link, checkbox, textbox, combobox, etc."
+        },
+        "name": {
+          "type": "string",
+          "description": "Accessible name of the element"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "playwright_fill_by_label",
+    "description": "Fill an input field by its label text on a page.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "fill",
+      "label",
+      "form",
+      "locator",
+      "input"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "label",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "playwright_get_by_test_id",
+    "description": "Find an element by its data-testid attribute and return its text content and visibility.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "testid",
+      "locator",
+      "testing",
+      "element"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "test_id": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url",
+        "test_id"
+      ]
+    }
+  },
+  {
+    "name": "playwright_open_multiple_tabs",
+    "description": "Open multiple URLs in parallel tabs and return their titles and status.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "tabs",
+      "multi-page",
+      "parallel",
+      "navigate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "urls"
+      ]
+    }
+  },
+  {
+    "name": "playwright_block_resources",
+    "description": "Load a page with specific resource types blocked (images, CSS, fonts) and measure speed improvement.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "block",
+      "resources",
+      "performance",
+      "optimization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "block_types": {
+          "type": "array",
+          "description": "Resource types to block: image, stylesheet, font, script"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_capture_network_requests",
+    "description": "Capture all network requests made during a page load, with optional URL pattern filter.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "network",
+      "requests",
+      "capture",
+      "monitor",
+      "api"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "filter_url_pattern": {
+          "type": "string",
+          "description": "Only capture requests containing this string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_page_audit",
+    "description": "SUPER TOOL: Full page audit — performance metrics, link counts, SEO basics (H1, meta description, alt text), console errors, and network errors.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "audit",
+      "seo",
+      "performance",
+      "errors",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "playwright_compare_pages",
+    "description": "SUPER TOOL: Compare two pages side by side — load time, element count, and title differences.",
+    "namespace": "playwright",
+    "tags": [
+      "playwright",
+      "compare",
+      "pages",
+      "diff",
+      "regression",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url_a": {
+          "type": "string"
+        },
+        "url_b": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "url_a",
+        "url_b"
+      ]
+    }
+  }
 ]

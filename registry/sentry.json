@@ -210,7 +210,7 @@
   },
   {
     "name": "sentry_bulk_update_issues",
-    "description": "Update multiple Sentry issues at once \u2014 e.g. resolve or ignore a batch of issues.",
+    "description": "Update multiple Sentry issues at once — e.g. resolve or ignore a batch of issues.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -294,7 +294,7 @@
   },
   {
     "name": "sentry_get_issue_tag_values",
-    "description": "Get all distinct values for a specific tag on a Sentry issue \u2014 e.g. all affected user emails.",
+    "description": "Get all distinct values for a specific tag on a Sentry issue — e.g. all affected user emails.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -1412,7 +1412,7 @@
   },
   {
     "name": "sentry_triage_errors",
-    "description": "SUPER TOOL: Get top unresolved errors sorted by user impact \u2014 issue ID, title, error count, users affected, and last seen \u2014 ready for triage.",
+    "description": "SUPER TOOL: Get top unresolved errors sorted by user impact — issue ID, title, error count, users affected, and last seen — ready for triage.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -1441,7 +1441,7 @@
   },
   {
     "name": "sentry_production_health",
-    "description": "SUPER TOOL: Production health check \u2014 project count, top 5 recent unresolved issues, and error volume stats in one call.",
+    "description": "SUPER TOOL: Production health check — project count, top 5 recent unresolved issues, and error volume stats in one call.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -1463,7 +1463,7 @@
   },
   {
     "name": "sentry_deploy_release",
-    "description": "SUPER TOOL: Create a release in Sentry and immediately mark it as deployed to an environment \u2014 the standard CI/CD workflow in one call.",
+    "description": "SUPER TOOL: Create a release in Sentry and immediately mark it as deployed to an environment — the standard CI/CD workflow in one call.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -1652,7 +1652,7 @@
   },
   {
     "name": "sentry_run_discover_query",
-    "description": "Run a Sentry Discover analytics query \u2014 event counts, error rates, latencies by any field.",
+    "description": "Run a Sentry Discover analytics query — event counts, error rates, latencies by any field.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -1881,7 +1881,7 @@
   },
   {
     "name": "sentry_get_performance_summary",
-    "description": "Query performance metrics for transactions using Sentry Discover \u2014 returns p50/p75/p95 latency, error rate, and throughput. Filter by transaction name, environment, or date range. Requires Sentry performance monitoring to be enabled.",
+    "description": "Query performance metrics for transactions using Sentry Discover — returns p50/p75/p95 latency, error rate, and throughput. Filter by transaction name, environment, or date range. Requires Sentry performance monitoring to be enabled.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -2163,7 +2163,7 @@
   },
   {
     "name": "sentry_performance_health",
-    "description": "SUPER TOOL: Get a full performance health snapshot \u2014 the 5 slowest transactions by p95 latency plus the most recent unresolved errors, all in one parallel call. Use for morning health checks and post-deploy performance verification.",
+    "description": "SUPER TOOL: Get a full performance health snapshot — the 5 slowest transactions by p95 latency plus the most recent unresolved errors, all in one parallel call. Use for morning health checks and post-deploy performance verification.",
     "namespace": "sentry",
     "tags": [
       "sentry",
@@ -2182,6 +2182,538 @@
           "type": "string"
         }
       }
+    }
+  },
+  {
+    "name": "sentry_get_data_scrubbing_config",
+    "description": "Get the org-level data scrubbing and PII configuration for Sentry.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "pii",
+      "data-scrubbing",
+      "config",
+      "privacy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_update_data_scrubbing_config",
+    "description": "Update PII/data scrubbing settings — sensitive fields, safe fields, IP scrubbing.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "pii",
+      "data-scrubbing",
+      "update",
+      "gdpr"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sensitive_fields": {
+          "type": "array",
+          "description": "Field names to always scrub"
+        },
+        "safe_fields": {
+          "type": "array",
+          "description": "Field names to never scrub"
+        },
+        "scrub_ip_addresses": {
+          "type": "boolean"
+        },
+        "require_scrub_data": {
+          "type": "boolean"
+        },
+        "require_scrub_defaults": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_inbound_filters",
+    "description": "List inbound event filters for a Sentry project (localhost, browser extensions, web crawlers, etc.).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "filters",
+      "inbound",
+      "project",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_org_inbound_filter",
+    "description": "Enable or disable an inbound filter for a Sentry project (e.g. filter localhost errors).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "filter",
+      "inbound",
+      "project",
+      "configure"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "filter_id": {
+          "type": "string",
+          "description": "browser-extensions, localhost, legacy-browsers, web-crawlers"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "subfilters": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "filter_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_codeowners",
+    "description": "Get the CODEOWNERS configuration for a Sentry project (auto-assignment rules).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "codeowners",
+      "ownership",
+      "auto-assign"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_codeowners",
+    "description": "Create a CODEOWNERS file for a Sentry project to auto-assign issues by code path.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "codeowners",
+      "create",
+      "ownership",
+      "auto-assign"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "raw": {
+          "type": "string",
+          "description": "Raw CODEOWNERS file content"
+        },
+        "code_mapping_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_codeowners",
+    "description": "Update a CODEOWNERS file for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "codeowners",
+      "update",
+      "ownership"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "codeowners_id": {
+          "type": "string"
+        },
+        "raw": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "codeowners_id",
+        "raw"
+      ]
+    }
+  },
+  {
+    "name": "sentry_create_dashboard",
+    "description": "Create a new Sentry dashboard with widgets.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "dashboard",
+      "create",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "widgets": {
+          "type": "array",
+          "description": "Array of widget configurations"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    }
+  },
+  {
+    "name": "sentry_update_dashboard",
+    "description": "Update a Sentry dashboard's title or widgets.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "dashboard",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "widgets": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_dashboard",
+    "description": "Delete a Sentry dashboard.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "dashboard",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dashboard_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dashboard_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_list_notification_actions",
+    "description": "List notification actions (Slack, PagerDuty, etc.) configured in the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "notifications",
+      "actions",
+      "list",
+      "alerts"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_create_notification_action",
+    "description": "Create a notification action to route Sentry alerts to Slack, PagerDuty, or other services.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "notification",
+      "action",
+      "create",
+      "slack",
+      "pagerduty"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "trigger_type": {
+          "type": "string",
+          "description": "spike-protection or error-count"
+        },
+        "service_type": {
+          "type": "string",
+          "description": "slack, pagerduty, sentry_notification, email, opsgenie"
+        },
+        "target_type": {
+          "type": "string",
+          "description": "specific or team"
+        },
+        "target_display": {
+          "type": "string"
+        },
+        "target_identifier": {
+          "type": "string"
+        },
+        "integration_id": {
+          "type": "number"
+        },
+        "projects": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "trigger_type",
+        "service_type",
+        "target_type"
+      ]
+    }
+  },
+  {
+    "name": "sentry_delete_notification_action",
+    "description": "Delete a Sentry notification action.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "notification",
+      "action",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action_id"
+      ]
+    }
+  },
+  {
+    "name": "sentry_get_org",
+    "description": "Get the Sentry organization details and settings.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "org",
+      "details",
+      "settings",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_update_org",
+    "description": "Update Sentry organization settings (name, features, security settings).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "org",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_org_integrations",
+    "description": "List all third-party integrations configured for the Sentry organization.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "integrations",
+      "list",
+      "github",
+      "jira",
+      "slack"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_get_ownership_rules",
+    "description": "Get issue ownership rules for a Sentry project (routes issues to teams/users by path).",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "ownership",
+      "rules",
+      "project",
+      "routing"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_update_ownership_rules",
+    "description": "Update issue ownership rules for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "ownership",
+      "rules",
+      "update",
+      "project"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "raw": {
+          "type": "string",
+          "description": "Ownership rules text"
+        },
+        "fallthrough": {
+          "type": "boolean"
+        },
+        "auto_assignment": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_list_grouping_configs",
+    "description": "List available issue grouping configurations in Sentry.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "grouping",
+      "configs",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_update_project_grouping",
+    "description": "Update the issue grouping configuration for a Sentry project.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "grouping",
+      "project",
+      "update",
+      "fingerprinting"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_slug": {
+          "type": "string"
+        },
+        "grouping_config": {
+          "type": "string"
+        },
+        "secondary_grouping_config": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_org_security_posture",
+    "description": "SUPER TOOL: Organization security posture — 2FA coverage, PII settings, project count, and integrations in one call.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "security",
+      "audit",
+      "posture",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "sentry_alert_coverage_audit",
+    "description": "SUPER TOOL: Alert coverage audit — which projects have no issue or metric alerts configured.",
+    "namespace": "sentry",
+    "tags": [
+      "sentry",
+      "alerts",
+      "coverage",
+      "audit",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
     }
   }
 ]

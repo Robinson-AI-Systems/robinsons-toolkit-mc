@@ -553,6 +553,162 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Twilio tool: ${tool}`);
+
+  // ── 10DLC BRAND & CAMPAIGN REGISTRATION ──────────────────────────────────
+  if (tool === 'twilio_list_brands') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/A2P/Brands.json`, { PageSize: args.limit || 20 });
+  }
+  if (tool === 'twilio_get_brand') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/A2P/Brands/${args.brand_sid}.json`, {});
+  }
+  if (tool === 'twilio_list_campaigns') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/A2P/Campaigns.json`, { PageSize: args.limit || 20 });
+  }
+  if (tool === 'twilio_get_campaign') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/A2P/Campaigns/${args.campaign_sid}.json`, {});
+  }
+  if (tool === 'twilio_list_brand_registrations') {
+    // Uses Messaging v1 API for 10DLC brand registrations
+    const res = await fetch(`https://messaging.twilio.com/v1/a2p/BrandRegistrations?PageSize=${args.limit || 20}`, {
+      headers: { 'Authorization': `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Twilio 10DLC ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+  if (tool === 'twilio_list_us_app_to_person_campaigns') {
+    const res = await fetch(`https://messaging.twilio.com/v1/Services/${args.messaging_service_sid}/Compliance/Usa2p?PageSize=${args.limit || 20}`, {
+      headers: { 'Authorization': `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Twilio USA2P ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+
+  // ── WEBHOOK VALIDATION ────────────────────────────────────────────────────
+  if (tool === 'twilio_validate_webhook_signature') {
+    const { url, params, signature } = args;
+    if (!url || !signature) throw new Error('url and signature are required');
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    if (!authToken) throw new Error('TWILIO_AUTH_TOKEN not set');
+    // Construct the expected signature
+    let signedData = url;
+    if (params && typeof params === 'object') {
+      const sorted = Object.keys(params).sort();
+      for (const key of sorted) signedData += key + params[key];
+    }
+    const { createHmac } = await import('crypto');
+    const expected = createHmac('sha1', authToken).update(signedData).digest('base64');
+    return {
+      valid: expected === signature,
+      expected_signature: expected,
+      provided_signature: signature,
+      url
+    };
+  }
+
+  // ── PHONE NUMBER MANAGEMENT ADVANCED ─────────────────────────────────────
+  if (tool === 'twilio_list_local_numbers') {
+    const { country_code = 'US', area_code, contains, limit = 20 } = args;
+    const params = { PageSize: limit };
+    if (area_code) params.AreaCode = area_code;
+    if (contains) params.Contains = contains;
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/AvailablePhoneNumbers/${country_code}/Local.json`, params);
+  }
+  if (tool === 'twilio_configure_number_webhook') {
+    const { phone_number_sid, sms_url, sms_method = 'POST', voice_url, voice_method = 'POST', status_callback } = args;
+    if (!phone_number_sid) throw new Error('phone_number_sid is required');
+    const params = {};
+    if (sms_url) params.SmsUrl = sms_url;
+    if (sms_method) params.SmsMethod = sms_method;
+    if (voice_url) params.VoiceUrl = voice_url;
+    if (voice_method) params.VoiceMethod = voice_method;
+    if (status_callback) params.StatusCallback = status_callback;
+    return await twilio('POST', `/2010-04-01/Accounts/${SID()}/IncomingPhoneNumbers/${phone_number_sid}.json`, params);
+  }
+
+  // ── ACCOUNT MANAGEMENT ADVANCED ───────────────────────────────────────────
+  if (tool === 'twilio_update_account') {
+    const { friendly_name, status } = args;
+    const params = {};
+    if (friendly_name) params.FriendlyName = friendly_name;
+    if (status) params.Status = status;
+    return await twilio('POST', `/2010-04-01/Accounts/${SID()}.json`, params);
+  }
+  if (tool === 'twilio_list_keys') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/Keys.json`, { PageSize: args.limit || 20 });
+  }
+  if (tool === 'twilio_get_key') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/Keys/${args.key_sid}.json`, {});
+  }
+  if (tool === 'twilio_update_key') {
+    return await twilio('POST', `/2010-04-01/Accounts/${SID()}/Keys/${args.key_sid}.json`, { FriendlyName: args.friendly_name });
+  }
+
+  // ── QUEUE MANAGEMENT ─────────────────────────────────────────────────────
+  if (tool === 'twilio_list_queues') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/Queues.json`, { PageSize: args.limit || 20 });
+  }
+  if (tool === 'twilio_create_queue') {
+    const { friendly_name, max_size = 1000 } = args;
+    if (!friendly_name) throw new Error('friendly_name is required');
+    return await twilio('POST', `/2010-04-01/Accounts/${SID()}/Queues.json`, { FriendlyName: friendly_name, MaxSize: max_size });
+  }
+  if (tool === 'twilio_get_queue') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/Queues/${args.queue_sid}.json`, {});
+  }
+  if (tool === 'twilio_delete_queue') {
+    return await twilio('DELETE', `/2010-04-01/Accounts/${SID()}/Queues/${args.queue_sid}.json`, {});
+  }
+  if (tool === 'twilio_list_queue_members') {
+    return await twilio('GET', `/2010-04-01/Accounts/${SID()}/Queues/${args.queue_sid}/Members.json`, {});
+  }
+
+  // ── TASK ROUTER (basic) ───────────────────────────────────────────────────
+  if (tool === 'twilio_list_taskrouter_workspaces') {
+    const res = await fetch(`https://taskrouter.twilio.com/v1/Workspaces?PageSize=${args.limit || 20}`, {
+      headers: { 'Authorization': `Basic ${Buffer.from(`${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`).toString('base64')}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`Twilio TaskRouter ${res.status}: ${JSON.stringify(data)}`);
+    return data;
+  }
+
+  // ── SUPER TOOL: Account health overview ──────────────────────────────────
+  if (tool === 'twilio_account_health') {
+    const [account, balance, numbers, messagingServices] = await Promise.all([
+      twilio('GET', `/2010-04-01/Accounts/${SID()}.json`, {}),
+      twilio('GET', `/2010-04-01/Accounts/${SID()}/Balance.json`, {}),
+      twilio('GET', `/2010-04-01/Accounts/${SID()}/IncomingPhoneNumbers.json`, { PageSize: 50 }),
+      twilio('GET', `/2010-04-01/Accounts/${SID()}/Services.json`, { PageSize: 20 }).catch(() => ({ services: [] }))
+    ]);
+    return {
+      account: { sid: account.sid, friendly_name: account.friendly_name, status: account.status, type: account.type, created_at: account.date_created },
+      balance: { amount: balance.balance, currency: balance.currency },
+      phone_numbers: { total: numbers.incoming_phone_numbers?.length || 0, numbers: (numbers.incoming_phone_numbers || []).map(n => ({ sid: n.sid, number: n.phone_number, friendly_name: n.friendly_name, capabilities: n.capabilities })) },
+      messaging_services_count: messagingServices.services?.length || 0,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Compliance summary ────────────────────────────────────────
+  if (tool === 'twilio_compliance_summary') {
+    const [numbers, usageRecords] = await Promise.all([
+      twilio('GET', `/2010-04-01/Accounts/${SID()}/IncomingPhoneNumbers.json`, { PageSize: 100 }),
+      twilio('GET', `/2010-04-01/Accounts/${SID()}/Usage/Records/LastMonth.json`, { PageSize: 50 })
+    ]);
+    const phoneNumbers = numbers.incoming_phone_numbers || [];
+    const smsEnabled = phoneNumbers.filter(n => n.capabilities?.sms);
+    const mmsEnabled = phoneNumbers.filter(n => n.capabilities?.mms);
+    const voiceEnabled = phoneNumbers.filter(n => n.capabilities?.voice);
+    return {
+      phone_numbers: { total: phoneNumbers.length, sms_capable: smsEnabled.length, mms_capable: mmsEnabled.length, voice_capable: voiceEnabled.length },
+      usage_last_month: (usageRecords.usage_records || []).filter(r => parseInt(r.count) > 0).map(r => ({ category: r.category, count: r.count, price: r.price, price_unit: r.price_unit })),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Twilio tool: ${tool}`);
 }
 
 export default { execute };

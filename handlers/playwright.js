@@ -479,6 +479,284 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Playwright tool: ${tool}`);
+
+  // ── PERFORMANCE METRICS (Core Web Vitals) ─────────────────────────────────
+  if (tool === 'playwright_get_performance_metrics') {
+    const { url, timeout = 30000 } = args;
+    if (!url) throw new Error('url is required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      // Collect Performance API metrics
+      const metrics = await page.evaluate(() => {
+        const nav = performance.getEntriesByType('navigation')[0];
+        const paint = Object.fromEntries(performance.getEntriesByType('paint').map(e => [e.name, Math.round(e.startTime)]));
+        const lcp = performance.getEntriesByType('largest-contentful-paint');
+        const cls = performance.getEntriesByType('layout-shift');
+        return {
+          ttfb: Math.round(nav?.responseStart - nav?.requestStart),
+          fcp: paint['first-contentful-paint'],
+          lcp: lcp.length ? Math.round(lcp[lcp.length - 1].startTime) : null,
+          cls: cls.reduce((sum, e) => sum + (e.hadRecentInput ? 0 : e.value), 0).toFixed(4),
+          dom_interactive: Math.round(nav?.domInteractive),
+          dom_complete: Math.round(nav?.domComplete),
+          load_event_end: Math.round(nav?.loadEventEnd),
+          transfer_size_bytes: nav?.transferSize,
+          decoded_body_size: nav?.decodedBodySize
+        };
+      });
+      const vitals = {
+        lcp_rating: metrics.lcp < 2500 ? 'good' : metrics.lcp < 4000 ? 'needs improvement' : 'poor',
+        fcp_rating: metrics.fcp < 1800 ? 'good' : metrics.fcp < 3000 ? 'needs improvement' : 'poor',
+        cls_rating: parseFloat(metrics.cls) < 0.1 ? 'good' : parseFloat(metrics.cls) < 0.25 ? 'needs improvement' : 'poor',
+        ttfb_rating: metrics.ttfb < 800 ? 'good' : metrics.ttfb < 1800 ? 'needs improvement' : 'poor'
+      };
+      return { url, metrics, ratings: vitals };
+    }, { timeout });
+  }
+
+  if (tool === 'playwright_get_resource_timing') {
+    const { url, timeout = 30000, resource_type } = args;
+    if (!url) throw new Error('url is required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      const resources = await page.evaluate((filterType) => {
+        return performance.getEntriesByType('resource')
+          .filter(r => !filterType || r.initiatorType === filterType)
+          .map(r => ({
+            name: r.name,
+            type: r.initiatorType,
+            duration_ms: Math.round(r.duration),
+            size_bytes: r.transferSize,
+            start_time_ms: Math.round(r.startTime)
+          }))
+          .sort((a, b) => b.duration_ms - a.duration_ms)
+          .slice(0, 20);
+      }, resource_type || null);
+      return { url, resource_count: resources.length, slowest_resources: resources };
+    }, { timeout });
+  }
+
+  // ── VIDEO RECORDING ────────────────────────────────────────────────────────
+  if (tool === 'playwright_record_video') {
+    const { url, output_path, duration_ms = 5000, viewport_width = 1280, viewport_height = 720, timeout = 30000 } = args;
+    if (!url || !output_path) throw new Error('url and output_path are required');
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      viewport: { width: viewport_width, height: viewport_height },
+      recordVideo: { dir: output_path.replace(/\/[^/]+$/, '') || '/tmp', size: { width: viewport_width, height: viewport_height } }
+    });
+    const page = await context.newPage();
+    try {
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      await page.waitForTimeout(duration_ms);
+      const videoPath = await page.video()?.path();
+      await context.close();
+      await browser.close();
+      return { success: true, url, video_path: videoPath, duration_ms };
+    } catch (err) {
+      await browser.close();
+      throw err;
+    }
+  }
+
+  // ── HAR CAPTURE ───────────────────────────────────────────────────────────
+  if (tool === 'playwright_capture_har') {
+    const { url, output_path, timeout = 30000 } = args;
+    if (!url || !output_path) throw new Error('url and output_path are required');
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ recordHar: { path: output_path } });
+    const page = await context.newPage();
+    try {
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      await context.close();
+      await browser.close();
+      return { success: true, url, har_path: output_path };
+    } catch (err) {
+      await browser.close();
+      throw err;
+    }
+  }
+
+  // ── LOCATOR-BASED INTERACTIONS ────────────────────────────────────────────
+  if (tool === 'playwright_click_by_text') {
+    const { url, text, exact = false, timeout = 30000 } = args;
+    if (!url || !text) throw new Error('url and text are required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+      await page.getByText(text, { exact }).first().click({ timeout });
+      return { success: true, url, clicked_text: text };
+    }, { timeout });
+  }
+  if (tool === 'playwright_click_by_role') {
+    const { url, role, name, timeout = 30000 } = args;
+    if (!url || !role) throw new Error('url and role are required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+      await page.getByRole(role, name ? { name } : {}).first().click({ timeout });
+      return { success: true, url, role, name };
+    }, { timeout });
+  }
+  if (tool === 'playwright_fill_by_label') {
+    const { url, label, value, timeout = 30000 } = args;
+    if (!url || !label || value === undefined) throw new Error('url, label, and value are required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+      await page.getByLabel(label).fill(String(value), { timeout });
+      return { success: true, url, label, value };
+    }, { timeout });
+  }
+  if (tool === 'playwright_get_by_test_id') {
+    const { url, test_id, timeout = 30000 } = args;
+    if (!url || !test_id) throw new Error('url and test_id are required');
+    return await withPage(async (page) => {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+      const el = page.getByTestId(test_id).first();
+      await el.waitFor({ timeout });
+      const text = await el.textContent();
+      const isVisible = await el.isVisible();
+      return { success: true, test_id, text: text?.trim(), is_visible: isVisible };
+    }, { timeout });
+  }
+
+  // ── MULTI-PAGE / TABS ─────────────────────────────────────────────────────
+  if (tool === 'playwright_open_multiple_tabs') {
+    const { urls, timeout = 30000 } = args;
+    if (!urls?.length) throw new Error('urls array is required');
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const results = [];
+    try {
+      for (const url of urls) {
+        const page = await context.newPage();
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+          const title = await page.title();
+          results.push({ url, title, status: 'ok' });
+        } catch (e) {
+          results.push({ url, status: 'error', error: e.message });
+        }
+      }
+    } finally {
+      await browser.close();
+    }
+    return { tabs_opened: results.length, results };
+  }
+
+  // ── NETWORK INTERCEPTION ADVANCED ─────────────────────────────────────────
+  if (tool === 'playwright_block_resources') {
+    const { url, block_types = ['image', 'stylesheet', 'font'], timeout = 30000 } = args;
+    if (!url) throw new Error('url is required');
+    return await withPage(async (page) => {
+      await page.route('**/*', route => {
+        if (block_types.includes(route.request().resourceType())) {
+          route.abort();
+        } else {
+          route.continue();
+        }
+      });
+      const startTime = Date.now();
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      const loadTime = Date.now() - startTime;
+      const title = await page.title();
+      return { url, title, load_time_ms: loadTime, blocked_types: block_types };
+    }, { timeout });
+  }
+  if (tool === 'playwright_capture_network_requests') {
+    const { url, timeout = 30000, filter_url_pattern } = args;
+    if (!url) throw new Error('url is required');
+    return await withPage(async (page, context) => {
+      const requests = [];
+      page.on('request', req => {
+        if (!filter_url_pattern || req.url().includes(filter_url_pattern)) {
+          requests.push({ url: req.url(), method: req.method(), type: req.resourceType() });
+        }
+      });
+      const responses = [];
+      page.on('response', res => {
+        if (!filter_url_pattern || res.url().includes(filter_url_pattern)) {
+          responses.push({ url: res.url(), status: res.status(), ok: res.ok() });
+        }
+      });
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      return { url, request_count: requests.length, requests: requests.slice(0, 50), failed_responses: responses.filter(r => !r.ok) };
+    }, { timeout });
+  }
+
+  // ── SUPER TOOL: Full page audit ────────────────────────────────────────────
+  if (tool === 'playwright_page_audit') {
+    const { url, timeout = 45000 } = args;
+    if (!url) throw new Error('url is required');
+    return await withPage(async (page) => {
+      const consoleLogs = [];
+      const networkErrors = [];
+      page.on('console', msg => { if (msg.type() === 'error') consoleLogs.push(msg.text()); });
+      page.on('response', res => { if (!res.ok() && res.status() !== 304) networkErrors.push({ url: res.url(), status: res.status() }); });
+      await page.goto(url, { waitUntil: 'networkidle', timeout });
+      const [title, metrics, links, accessibility] = await Promise.all([
+        page.title(),
+        page.evaluate(() => {
+          const nav = performance.getEntriesByType('navigation')[0];
+          const paint = Object.fromEntries(performance.getEntriesByType('paint').map(e => [e.name, Math.round(e.startTime)]));
+          return { fcp: paint['first-contentful-paint'], load_ms: Math.round(nav?.loadEventEnd), ttfb: Math.round(nav?.responseStart - nav?.requestStart) };
+        }),
+        page.evaluate(() => {
+          const hrefs = Array.from(document.querySelectorAll('a[href]')).map(a => a.href);
+          return { total: hrefs.length, internal: hrefs.filter(h => h.includes(window.location.hostname)).length, external: hrefs.filter(h => !h.includes(window.location.hostname)).length };
+        }),
+        page.evaluate(() => {
+          const imgs = Array.from(document.querySelectorAll('img'));
+          return { images_missing_alt: imgs.filter(i => !i.alt).length, total_images: imgs.length, has_h1: !!document.querySelector('h1'), has_meta_description: !!document.querySelector('meta[name="description"]') };
+        })
+      ]);
+      return {
+        url, title,
+        performance: metrics,
+        links,
+        seo: accessibility,
+        issues: { console_errors: consoleLogs.slice(0, 10), network_errors: networkErrors.slice(0, 10) },
+        generated_at: new Date().toISOString()
+      };
+    }, { timeout });
+  }
+
+  // ── SUPER TOOL: Visual regression screenshot comparison ────────────────────
+  if (tool === 'playwright_compare_pages') {
+    const { url_a, url_b, timeout = 30000 } = args;
+    if (!url_a || !url_b) throw new Error('url_a and url_b are required');
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const results = {};
+    try {
+      for (const [key, url] of [['a', url_a], ['b', url_b]]) {
+        const page = await context.newPage();
+        await page.goto(url, { waitUntil: 'networkidle', timeout });
+        const title = await page.title();
+        const metrics = await page.evaluate(() => {
+          const nav = performance.getEntriesByType('navigation')[0];
+          return { load_ms: Math.round(nav?.loadEventEnd), elements: document.querySelectorAll('*').length };
+        });
+        results[key] = { url, title, ...metrics };
+        await page.close();
+      }
+    } finally {
+      await browser.close();
+    }
+    return {
+      page_a: results.a,
+      page_b: results.b,
+      diff: {
+        load_ms_diff: results.b?.load_ms - results.a?.load_ms,
+        element_count_diff: results.b?.elements - results.a?.elements,
+        title_changed: results.a?.title !== results.b?.title
+      }
+    };
+  }
+
+  throw new Error(`Unknown Playwright tool: ${tool}`);
 }
 
 export default { execute };
