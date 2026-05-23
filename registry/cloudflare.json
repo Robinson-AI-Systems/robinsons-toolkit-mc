@@ -1,150 +1,4919 @@
 [
-  {"name":"cf_list_zones","description":"List all Cloudflare zones (domains) in the account","namespace":"cloudflare","tags":["cloudflare","zones","domains","list"],"inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Filter by domain name"},"status":{"type":"string","enum":["active","pending","initializing","moved","deleted"]},"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_get_zone","description":"Get details of a specific Cloudflare zone by ID","namespace":"cloudflare","tags":["cloudflare","zone","detail","domain","info"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_create_zone","description":"Add a new domain to Cloudflare","namespace":"cloudflare","tags":["cloudflare","zone","create","domain","add"],"inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Domain name e.g. example.com"},"jump_start":{"type":"boolean","default":true}},"required":["name"]}},
-  {"name":"cf_delete_zone","description":"Remove a zone (domain) from Cloudflare","namespace":"cloudflare","tags":["cloudflare","zone","delete","remove","domain"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_purge_cache","description":"Purge the Cloudflare cache for a zone (all files or specific URLs)","namespace":"cloudflare","tags":["cloudflare","cache","purge","clear","invalidate","cdn"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"purge_everything":{"type":"boolean","default":false},"files":{"type":"array","items":{"type":"string"},"description":"Specific URLs to purge"}},"required":["zone_id"]}},
-  {"name":"cf_get_zone_settings","description":"Get all Cloudflare settings for a zone","namespace":"cloudflare","tags":["cloudflare","zone","settings","config","ssl","security"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_update_zone_setting","description":"Update a specific Cloudflare zone setting (SSL mode, security level, etc.)","namespace":"cloudflare","tags":["cloudflare","zone","setting","update","ssl","security","config"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"setting_id":{"type":"string","description":"e.g. ssl, security_level, minify, always_use_https"},"value":{"type":"string","description":"New value for the setting"}},"required":["zone_id","setting_id","value"]}},
-  {"name":"cf_get_analytics","description":"Get traffic analytics (requests, bandwidth, threats) for a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","analytics","traffic","bandwidth","threats","stats"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"since":{"type":"string","description":"ISO timestamp or relative e.g. -10080 (minutes)"},"until":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_list_dns_records","description":"List DNS records for a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","dns","records","list","A","CNAME","MX","TXT"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"type":{"type":"string","enum":["A","AAAA","CNAME","MX","TXT","NS","SRV","CAA"]},"name":{"type":"string"},"per_page":{"type":"number","default":100}},"required":["zone_id"]}},
-  {"name":"cf_get_dns_record","description":"Get a specific DNS record by ID","namespace":"cloudflare","tags":["cloudflare","dns","record","detail"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"record_id":{"type":"string"}},"required":["zone_id","record_id"]}},
-  {"name":"cf_create_dns_record","description":"Create a DNS record in a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","dns","record","create","A","CNAME","MX","TXT","add"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"type":{"type":"string","enum":["A","AAAA","CNAME","MX","TXT","NS","SRV","CAA"]},"name":{"type":"string"},"content":{"type":"string"},"ttl":{"type":"number","default":1,"description":"1 = automatic"},"proxied":{"type":"boolean","default":false}},"required":["zone_id","type","name","content"]}},
-  {"name":"cf_update_dns_record","description":"Update an existing DNS record in Cloudflare","namespace":"cloudflare","tags":["cloudflare","dns","record","update","edit"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"record_id":{"type":"string"},"type":{"type":"string"},"name":{"type":"string"},"content":{"type":"string"},"proxied":{"type":"boolean"}},"required":["zone_id","record_id"]}},
-  {"name":"cf_delete_dns_record","description":"Delete a DNS record from a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","dns","record","delete","remove"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"record_id":{"type":"string"}},"required":["zone_id","record_id"]}},
-  {"name":"cf_import_dns_records","description":"Import DNS records from a BIND zone file","namespace":"cloudflare","tags":["cloudflare","dns","import","bind","zone-file","bulk"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"bind_content":{"type":"string","description":"BIND format zone file content"}},"required":["zone_id","bind_content"]}},
-  {"name":"cf_list_workers","description":"List all Cloudflare Workers scripts in the account","namespace":"cloudflare","tags":["cloudflare","workers","list","scripts","edge","serverless"],"inputSchema":{"type":"object","properties":{"account_id":{"type":"string","description":"Defaults to CLOUDFLARE_ACCOUNT_ID env var"}}}},
-  {"name":"cf_get_worker","description":"Get details and script content of a Cloudflare Worker","namespace":"cloudflare","tags":["cloudflare","worker","detail","script","edge"],"inputSchema":{"type":"object","properties":{"script_name":{"type":"string"}},"required":["script_name"]}},
-  {"name":"cf_deploy_worker","description":"Deploy or update a Cloudflare Worker script","namespace":"cloudflare","tags":["cloudflare","worker","deploy","upload","edge","serverless","publish"],"inputSchema":{"type":"object","properties":{"script_name":{"type":"string"},"script":{"type":"string","description":"JavaScript/TypeScript Worker code"},"bindings":{"type":"array","description":"KV, D1, R2, and other bindings"}},"required":["script_name","script"]}},
-  {"name":"cf_delete_worker","description":"Delete a Cloudflare Worker script","namespace":"cloudflare","tags":["cloudflare","worker","delete","remove"],"inputSchema":{"type":"object","properties":{"script_name":{"type":"string"}},"required":["script_name"]}},
-  {"name":"cf_list_worker_routes","description":"List URL routes mapped to Cloudflare Workers for a zone","namespace":"cloudflare","tags":["cloudflare","worker","routes","list","mapping","url"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_create_worker_route","description":"Map a URL pattern to a Cloudflare Worker script","namespace":"cloudflare","tags":["cloudflare","worker","route","create","mapping","url"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"pattern":{"type":"string","description":"URL pattern e.g. example.com/api/*"},"script":{"type":"string","description":"Worker script name"}},"required":["zone_id","pattern","script"]}},
-  {"name":"cf_delete_worker_route","description":"Delete a Worker route mapping","namespace":"cloudflare","tags":["cloudflare","worker","route","delete","remove"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"route_id":{"type":"string"}},"required":["zone_id","route_id"]}},
-  {"name":"cf_list_worker_cron_triggers","description":"List cron triggers for a Worker script","namespace":"cloudflare","tags":["cloudflare","worker","cron","schedule","triggers","list"],"inputSchema":{"type":"object","properties":{"script_name":{"type":"string"}},"required":["script_name"]}},
-  {"name":"cf_update_worker_cron_triggers","description":"Set cron schedule triggers for a Worker script","namespace":"cloudflare","tags":["cloudflare","worker","cron","schedule","set","triggers"],"inputSchema":{"type":"object","properties":{"script_name":{"type":"string"},"crons":{"type":"array","items":{"type":"string"},"description":"Cron expressions e.g. ['0 * * * *', '*/15 * * * *']"}},"required":["script_name","crons"]}},
-  {"name":"cf_get_worker_subdomain","description":"Get the workers.dev subdomain for the account","namespace":"cloudflare","tags":["cloudflare","worker","subdomain","workers.dev","url"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_list_kv_namespaces","description":"List all KV namespaces in the Cloudflare account","namespace":"cloudflare","tags":["cloudflare","kv","namespaces","list","storage","edge"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_create_kv_namespace","description":"Create a new KV namespace for edge key-value storage","namespace":"cloudflare","tags":["cloudflare","kv","namespace","create","storage","edge"],"inputSchema":{"type":"object","properties":{"title":{"type":"string"}},"required":["title"]}},
-  {"name":"cf_delete_kv_namespace","description":"Delete a KV namespace and all its data","namespace":"cloudflare","tags":["cloudflare","kv","namespace","delete"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"}},"required":["namespace_id"]}},
-  {"name":"cf_rename_kv_namespace","description":"Rename a KV namespace","namespace":"cloudflare","tags":["cloudflare","kv","namespace","rename","update"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"title":{"type":"string"}},"required":["namespace_id","title"]}},
-  {"name":"cf_kv_get","description":"Read a value from a Cloudflare KV namespace","namespace":"cloudflare","tags":["cloudflare","kv","get","read","key","edge","cache"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"key":{"type":"string"}},"required":["namespace_id","key"]}},
-  {"name":"cf_kv_put","description":"Write a key-value pair to a Cloudflare KV namespace","namespace":"cloudflare","tags":["cloudflare","kv","put","write","set","key","edge","store"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"key":{"type":"string"},"value":{"type":"string"},"expiration_ttl":{"type":"number","description":"TTL in seconds"}},"required":["namespace_id","key","value"]}},
-  {"name":"cf_kv_delete","description":"Delete a key from a Cloudflare KV namespace","namespace":"cloudflare","tags":["cloudflare","kv","delete","remove","key"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"key":{"type":"string"}},"required":["namespace_id","key"]}},
-  {"name":"cf_kv_list_keys","description":"List keys in a Cloudflare KV namespace with optional prefix filter","namespace":"cloudflare","tags":["cloudflare","kv","list","keys","prefix","browse"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"prefix":{"type":"string"},"limit":{"type":"number","default":100},"cursor":{"type":"string"}},"required":["namespace_id"]}},
-  {"name":"cf_kv_bulk_put","description":"Write multiple key-value pairs to KV in a single request","namespace":"cloudflare","tags":["cloudflare","kv","bulk","write","batch","put"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"pairs":{"type":"array","description":"Array of {key, value, expiration_ttl} objects"}},"required":["namespace_id","pairs"]}},
-  {"name":"cf_kv_bulk_delete","description":"Delete multiple keys from a KV namespace in one request","namespace":"cloudflare","tags":["cloudflare","kv","bulk","delete","batch","remove"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"keys":{"type":"array","items":{"type":"string"}}},"required":["namespace_id","keys"]}},
-  {"name":"cf_list_r2_buckets","description":"List all R2 object storage buckets in the account","namespace":"cloudflare","tags":["cloudflare","r2","buckets","list","s3","storage","object"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_get_r2_bucket","description":"Get details of a specific R2 bucket","namespace":"cloudflare","tags":["cloudflare","r2","bucket","detail","storage"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"}},"required":["bucket_name"]}},
-  {"name":"cf_create_r2_bucket","description":"Create a new R2 object storage bucket","namespace":"cloudflare","tags":["cloudflare","r2","bucket","create","storage","s3","new"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"location_hint":{"type":"string","description":"e.g. wnam, enam, weur, eeur, apac"}},"required":["name"]}},
-  {"name":"cf_delete_r2_bucket","description":"Delete an R2 bucket (must be empty)","namespace":"cloudflare","tags":["cloudflare","r2","bucket","delete","storage"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"}},"required":["bucket_name"]}},
-  {"name":"cf_get_r2_bucket_cors","description":"Get CORS configuration for an R2 bucket","namespace":"cloudflare","tags":["cloudflare","r2","bucket","cors","config"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"}},"required":["bucket_name"]}},
-  {"name":"cf_put_r2_bucket_cors","description":"Set CORS configuration for an R2 bucket","namespace":"cloudflare","tags":["cloudflare","r2","bucket","cors","set","config"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"},"rules":{"type":"array","description":"Array of CORS rules"}},"required":["bucket_name","rules"]}},
-  {"name":"cf_list_pages_projects","description":"List all Cloudflare Pages projects","namespace":"cloudflare","tags":["cloudflare","pages","projects","list","hosting","deploy"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_get_pages_project","description":"Get details of a Cloudflare Pages project","namespace":"cloudflare","tags":["cloudflare","pages","project","detail","hosting"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"}},"required":["project_name"]}},
-  {"name":"cf_list_pages_deployments","description":"List deployments for a Cloudflare Pages project","namespace":"cloudflare","tags":["cloudflare","pages","deployments","list","history"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"}},"required":["project_name"]}},
-  {"name":"cf_get_pages_deployment","description":"Get details of a specific Pages deployment","namespace":"cloudflare","tags":["cloudflare","pages","deployment","detail","status"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"deployment_id":{"type":"string"}},"required":["project_name","deployment_id"]}},
-  {"name":"cf_retry_pages_deployment","description":"Retry a failed Cloudflare Pages deployment","namespace":"cloudflare","tags":["cloudflare","pages","deployment","retry","redeploy"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"deployment_id":{"type":"string"}},"required":["project_name","deployment_id"]}},
-  {"name":"cf_rollback_pages_deployment","description":"Roll back a Pages project to a previous deployment","namespace":"cloudflare","tags":["cloudflare","pages","rollback","revert","deploy","previous"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"deployment_id":{"type":"string"}},"required":["project_name","deployment_id"]}},
-  {"name":"cf_list_pages_domains","description":"List custom domains for a Cloudflare Pages project","namespace":"cloudflare","tags":["cloudflare","pages","domains","list","custom"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"}},"required":["project_name"]}},
-  {"name":"cf_add_pages_domain","description":"Add a custom domain to a Cloudflare Pages project","namespace":"cloudflare","tags":["cloudflare","pages","domain","add","custom","dns"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"domain":{"type":"string"}},"required":["project_name","domain"]}},
-  {"name":"cf_list_firewall_rules","description":"List WAF firewall rules for a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","firewall","waf","rules","list","security"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"per_page":{"type":"number","default":20}},"required":["zone_id"]}},
-  {"name":"cf_create_firewall_rule","description":"Create a WAF firewall rule (block, challenge, allow IPs/countries)","namespace":"cloudflare","tags":["cloudflare","firewall","waf","rule","create","block","security"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"filter_expression":{"type":"string","description":"Wirefilter expression e.g. \"(ip.src eq 1.2.3.4)\""},"action":{"type":"string","enum":["block","challenge","allow","js_challenge","managed_challenge","log"],"default":"block"},"description":{"type":"string"}},"required":["zone_id","filter_expression","action"]}},
-  {"name":"cf_delete_firewall_rule","description":"Delete a WAF firewall rule","namespace":"cloudflare","tags":["cloudflare","firewall","rule","delete","remove","security"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"rule_id":{"type":"string"}},"required":["zone_id","rule_id"]}},
-  {"name":"cf_list_rate_limits","description":"List rate limiting rules for a Cloudflare zone","namespace":"cloudflare","tags":["cloudflare","rate-limit","rules","list","ddos","security"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_get_account","description":"Get Cloudflare account details","namespace":"cloudflare","tags":["cloudflare","account","info","detail","profile"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_list_account_members","description":"List members of the Cloudflare account with their roles","namespace":"cloudflare","tags":["cloudflare","account","members","list","team","roles"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_export_dns_records","description":"Export all DNS records for a zone in BIND zone-file format","namespace":"cloudflare","tags":["cloudflare","dns","export","bind","zone-file"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_list_d1_databases","description":"List Cloudflare D1 (SQLite at the edge) databases in your account","namespace":"cloudflare","tags":["cloudflare","d1","database","sqlite","list"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_get_d1_database","description":"Get details about a specific D1 database","namespace":"cloudflare","tags":["cloudflare","d1","database","get"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"cf_create_d1_database","description":"Create a new D1 SQLite database at the edge","namespace":"cloudflare","tags":["cloudflare","d1","database","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"primary_location_hint":{"type":"string"}},"required":["name"]}},
-  {"name":"cf_delete_d1_database","description":"Delete a D1 database permanently","namespace":"cloudflare","tags":["cloudflare","d1","database","delete"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"cf_query_d1","description":"Run a parameterized SQL query against a D1 database. Use ? placeholders and pass params array.","namespace":"cloudflare","tags":["cloudflare","d1","sql","query","database"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"sql":{"type":"string"},"params":{"type":"array"}},"required":["database_id","sql"]}},
-  {"name":"cf_d1_raw_query","description":"Run SQL against D1 with raw (more performant for large reads) response format","namespace":"cloudflare","tags":["cloudflare","d1","sql","raw","query"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"sql":{"type":"string"},"params":{"type":"array"}},"required":["database_id","sql"]}},
-  {"name":"cf_d1_list_tables","description":"List all user tables in a D1 database (filters out sqlite internals)","namespace":"cloudflare","tags":["cloudflare","d1","tables","list","schema"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"}},"required":["database_id"]}},
-  {"name":"cf_d1_table_schema","description":"Get the column schema (PRAGMA table_info) of a specific D1 table","namespace":"cloudflare","tags":["cloudflare","d1","schema","columns","table"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"table_name":{"type":"string"}},"required":["database_id","table_name"]}},
-  {"name":"cf_d1_export","description":"Export a D1 database as SQL (returns polling URL or content depending on output_format)","namespace":"cloudflare","tags":["cloudflare","d1","export","backup","sql"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"output_format":{"type":"string","default":"polling"},"dump_options":{"type":"object"}},"required":["database_id"]}},
-  {"name":"cf_d1_import","description":"Import SQL into a D1 database from an uploaded file","namespace":"cloudflare","tags":["cloudflare","d1","import","restore","sql"],"inputSchema":{"type":"object","properties":{"database_id":{"type":"string"},"action":{"type":"string","default":"init"},"etag":{"type":"string"},"filename":{"type":"string"}},"required":["database_id"]}},
-  {"name":"cf_run_ai_model","description":"Run any Workers AI model with raw inputs. Provide the model name (e.g. @cf/meta/llama-3.1-8b-instruct) and the model-specific inputs object.","namespace":"cloudflare","tags":["cloudflare","workers-ai","ai","inference","model"],"inputSchema":{"type":"object","properties":{"model":{"type":"string"},"inputs":{"type":"object"}},"required":["model","inputs"]}},
-  {"name":"cf_list_ai_models","description":"List available Workers AI models with optional task filter","namespace":"cloudflare","tags":["cloudflare","workers-ai","models","list","catalog"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":50},"task":{"type":"string"}}}},
-  {"name":"cf_text_generation","description":"Run text generation via Workers AI (default: Llama 3.1 8b). System prompt + user prompt format.","namespace":"cloudflare","tags":["cloudflare","workers-ai","text-generation","llama","llm"],"inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"system":{"type":"string"},"model":{"type":"string"},"max_tokens":{"type":"number","default":512}},"required":["prompt"]}},
-  {"name":"cf_text_embedding","description":"Generate text embeddings via Workers AI (default: BGE base en v1.5). Accepts string or array.","namespace":"cloudflare","tags":["cloudflare","workers-ai","embeddings","bge","vector"],"inputSchema":{"type":"object","properties":{"text":{},"model":{"type":"string"}},"required":["text"]}},
-  {"name":"cf_image_classification","description":"Classify an image via Workers AI (default: ResNet-50). Accepts base64-encoded image.","namespace":"cloudflare","tags":["cloudflare","workers-ai","image","classification","resnet"],"inputSchema":{"type":"object","properties":{"image_base64":{"type":"string"},"model":{"type":"string"}},"required":["image_base64"]}},
-  {"name":"cf_text_to_image","description":"Generate an image from text via Workers AI (default: SDXL). Returns base64 PNG.","namespace":"cloudflare","tags":["cloudflare","workers-ai","text-to-image","sdxl","stable-diffusion"],"inputSchema":{"type":"object","properties":{"prompt":{"type":"string"},"model":{"type":"string"},"num_steps":{"type":"number","default":20}},"required":["prompt"]}},
-  {"name":"cf_speech_to_text","description":"Transcribe audio via Workers AI Whisper (default model @cf/openai/whisper). Accepts base64 audio.","namespace":"cloudflare","tags":["cloudflare","workers-ai","whisper","transcription","speech"],"inputSchema":{"type":"object","properties":{"audio_base64":{"type":"string"},"model":{"type":"string"}},"required":["audio_base64"]}},
-  {"name":"cf_translation","description":"Translate text between languages via Workers AI (default: M2M100 1.2b).","namespace":"cloudflare","tags":["cloudflare","workers-ai","translation","m2m100"],"inputSchema":{"type":"object","properties":{"text":{"type":"string"},"source_lang":{"type":"string","default":"english"},"target_lang":{"type":"string"},"model":{"type":"string"}},"required":["text","target_lang"]}},
-  {"name":"cf_summarization","description":"Summarize input text via Workers AI BART-CNN","namespace":"cloudflare","tags":["cloudflare","workers-ai","summarization","bart"],"inputSchema":{"type":"object","properties":{"input_text":{"type":"string"},"max_length":{"type":"number","default":1024},"model":{"type":"string"}},"required":["input_text"]}},
-  {"name":"cf_get_ai_finetunes","description":"List Workers AI fine-tune adapters in the account","namespace":"cloudflare","tags":["cloudflare","workers-ai","fine-tune","adapters"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_list_queues","description":"List Cloudflare Queues in your account","namespace":"cloudflare","tags":["cloudflare","queues","list","messaging"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_create_queue","description":"Create a new Cloudflare Queue for message passing between Workers","namespace":"cloudflare","tags":["cloudflare","queues","create","messaging"],"inputSchema":{"type":"object","properties":{"queue_name":{"type":"string"}},"required":["queue_name"]}},
-  {"name":"cf_get_queue","description":"Get details about a queue (settings, message counts, consumers)","namespace":"cloudflare","tags":["cloudflare","queues","get"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"}},"required":["queue_id"]}},
-  {"name":"cf_delete_queue","description":"Delete a Cloudflare Queue permanently","namespace":"cloudflare","tags":["cloudflare","queues","delete"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"}},"required":["queue_id"]}},
-  {"name":"cf_update_queue","description":"Update a queue's name or settings (delivery delay, retention period, dead letter queue)","namespace":"cloudflare","tags":["cloudflare","queues","update","settings"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"},"queue_name":{"type":"string"},"settings":{"type":"object"}},"required":["queue_id"]}},
-  {"name":"cf_send_queue_message","description":"Send a single message to a Cloudflare Queue (optionally delayed)","namespace":"cloudflare","tags":["cloudflare","queues","send","message"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"},"body":{},"content_type":{"type":"string","default":"json"},"delay_seconds":{"type":"number"}},"required":["queue_id","body"]}},
-  {"name":"cf_send_queue_messages_batch","description":"Send up to 100 messages to a queue in one batch call","namespace":"cloudflare","tags":["cloudflare","queues","batch","send","bulk"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"},"messages":{"type":"array"}},"required":["queue_id","messages"]}},
-  {"name":"cf_purge_queue","description":"Delete all messages currently in a queue","namespace":"cloudflare","tags":["cloudflare","queues","purge","clear"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"}},"required":["queue_id"]}},
-  {"name":"cf_list_queue_consumers","description":"List consumers attached to a queue","namespace":"cloudflare","tags":["cloudflare","queues","consumers","list"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"}},"required":["queue_id"]}},
-  {"name":"cf_create_queue_consumer","description":"Attach a Worker as a consumer of a queue","namespace":"cloudflare","tags":["cloudflare","queues","consumer","create","worker"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"},"script_name":{"type":"string"},"settings":{"type":"object"},"type":{"type":"string","default":"worker"}},"required":["queue_id","script_name"]}},
-  {"name":"cf_delete_queue_consumer","description":"Remove a consumer from a queue","namespace":"cloudflare","tags":["cloudflare","queues","consumer","delete"],"inputSchema":{"type":"object","properties":{"queue_id":{"type":"string"},"consumer_id":{"type":"string"}},"required":["queue_id","consumer_id"]}},
-  {"name":"cf_list_durable_object_namespaces","description":"List Durable Object namespaces (stateful classes)","namespace":"cloudflare","tags":["cloudflare","durable-objects","namespaces","list","state"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_get_durable_object_namespace","description":"Get details for a Durable Object namespace","namespace":"cloudflare","tags":["cloudflare","durable-objects","namespace","get"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"}},"required":["namespace_id"]}},
-  {"name":"cf_list_durable_objects","description":"List active object instances within a Durable Object namespace","namespace":"cloudflare","tags":["cloudflare","durable-objects","instances","list"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"limit":{"type":"number","default":20}},"required":["namespace_id"]}},
-  {"name":"cf_list_worker_secrets","description":"List secret names bound to a Worker (values not returned)","namespace":"cloudflare","tags":["cloudflare","workers","secrets","list"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"}},"required":["worker_name"]}},
-  {"name":"cf_put_worker_secret","description":"Create or update a secret bound to a Worker","namespace":"cloudflare","tags":["cloudflare","workers","secret","put","update","create"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"name":{"type":"string"},"text":{"type":"string"},"type":{"type":"string","default":"secret_text"}},"required":["worker_name","name","text"]}},
-  {"name":"cf_delete_worker_secret","description":"Delete a secret bound to a Worker","namespace":"cloudflare","tags":["cloudflare","workers","secret","delete"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"name":{"type":"string"}},"required":["worker_name","name"]}},
-  {"name":"cf_list_worker_versions","description":"List immutable versions of a Worker script","namespace":"cloudflare","tags":["cloudflare","workers","versions","list","history"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"per_page":{"type":"number","default":10}},"required":["worker_name"]}},
-  {"name":"cf_get_worker_version","description":"Get details for a specific Worker version","namespace":"cloudflare","tags":["cloudflare","workers","version","get"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"version_id":{"type":"string"}},"required":["worker_name","version_id"]}},
-  {"name":"cf_list_worker_deployments","description":"List active deployments (version-routing weights) for a Worker","namespace":"cloudflare","tags":["cloudflare","workers","deployments","list","gradual"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"}},"required":["worker_name"]}},
-  {"name":"cf_create_worker_deployment","description":"Create a new deployment with percentage-based or canary routing across Worker versions","namespace":"cloudflare","tags":["cloudflare","workers","deployment","create","canary"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"strategy":{"type":"string","default":"percentage"},"versions":{"type":"array"}},"required":["worker_name","versions"]}},
-  {"name":"cf_get_worker_settings","description":"Get Worker script settings (compatibility flags, observability, logpush)","namespace":"cloudflare","tags":["cloudflare","workers","settings","get"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"}},"required":["worker_name"]}},
-  {"name":"cf_update_worker_settings","description":"Update Worker script settings (observability, compatibility flags)","namespace":"cloudflare","tags":["cloudflare","workers","settings","update"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"},"settings":{"type":"object"}},"required":["worker_name","settings"]}},
-  {"name":"cf_list_worker_tail_logs","description":"List active tail (live log streaming) sessions for a Worker","namespace":"cloudflare","tags":["cloudflare","workers","tail","logs","streaming"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"}},"required":["worker_name"]}},
-  {"name":"cf_get_worker_analytics","description":"Get analytics (requests, errors, CPU time) for a Worker","namespace":"cloudflare","tags":["cloudflare","workers","analytics","metrics"],"inputSchema":{"type":"object","properties":{"worker_name":{"type":"string"}},"required":["worker_name"]}},
-  {"name":"cf_list_worker_domains","description":"List worker custom domains (production routing hostnames)","namespace":"cloudflare","tags":["cloudflare","workers","domains","list","custom"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_attach_worker_domain","description":"Attach a custom domain to a Worker service","namespace":"cloudflare","tags":["cloudflare","workers","domain","attach","custom"],"inputSchema":{"type":"object","properties":{"hostname":{"type":"string"},"service":{"type":"string"},"zone_id":{"type":"string"}},"required":["hostname","service","zone_id"]}},
-  {"name":"cf_list_access_applications","description":"List Cloudflare Access (Zero Trust) applications","namespace":"cloudflare","tags":["cloudflare","access","zero-trust","applications","list"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_get_access_application","description":"Get a Cloudflare Access application by ID","namespace":"cloudflare","tags":["cloudflare","access","zero-trust","application","get"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"}},"required":["app_id"]}},
-  {"name":"cf_create_access_application","description":"Create a Cloudflare Access (Zero Trust) protected application","namespace":"cloudflare","tags":["cloudflare","access","zero-trust","application","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"domain":{"type":"string"},"type":{"type":"string","default":"self_hosted"},"session_duration":{"type":"string","default":"24h"}},"required":["name","domain"]}},
-  {"name":"cf_update_access_application","description":"Update a Cloudflare Access application's configuration","namespace":"cloudflare","tags":["cloudflare","access","application","update"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"},"config":{"type":"object"}},"required":["app_id","config"]}},
-  {"name":"cf_delete_access_application","description":"Delete a Cloudflare Access application","namespace":"cloudflare","tags":["cloudflare","access","application","delete"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"}},"required":["app_id"]}},
-  {"name":"cf_list_access_policies","description":"List Access policies attached to an application","namespace":"cloudflare","tags":["cloudflare","access","policies","list","zero-trust"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"}},"required":["app_id"]}},
-  {"name":"cf_create_access_policy","description":"Create an Access policy (include/exclude/require rules with allow/block decision)","namespace":"cloudflare","tags":["cloudflare","access","policy","create","zero-trust"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"},"name":{"type":"string"},"decision":{"type":"string","default":"allow"},"include":{"type":"array"},"exclude":{"type":"array"},"require":{"type":"array"}},"required":["app_id","name"]}},
-  {"name":"cf_delete_access_policy","description":"Delete an Access policy from an application","namespace":"cloudflare","tags":["cloudflare","access","policy","delete"],"inputSchema":{"type":"object","properties":{"app_id":{"type":"string"},"policy_id":{"type":"string"}},"required":["app_id","policy_id"]}},
-  {"name":"cf_list_access_groups","description":"List reusable Access groups for use across multiple applications","namespace":"cloudflare","tags":["cloudflare","access","groups","list","zero-trust"],"inputSchema":{"type":"object","properties":{"per_page":{"type":"number","default":20}}}},
-  {"name":"cf_create_access_group","description":"Create a reusable Access group with include/exclude/require rules","namespace":"cloudflare","tags":["cloudflare","access","group","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"include":{"type":"array"},"exclude":{"type":"array"},"require":{"type":"array"}},"required":["name"]}},
-  {"name":"cf_list_hyperdrive_configs","description":"List Hyperdrive configurations (accelerated remote database connection caching)","namespace":"cloudflare","tags":["cloudflare","hyperdrive","configs","list","database"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_get_hyperdrive_config","description":"Get a Hyperdrive configuration by ID","namespace":"cloudflare","tags":["cloudflare","hyperdrive","config","get"],"inputSchema":{"type":"object","properties":{"hyperdrive_id":{"type":"string"}},"required":["hyperdrive_id"]}},
-  {"name":"cf_create_hyperdrive_config","description":"Create a Hyperdrive config to accelerate access to an origin database","namespace":"cloudflare","tags":["cloudflare","hyperdrive","config","create","postgres"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"origin":{"type":"object"},"caching":{"type":"object"}},"required":["name","origin"]}},
-  {"name":"cf_delete_hyperdrive_config","description":"Delete a Hyperdrive configuration","namespace":"cloudflare","tags":["cloudflare","hyperdrive","config","delete"],"inputSchema":{"type":"object","properties":{"hyperdrive_id":{"type":"string"}},"required":["hyperdrive_id"]}},
-  {"name":"cf_list_stream_videos","description":"List videos uploaded to Cloudflare Stream","namespace":"cloudflare","tags":["cloudflare","stream","videos","list"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number","default":20}}}},
-  {"name":"cf_get_stream_video","description":"Get metadata for a Stream video","namespace":"cloudflare","tags":["cloudflare","stream","video","get"],"inputSchema":{"type":"object","properties":{"video_id":{"type":"string"}},"required":["video_id"]}},
-  {"name":"cf_delete_stream_video","description":"Delete a video from Cloudflare Stream","namespace":"cloudflare","tags":["cloudflare","stream","video","delete"],"inputSchema":{"type":"object","properties":{"video_id":{"type":"string"}},"required":["video_id"]}},
-  {"name":"cf_create_stream_url_upload","description":"Copy a video into Cloudflare Stream from a public URL","namespace":"cloudflare","tags":["cloudflare","stream","upload","url","copy"],"inputSchema":{"type":"object","properties":{"url":{"type":"string"},"meta":{"type":"object"}},"required":["url"]}},
-  {"name":"cf_create_stream_direct_upload","description":"Create a one-time direct upload URL for Cloudflare Stream (no API key needed by uploader)","namespace":"cloudflare","tags":["cloudflare","stream","upload","direct","tus"],"inputSchema":{"type":"object","properties":{"max_duration_seconds":{"type":"number","default":3600},"expiry":{"type":"string"},"meta":{"type":"object"}}}},
-  {"name":"cf_create_pages_project","description":"Create a new Cloudflare Pages project","namespace":"cloudflare","tags":["cloudflare","pages","project","create"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"production_branch":{"type":"string","default":"main"},"source":{"type":"object"},"build_config":{"type":"object"}},"required":["name"]}},
-  {"name":"cf_delete_pages_project","description":"Delete a Cloudflare Pages project and all its deployments","namespace":"cloudflare","tags":["cloudflare","pages","project","delete"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"}},"required":["project_name"]}},
-  {"name":"cf_remove_pages_domain","description":"Remove a custom domain from a Pages project","namespace":"cloudflare","tags":["cloudflare","pages","domain","remove"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"domain":{"type":"string"}},"required":["project_name","domain"]}},
-  {"name":"cf_create_pages_deployment","description":"Trigger a new Pages deployment for a project","namespace":"cloudflare","tags":["cloudflare","pages","deployment","create","trigger"],"inputSchema":{"type":"object","properties":{"project_name":{"type":"string"},"body":{"type":"object"}},"required":["project_name"]}},
-  {"name":"cf_purge_cache_by_tag","description":"Purge cached content matching cache-tag headers (Enterprise plan)","namespace":"cloudflare","tags":["cloudflare","cache","purge","tag"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"tags":{"type":"array","items":{"type":"string"}}},"required":["zone_id","tags"]}},
-  {"name":"cf_purge_cache_by_host","description":"Purge all cached content for specific hostnames","namespace":"cloudflare","tags":["cloudflare","cache","purge","host"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"hosts":{"type":"array","items":{"type":"string"}}},"required":["zone_id","hosts"]}},
-  {"name":"cf_purge_cache_by_prefix","description":"Purge cached content under URL prefixes","namespace":"cloudflare","tags":["cloudflare","cache","purge","prefix"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"prefixes":{"type":"array","items":{"type":"string"}}},"required":["zone_id","prefixes"]}},
-  {"name":"cf_list_page_rules","description":"List Page Rules for a zone","namespace":"cloudflare","tags":["cloudflare","page-rules","list"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"per_page":{"type":"number","default":20}},"required":["zone_id"]}},
-  {"name":"cf_create_page_rule","description":"Create a Page Rule (URL pattern matching with cache/ssl/forwarding actions)","namespace":"cloudflare","tags":["cloudflare","page-rules","create"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"targets":{"type":"array"},"actions":{"type":"array"},"priority":{"type":"number","default":1},"status":{"type":"string","default":"active"}},"required":["zone_id","targets","actions"]}},
-  {"name":"cf_update_page_rule","description":"Update a Page Rule's actions, targets, or priority","namespace":"cloudflare","tags":["cloudflare","page-rules","update"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"rule_id":{"type":"string"},"config":{"type":"object"}},"required":["zone_id","rule_id","config"]}},
-  {"name":"cf_delete_page_rule","description":"Delete a Page Rule","namespace":"cloudflare","tags":["cloudflare","page-rules","delete"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"rule_id":{"type":"string"}},"required":["zone_id","rule_id"]}},
-  {"name":"cf_get_r2_bucket_lifecycle","description":"Get lifecycle rules for an R2 bucket (object expiration, abort multipart)","namespace":"cloudflare","tags":["cloudflare","r2","lifecycle","get"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"}},"required":["bucket_name"]}},
-  {"name":"cf_put_r2_bucket_lifecycle","description":"Set lifecycle rules for an R2 bucket","namespace":"cloudflare","tags":["cloudflare","r2","lifecycle","put","expiration"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"},"rules":{"type":"array"}},"required":["bucket_name","rules"]}},
-  {"name":"cf_get_r2_bucket_usage","description":"Get storage usage stats for an R2 bucket","namespace":"cloudflare","tags":["cloudflare","r2","usage","stats"],"inputSchema":{"type":"object","properties":{"bucket_name":{"type":"string"}},"required":["bucket_name"]}},
-  {"name":"cf_create_r2_api_token","description":"Create an R2 API token (S3-compatible credential) scoped to a bucket","namespace":"cloudflare","tags":["cloudflare","r2","api-token","credentials","s3"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"permission":{"type":"string","default":"object-read-only"},"bucket":{"type":"string"}},"required":["name"]}},
-  {"name":"cf_kv_get_metadata","description":"Get the metadata associated with a KV key (without the value)","namespace":"cloudflare","tags":["cloudflare","kv","metadata","get"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"key":{"type":"string"}},"required":["namespace_id","key"]}},
-  {"name":"cf_kv_get_with_metadata","description":"Get a KV value AND its metadata in one call","namespace":"cloudflare","tags":["cloudflare","kv","value","metadata","get"],"inputSchema":{"type":"object","properties":{"namespace_id":{"type":"string"},"key":{"type":"string"}},"required":["namespace_id","key"]}},
-  {"name":"cf_query_analytics","description":"Query zone analytics by colo (data centers) with time range","namespace":"cloudflare","tags":["cloudflare","analytics","colos","query"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"since":{"type":"string"},"until":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_get_workers_analytics","description":"Get aggregated Workers analytics for the account dashboard","namespace":"cloudflare","tags":["cloudflare","workers","analytics","dashboard"],"inputSchema":{"type":"object","properties":{"since":{"type":"string"},"until":{"type":"string"}}}},
-  {"name":"cf_list_load_balancers","description":"List load balancers for a zone","namespace":"cloudflare","tags":["cloudflare","load-balancing","list"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"}},"required":["zone_id"]}},
-  {"name":"cf_list_load_balancer_pools","description":"List load balancer origin pools in the account","namespace":"cloudflare","tags":["cloudflare","load-balancing","pools","list"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_list_load_balancer_monitors","description":"List load balancer health monitors in the account","namespace":"cloudflare","tags":["cloudflare","load-balancing","monitors","health"],"inputSchema":{"type":"object","properties":{}}},
-  {"name":"cf_deploy_full_worker","description":"SUPER TOOL: Deploy a Worker script + set environment bindings + create route + add secrets — all in one call. Returns deployment + per-secret status + route info.","namespace":"cloudflare","tags":["cloudflare","super-tool","workers","deploy","compound"],"inputSchema":{"type":"object","properties":{"name":{"type":"string"},"script":{"type":"string"},"route_pattern":{"type":"string"},"route_zone_id":{"type":"string"},"bindings":{"type":"array"},"secrets":{"type":"object"},"compatibility_date":{"type":"string","default":"2024-01-01"}},"required":["name","script"]}},
-  {"name":"cf_setup_d1_schema","description":"SUPER TOOL: Create a new D1 database AND run a multi-statement SQL schema script against it. Returns database info + per-statement results.","namespace":"cloudflare","tags":["cloudflare","super-tool","d1","schema","migration","compound"],"inputSchema":{"type":"object","properties":{"database_name":{"type":"string"},"schema_sql":{"type":"string"},"primary_location_hint":{"type":"string"}},"required":["database_name","schema_sql"]}},
-  {"name":"cf_edge_cache_purge_and_verify","description":"SUPER TOOL: Purge cache for a list of URLs AND verify each URL is fresh by fetching cf-cache-status header. Returns purge result + per-URL verification.","namespace":"cloudflare","tags":["cloudflare","super-tool","cache","purge","verify","compound"],"inputSchema":{"type":"object","properties":{"zone_id":{"type":"string"},"urls":{"type":"array","items":{"type":"string"}},"verify":{"type":"boolean","default":true}},"required":["zone_id","urls"]}},
-  {"name":"cf_worker_canary_deploy","description":"SUPER TOOL: Deploy Worker to a {name}-canary staging script + smoke test it + if smoke test passes, promote to production + clean up canary. Aborts production deploy on smoke test failure.","namespace":"cloudflare","tags":["cloudflare","super-tool","workers","canary","staging","deploy"],"inputSchema":{"type":"object","properties":{"production_name":{"type":"string"},"script":{"type":"string"},"smoke_test_url":{"type":"string"},"compatibility_date":{"type":"string","default":"2024-01-01"},"bindings":{"type":"array"}},"required":["production_name","script","smoke_test_url"]}},
-  {"name":"cf_rag_with_workers_ai","description":"SUPER TOOL: Edge-native RAG: embed query → fetch documents from a KV namespace → generate answer with Workers AI. Returns answer + source keys. For production RAG, use Vectorize for similarity search.","namespace":"cloudflare","tags":["cloudflare","super-tool","rag","workers-ai","kv","compound"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"kv_namespace_id":{"type":"string"},"embedding_model":{"type":"string"},"generation_model":{"type":"string"},"max_results":{"type":"number","default":3}},"required":["query","kv_namespace_id"]}}
+  {
+    "name": "cf_list_zones",
+    "description": "List all Cloudflare zones (domains) in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zones",
+      "domains",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Filter by domain name"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "pending",
+            "initializing",
+            "moved",
+            "deleted"
+          ]
+        },
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_get_zone",
+    "description": "Get details of a specific Cloudflare zone by ID",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "detail",
+      "domain",
+      "info"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_zone",
+    "description": "Add a new domain to Cloudflare",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "create",
+      "domain",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Domain name e.g. example.com"
+        },
+        "jump_start": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_zone",
+    "description": "Remove a zone (domain) from Cloudflare",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "delete",
+      "remove",
+      "domain"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_purge_cache",
+    "description": "Purge the Cloudflare cache for a zone (all files or specific URLs)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "cache",
+      "purge",
+      "clear",
+      "invalidate",
+      "cdn"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "purge_everything": {
+          "type": "boolean",
+          "default": false
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Specific URLs to purge"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_zone_settings",
+    "description": "Get all Cloudflare settings for a zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "settings",
+      "config",
+      "ssl",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_zone_setting",
+    "description": "Update a specific Cloudflare zone setting (SSL mode, security level, etc.)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "setting",
+      "update",
+      "ssl",
+      "security",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "setting_id": {
+          "type": "string",
+          "description": "e.g. ssl, security_level, minify, always_use_https"
+        },
+        "value": {
+          "type": "string",
+          "description": "New value for the setting"
+        }
+      },
+      "required": [
+        "zone_id",
+        "setting_id",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_analytics",
+    "description": "Get traffic analytics (requests, bandwidth, threats) for a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "analytics",
+      "traffic",
+      "bandwidth",
+      "threats",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "since": {
+          "type": "string",
+          "description": "ISO timestamp or relative e.g. -10080 (minutes)"
+        },
+        "until": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_dns_records",
+    "description": "List DNS records for a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "records",
+      "list",
+      "A",
+      "CNAME",
+      "MX",
+      "TXT"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "NS",
+            "SRV",
+            "CAA"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "per_page": {
+          "type": "number",
+          "default": 100
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_dns_record",
+    "description": "Get a specific DNS record by ID",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "record",
+      "detail"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "record_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_dns_record",
+    "description": "Create a DNS record in a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "record",
+      "create",
+      "A",
+      "CNAME",
+      "MX",
+      "TXT",
+      "add"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "A",
+            "AAAA",
+            "CNAME",
+            "MX",
+            "TXT",
+            "NS",
+            "SRV",
+            "CAA"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "number",
+          "default": 1,
+          "description": "1 = automatic"
+        },
+        "proxied": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "zone_id",
+        "type",
+        "name",
+        "content"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_dns_record",
+    "description": "Update an existing DNS record in Cloudflare",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "record",
+      "update",
+      "edit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "proxied": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "zone_id",
+        "record_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_dns_record",
+    "description": "Delete a DNS record from a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "record",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "record_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "record_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_import_dns_records",
+    "description": "Import DNS records from a BIND zone file",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "import",
+      "bind",
+      "zone-file",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "bind_content": {
+          "type": "string",
+          "description": "BIND format zone file content"
+        }
+      },
+      "required": [
+        "zone_id",
+        "bind_content"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_workers",
+    "description": "List all Cloudflare Workers scripts in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "list",
+      "scripts",
+      "edge",
+      "serverless"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "description": "Defaults to CLOUDFLARE_ACCOUNT_ID env var"
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_get_worker",
+    "description": "Get details and script content of a Cloudflare Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "detail",
+      "script",
+      "edge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "script_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "script_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_deploy_worker",
+    "description": "Deploy or update a Cloudflare Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "deploy",
+      "upload",
+      "edge",
+      "serverless",
+      "publish"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "script_name": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string",
+          "description": "JavaScript/TypeScript Worker code"
+        },
+        "bindings": {
+          "type": "array",
+          "description": "KV, D1, R2, and other bindings"
+        }
+      },
+      "required": [
+        "script_name",
+        "script"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_worker",
+    "description": "Delete a Cloudflare Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "script_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "script_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_routes",
+    "description": "List URL routes mapped to Cloudflare Workers for a zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "routes",
+      "list",
+      "mapping",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_worker_route",
+    "description": "Map a URL pattern to a Cloudflare Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "route",
+      "create",
+      "mapping",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "URL pattern e.g. example.com/api/*"
+        },
+        "script": {
+          "type": "string",
+          "description": "Worker script name"
+        }
+      },
+      "required": [
+        "zone_id",
+        "pattern",
+        "script"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_worker_route",
+    "description": "Delete a Worker route mapping",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "route",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "route_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "route_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_cron_triggers",
+    "description": "List cron triggers for a Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "cron",
+      "schedule",
+      "triggers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "script_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "script_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_worker_cron_triggers",
+    "description": "Set cron schedule triggers for a Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "cron",
+      "schedule",
+      "set",
+      "triggers"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "script_name": {
+          "type": "string"
+        },
+        "crons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Cron expressions e.g. ['0 * * * *', '*/15 * * * *']"
+        }
+      },
+      "required": [
+        "script_name",
+        "crons"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_worker_subdomain",
+    "description": "Get the workers.dev subdomain for the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "worker",
+      "subdomain",
+      "workers.dev",
+      "url"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_list_kv_namespaces",
+    "description": "List all KV namespaces in the Cloudflare account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "namespaces",
+      "list",
+      "storage",
+      "edge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_create_kv_namespace",
+    "description": "Create a new KV namespace for edge key-value storage",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "namespace",
+      "create",
+      "storage",
+      "edge"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_kv_namespace",
+    "description": "Delete a KV namespace and all its data",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "namespace",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_rename_kv_namespace",
+    "description": "Rename a KV namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "namespace",
+      "rename",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "title"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_get",
+    "description": "Read a value from a Cloudflare KV namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "get",
+      "read",
+      "key",
+      "edge",
+      "cache"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_put",
+    "description": "Write a key-value pair to a Cloudflare KV namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "put",
+      "write",
+      "set",
+      "key",
+      "edge",
+      "store"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "expiration_ttl": {
+          "type": "number",
+          "description": "TTL in seconds"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_delete",
+    "description": "Delete a key from a Cloudflare KV namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "delete",
+      "remove",
+      "key"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_list_keys",
+    "description": "List keys in a Cloudflare KV namespace with optional prefix filter",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "list",
+      "keys",
+      "prefix",
+      "browse"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 100
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_bulk_put",
+    "description": "Write multiple key-value pairs to KV in a single request",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "bulk",
+      "write",
+      "batch",
+      "put"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "pairs": {
+          "type": "array",
+          "description": "Array of {key, value, expiration_ttl} objects"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "pairs"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_bulk_delete",
+    "description": "Delete multiple keys from a KV namespace in one request",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "bulk",
+      "delete",
+      "batch",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "namespace_id",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_r2_buckets",
+    "description": "List all R2 object storage buckets in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "buckets",
+      "list",
+      "s3",
+      "storage",
+      "object"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_get_r2_bucket",
+    "description": "Get details of a specific R2 bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "bucket",
+      "detail",
+      "storage"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_r2_bucket",
+    "description": "Create a new R2 object storage bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "bucket",
+      "create",
+      "storage",
+      "s3",
+      "new"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "location_hint": {
+          "type": "string",
+          "description": "e.g. wnam, enam, weur, eeur, apac"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_r2_bucket",
+    "description": "Delete an R2 bucket (must be empty)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "bucket",
+      "delete",
+      "storage"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_r2_bucket_cors",
+    "description": "Get CORS configuration for an R2 bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "bucket",
+      "cors",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_put_r2_bucket_cors",
+    "description": "Set CORS configuration for an R2 bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "bucket",
+      "cors",
+      "set",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Array of CORS rules"
+        }
+      },
+      "required": [
+        "bucket_name",
+        "rules"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_pages_projects",
+    "description": "List all Cloudflare Pages projects",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "projects",
+      "list",
+      "hosting",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_get_pages_project",
+    "description": "Get details of a Cloudflare Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "project",
+      "detail",
+      "hosting"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_pages_deployments",
+    "description": "List deployments for a Cloudflare Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "deployments",
+      "list",
+      "history"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_pages_deployment",
+    "description": "Get details of a specific Pages deployment",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "deployment",
+      "detail",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "deployment_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name",
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_retry_pages_deployment",
+    "description": "Retry a failed Cloudflare Pages deployment",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "deployment",
+      "retry",
+      "redeploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "deployment_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name",
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_rollback_pages_deployment",
+    "description": "Roll back a Pages project to a previous deployment",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "rollback",
+      "revert",
+      "deploy",
+      "previous"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "deployment_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name",
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_pages_domains",
+    "description": "List custom domains for a Cloudflare Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "domains",
+      "list",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_add_pages_domain",
+    "description": "Add a custom domain to a Cloudflare Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "domain",
+      "add",
+      "custom",
+      "dns"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_firewall_rules",
+    "description": "List WAF firewall rules for a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "firewall",
+      "waf",
+      "rules",
+      "list",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_firewall_rule",
+    "description": "Create a WAF firewall rule (block, challenge, allow IPs/countries)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "firewall",
+      "waf",
+      "rule",
+      "create",
+      "block",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "filter_expression": {
+          "type": "string",
+          "description": "Wirefilter expression e.g. \"(ip.src eq 1.2.3.4)\""
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "block",
+            "challenge",
+            "allow",
+            "js_challenge",
+            "managed_challenge",
+            "log"
+          ],
+          "default": "block"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "filter_expression",
+        "action"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_firewall_rule",
+    "description": "Delete a WAF firewall rule",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "firewall",
+      "rule",
+      "delete",
+      "remove",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_rate_limits",
+    "description": "List rate limiting rules for a Cloudflare zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "rate-limit",
+      "rules",
+      "list",
+      "ddos",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_account",
+    "description": "Get Cloudflare account details",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "account",
+      "info",
+      "detail",
+      "profile"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_list_account_members",
+    "description": "List members of the Cloudflare account with their roles",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "account",
+      "members",
+      "list",
+      "team",
+      "roles"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_export_dns_records",
+    "description": "Export all DNS records for a zone in BIND zone-file format",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "dns",
+      "export",
+      "bind",
+      "zone-file"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_d1_databases",
+    "description": "List Cloudflare D1 (SQLite at the edge) databases in your account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "database",
+      "sqlite",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_get_d1_database",
+    "description": "Get details about a specific D1 database",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "database",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_d1_database",
+    "description": "Create a new D1 SQLite database at the edge",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "database",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "primary_location_hint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_d1_database",
+    "description": "Delete a D1 database permanently",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "database",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_query_d1",
+    "description": "Run a parameterized SQL query against a D1 database. Use ? placeholders and pass params array.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "sql",
+      "query",
+      "database"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "sql": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "database_id",
+        "sql"
+      ]
+    }
+  },
+  {
+    "name": "cf_d1_raw_query",
+    "description": "Run SQL against D1 with raw (more performant for large reads) response format",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "sql",
+      "raw",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "sql": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "database_id",
+        "sql"
+      ]
+    }
+  },
+  {
+    "name": "cf_d1_list_tables",
+    "description": "List all user tables in a D1 database (filters out sqlite internals)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "tables",
+      "list",
+      "schema"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_d1_table_schema",
+    "description": "Get the column schema (PRAGMA table_info) of a specific D1 table",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "schema",
+      "columns",
+      "table"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "table_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id",
+        "table_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_d1_export",
+    "description": "Export a D1 database as SQL (returns polling URL or content depending on output_format)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "export",
+      "backup",
+      "sql"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "output_format": {
+          "type": "string",
+          "default": "polling"
+        },
+        "dump_options": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_d1_import",
+    "description": "Import SQL into a D1 database from an uploaded file",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "d1",
+      "import",
+      "restore",
+      "sql"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "default": "init"
+        },
+        "etag": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_run_ai_model",
+    "description": "Run any Workers AI model with raw inputs. Provide the model name (e.g. @cf/meta/llama-3.1-8b-instruct) and the model-specific inputs object.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "ai",
+      "inference",
+      "model"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "inputs": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "model",
+        "inputs"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_ai_models",
+    "description": "List available Workers AI models with optional task filter",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "models",
+      "list",
+      "catalog"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 50
+        },
+        "task": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_text_generation",
+    "description": "Run text generation via Workers AI (default: Llama 3.1 8b). System prompt + user prompt format.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "text-generation",
+      "llama",
+      "llm"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "system": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "max_tokens": {
+          "type": "number",
+          "default": 512
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    }
+  },
+  {
+    "name": "cf_text_embedding",
+    "description": "Generate text embeddings via Workers AI (default: BGE base en v1.5). Accepts string or array.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "embeddings",
+      "bge",
+      "vector"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {},
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "cf_image_classification",
+    "description": "Classify an image via Workers AI (default: ResNet-50). Accepts base64-encoded image.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "image",
+      "classification",
+      "resnet"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "image_base64": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "image_base64"
+      ]
+    }
+  },
+  {
+    "name": "cf_text_to_image",
+    "description": "Generate an image from text via Workers AI (default: SDXL). Returns base64 PNG.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "text-to-image",
+      "sdxl",
+      "stable-diffusion"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "num_steps": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "prompt"
+      ]
+    }
+  },
+  {
+    "name": "cf_speech_to_text",
+    "description": "Transcribe audio via Workers AI Whisper (default model @cf/openai/whisper). Accepts base64 audio.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "whisper",
+      "transcription",
+      "speech"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "audio_base64": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "audio_base64"
+      ]
+    }
+  },
+  {
+    "name": "cf_translation",
+    "description": "Translate text between languages via Workers AI (default: M2M100 1.2b).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "translation",
+      "m2m100"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "source_lang": {
+          "type": "string",
+          "default": "english"
+        },
+        "target_lang": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "target_lang"
+      ]
+    }
+  },
+  {
+    "name": "cf_summarization",
+    "description": "Summarize input text via Workers AI BART-CNN",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "summarization",
+      "bart"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "input_text": {
+          "type": "string"
+        },
+        "max_length": {
+          "type": "number",
+          "default": 1024
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_text"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_ai_finetunes",
+    "description": "List Workers AI fine-tune adapters in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers-ai",
+      "fine-tune",
+      "adapters"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_list_queues",
+    "description": "List Cloudflare Queues in your account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "list",
+      "messaging"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_create_queue",
+    "description": "Create a new Cloudflare Queue for message passing between Workers",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "create",
+      "messaging"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_queue",
+    "description": "Get details about a queue (settings, message counts, consumers)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_queue",
+    "description": "Delete a Cloudflare Queue permanently",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_queue",
+    "description": "Update a queue's name or settings (delivery delay, retention period, dead letter queue)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "update",
+      "settings"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        },
+        "queue_name": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "queue_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_send_queue_message",
+    "description": "Send a single message to a Cloudflare Queue (optionally delayed)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "send",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        },
+        "body": {},
+        "content_type": {
+          "type": "string",
+          "default": "json"
+        },
+        "delay_seconds": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "queue_id",
+        "body"
+      ]
+    }
+  },
+  {
+    "name": "cf_send_queue_messages_batch",
+    "description": "Send up to 100 messages to a queue in one batch call",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "batch",
+      "send",
+      "bulk"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "queue_id",
+        "messages"
+      ]
+    }
+  },
+  {
+    "name": "cf_purge_queue",
+    "description": "Delete all messages currently in a queue",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "purge",
+      "clear"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_queue_consumers",
+    "description": "List consumers attached to a queue",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "consumers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_queue_consumer",
+    "description": "Attach a Worker as a consumer of a queue",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "consumer",
+      "create",
+      "worker"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        },
+        "script_name": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "object"
+        },
+        "type": {
+          "type": "string",
+          "default": "worker"
+        }
+      },
+      "required": [
+        "queue_id",
+        "script_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_queue_consumer",
+    "description": "Remove a consumer from a queue",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "queues",
+      "consumer",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "queue_id": {
+          "type": "string"
+        },
+        "consumer_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "queue_id",
+        "consumer_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_durable_object_namespaces",
+    "description": "List Durable Object namespaces (stateful classes)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "durable-objects",
+      "namespaces",
+      "list",
+      "state"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_get_durable_object_namespace",
+    "description": "Get details for a Durable Object namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "durable-objects",
+      "namespace",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_durable_objects",
+    "description": "List active object instances within a Durable Object namespace",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "durable-objects",
+      "instances",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "namespace_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_secrets",
+    "description": "List secret names bound to a Worker (values not returned)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "secrets",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_put_worker_secret",
+    "description": "Create or update a secret bound to a Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "secret",
+      "put",
+      "update",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "default": "secret_text"
+        }
+      },
+      "required": [
+        "worker_name",
+        "name",
+        "text"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_worker_secret",
+    "description": "Delete a secret bound to a Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "secret",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_versions",
+    "description": "List immutable versions of a Worker script",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "versions",
+      "list",
+      "history"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "per_page": {
+          "type": "number",
+          "default": 10
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_worker_version",
+    "description": "Get details for a specific Worker version",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "version",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "version_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name",
+        "version_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_deployments",
+    "description": "List active deployments (version-routing weights) for a Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "deployments",
+      "list",
+      "gradual"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_worker_deployment",
+    "description": "Create a new deployment with percentage-based or canary routing across Worker versions",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "deployment",
+      "create",
+      "canary"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "strategy": {
+          "type": "string",
+          "default": "percentage"
+        },
+        "versions": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "worker_name",
+        "versions"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_worker_settings",
+    "description": "Get Worker script settings (compatibility flags, observability, logpush)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "settings",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_worker_settings",
+    "description": "Update Worker script settings (observability, compatibility flags)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "settings",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "worker_name",
+        "settings"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_tail_logs",
+    "description": "List active tail (live log streaming) sessions for a Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "tail",
+      "logs",
+      "streaming"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_worker_analytics",
+    "description": "Get analytics (requests, errors, CPU time) for a Worker",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "analytics",
+      "metrics"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "worker_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "worker_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_worker_domains",
+    "description": "List worker custom domains (production routing hostnames)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "domains",
+      "list",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_attach_worker_domain",
+    "description": "Attach a custom domain to a Worker service",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "domain",
+      "attach",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hostname",
+        "service",
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_access_applications",
+    "description": "List Cloudflare Access (Zero Trust) applications",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "zero-trust",
+      "applications",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_get_access_application",
+    "description": "Get a Cloudflare Access application by ID",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "zero-trust",
+      "application",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_access_application",
+    "description": "Create a Cloudflare Access (Zero Trust) protected application",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "zero-trust",
+      "application",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "default": "self_hosted"
+        },
+        "session_duration": {
+          "type": "string",
+          "default": "24h"
+        }
+      },
+      "required": [
+        "name",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_access_application",
+    "description": "Update a Cloudflare Access application's configuration",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "application",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "app_id",
+        "config"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_access_application",
+    "description": "Delete a Cloudflare Access application",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "application",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_access_policies",
+    "description": "List Access policies attached to an application",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "policies",
+      "list",
+      "zero-trust"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_access_policy",
+    "description": "Create an Access policy (include/exclude/require rules with allow/block decision)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "policy",
+      "create",
+      "zero-trust"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string",
+          "default": "allow"
+        },
+        "include": {
+          "type": "array"
+        },
+        "exclude": {
+          "type": "array"
+        },
+        "require": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_id",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_access_policy",
+    "description": "Delete an Access policy from an application",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "policy",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "app_id": {
+          "type": "string"
+        },
+        "policy_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id",
+        "policy_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_access_groups",
+    "description": "List reusable Access groups for use across multiple applications",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "groups",
+      "list",
+      "zero-trust"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_create_access_group",
+    "description": "Create a reusable Access group with include/exclude/require rules",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "group",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "include": {
+          "type": "array"
+        },
+        "exclude": {
+          "type": "array"
+        },
+        "require": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_hyperdrive_configs",
+    "description": "List Hyperdrive configurations (accelerated remote database connection caching)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "hyperdrive",
+      "configs",
+      "list",
+      "database"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_get_hyperdrive_config",
+    "description": "Get a Hyperdrive configuration by ID",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "hyperdrive",
+      "config",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "hyperdrive_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hyperdrive_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_hyperdrive_config",
+    "description": "Create a Hyperdrive config to accelerate access to an origin database",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "hyperdrive",
+      "config",
+      "create",
+      "postgres"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "object"
+        },
+        "caching": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "origin"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_hyperdrive_config",
+    "description": "Delete a Hyperdrive configuration",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "hyperdrive",
+      "config",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "hyperdrive_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hyperdrive_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_stream_videos",
+    "description": "List videos uploaded to Cloudflare Stream",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "stream",
+      "videos",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number",
+          "default": 20
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_get_stream_video",
+    "description": "Get metadata for a Stream video",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "stream",
+      "video",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "video_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "video_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_stream_video",
+    "description": "Delete a video from Cloudflare Stream",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "stream",
+      "video",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "video_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "video_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_stream_url_upload",
+    "description": "Copy a video into Cloudflare Stream from a public URL",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "stream",
+      "upload",
+      "url",
+      "copy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_stream_direct_upload",
+    "description": "Create a one-time direct upload URL for Cloudflare Stream (no API key needed by uploader)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "stream",
+      "upload",
+      "direct",
+      "tus"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "max_duration_seconds": {
+          "type": "number",
+          "default": 3600
+        },
+        "expiry": {
+          "type": "string"
+        },
+        "meta": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_create_pages_project",
+    "description": "Create a new Cloudflare Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "project",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "production_branch": {
+          "type": "string",
+          "default": "main"
+        },
+        "source": {
+          "type": "object"
+        },
+        "build_config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_pages_project",
+    "description": "Delete a Cloudflare Pages project and all its deployments",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "project",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_remove_pages_domain",
+    "description": "Remove a custom domain from a Pages project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "domain",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_name",
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_pages_deployment",
+    "description": "Trigger a new Pages deployment for a project",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "pages",
+      "deployment",
+      "create",
+      "trigger"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_name": {
+          "type": "string"
+        },
+        "body": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "project_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_purge_cache_by_tag",
+    "description": "Purge cached content matching cache-tag headers (Enterprise plan)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "cache",
+      "purge",
+      "tag"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "zone_id",
+        "tags"
+      ]
+    }
+  },
+  {
+    "name": "cf_purge_cache_by_host",
+    "description": "Purge all cached content for specific hostnames",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "cache",
+      "purge",
+      "host"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "zone_id",
+        "hosts"
+      ]
+    }
+  },
+  {
+    "name": "cf_purge_cache_by_prefix",
+    "description": "Purge cached content under URL prefixes",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "cache",
+      "purge",
+      "prefix"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "zone_id",
+        "prefixes"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_page_rules",
+    "description": "List Page Rules for a zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "page-rules",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "per_page": {
+          "type": "number",
+          "default": 20
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_page_rule",
+    "description": "Create a Page Rule (URL pattern matching with cache/ssl/forwarding actions)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "page-rules",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "array"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "priority": {
+          "type": "number",
+          "default": 1
+        },
+        "status": {
+          "type": "string",
+          "default": "active"
+        }
+      },
+      "required": [
+        "zone_id",
+        "targets",
+        "actions"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_page_rule",
+    "description": "Update a Page Rule's actions, targets, or priority",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "page-rules",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "zone_id",
+        "rule_id",
+        "config"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_page_rule",
+    "description": "Delete a Page Rule",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "page-rules",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_r2_bucket_lifecycle",
+    "description": "Get lifecycle rules for an R2 bucket (object expiration, abort multipart)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "lifecycle",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_put_r2_bucket_lifecycle",
+    "description": "Set lifecycle rules for an R2 bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "lifecycle",
+      "put",
+      "expiration"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "bucket_name",
+        "rules"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_r2_bucket_usage",
+    "description": "Get storage usage stats for an R2 bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "usage",
+      "stats"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket_name"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_r2_api_token",
+    "description": "Create an R2 API token (S3-compatible credential) scoped to a bucket",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "api-token",
+      "credentials",
+      "s3"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string",
+          "default": "object-read-only"
+        },
+        "bucket": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_get_metadata",
+    "description": "Get the metadata associated with a KV key (without the value)",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "metadata",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_kv_get_with_metadata",
+    "description": "Get a KV value AND its metadata in one call",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "kv",
+      "value",
+      "metadata",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "namespace_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace_id",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_query_analytics",
+    "description": "Query zone analytics by colo (data centers) with time range",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "analytics",
+      "colos",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "since": {
+          "type": "string"
+        },
+        "until": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_workers_analytics",
+    "description": "Get aggregated Workers analytics for the account dashboard",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "analytics",
+      "dashboard"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "since": {
+          "type": "string"
+        },
+        "until": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "name": "cf_list_load_balancers",
+    "description": "List load balancers for a zone",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "load-balancing",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_load_balancer_pools",
+    "description": "List load balancer origin pools in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "load-balancing",
+      "pools",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_list_load_balancer_monitors",
+    "description": "List load balancer health monitors in the account",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "load-balancing",
+      "monitors",
+      "health"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    }
+  },
+  {
+    "name": "cf_deploy_full_worker",
+    "description": "SUPER TOOL: Deploy a Worker script + set environment bindings + create route + add secrets — all in one call. Returns deployment + per-secret status + route info.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "super-tool",
+      "workers",
+      "deploy",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        },
+        "route_pattern": {
+          "type": "string"
+        },
+        "route_zone_id": {
+          "type": "string"
+        },
+        "bindings": {
+          "type": "array"
+        },
+        "secrets": {
+          "type": "object"
+        },
+        "compatibility_date": {
+          "type": "string",
+          "default": "2024-01-01"
+        }
+      },
+      "required": [
+        "name",
+        "script"
+      ]
+    }
+  },
+  {
+    "name": "cf_setup_d1_schema",
+    "description": "SUPER TOOL: Create a new D1 database AND run a multi-statement SQL schema script against it. Returns database info + per-statement results.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "super-tool",
+      "d1",
+      "schema",
+      "migration",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database_name": {
+          "type": "string"
+        },
+        "schema_sql": {
+          "type": "string"
+        },
+        "primary_location_hint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "database_name",
+        "schema_sql"
+      ]
+    }
+  },
+  {
+    "name": "cf_edge_cache_purge_and_verify",
+    "description": "SUPER TOOL: Purge cache for a list of URLs AND verify each URL is fresh by fetching cf-cache-status header. Returns purge result + per-URL verification.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "super-tool",
+      "cache",
+      "purge",
+      "verify",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verify": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "zone_id",
+        "urls"
+      ]
+    }
+  },
+  {
+    "name": "cf_worker_canary_deploy",
+    "description": "SUPER TOOL: Deploy Worker to a {name}-canary staging script + smoke test it + if smoke test passes, promote to production + clean up canary. Aborts production deploy on smoke test failure.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "super-tool",
+      "workers",
+      "canary",
+      "staging",
+      "deploy"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "production_name": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        },
+        "smoke_test_url": {
+          "type": "string"
+        },
+        "compatibility_date": {
+          "type": "string",
+          "default": "2024-01-01"
+        },
+        "bindings": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "production_name",
+        "script",
+        "smoke_test_url"
+      ]
+    }
+  },
+  {
+    "name": "cf_rag_with_workers_ai",
+    "description": "SUPER TOOL: Edge-native RAG: embed query → fetch documents from a KV namespace → generate answer with Workers AI. Returns answer + source keys. For production RAG, use Vectorize for similarity search.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "super-tool",
+      "rag",
+      "workers-ai",
+      "kv",
+      "compound"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "kv_namespace_id": {
+          "type": "string"
+        },
+        "embedding_model": {
+          "type": "string"
+        },
+        "generation_model": {
+          "type": "string"
+        },
+        "max_results": {
+          "type": "number",
+          "default": 3
+        }
+      },
+      "required": [
+        "query",
+        "kv_namespace_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_email_routing",
+    "description": "Get the email routing status for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_enable_email_routing",
+    "description": "Enable Cloudflare Email Routing for a zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "enable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_disable_email_routing",
+    "description": "Disable Cloudflare Email Routing for a zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "disable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_email_routing_rules",
+    "description": "List email routing rules for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "rules",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_email_routing_rule",
+    "description": "Create an email routing rule (match sender/subject, forward to destination).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "rule",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "matchers": {
+          "type": "array"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "zone_id",
+        "matchers",
+        "actions"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_email_routing_rule",
+    "description": "Update an email routing rule.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "rule",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "matchers": {
+          "type": "array"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "zone_id",
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_email_routing_rule",
+    "description": "Delete an email routing rule.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "rule",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_email_routing_addresses",
+    "description": "List verified destination email addresses for Cloudflare Email Routing.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "addresses",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "cf_create_email_routing_address",
+    "description": "Add a verified destination email address for Cloudflare Email Routing.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "address",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_email_routing_address",
+    "description": "Remove a verified destination email address from Cloudflare Email Routing.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "email",
+      "routing",
+      "address",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "address_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "address_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_waf_packages",
+    "description": "List WAF managed ruleset packages for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "waf",
+      "packages",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_waf_rule_groups",
+    "description": "List WAF rule groups in a package for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "waf",
+      "rule-groups",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "package_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_waf_rules",
+    "description": "List WAF rules in a package for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "waf",
+      "rules",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "zone_id",
+        "package_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_waf_rule",
+    "description": "Update the mode of a WAF rule (on, off, simulate, challenge, block).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "waf",
+      "rule",
+      "update",
+      "mode"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "package_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id",
+        "package_id",
+        "rule_id",
+        "mode"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_bot_management_config",
+    "description": "Get the bot management configuration for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "bot",
+      "management",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_bot_management_config",
+    "description": "Update the bot management configuration (fight mode, session score, model updates).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "bot",
+      "management",
+      "update",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "fight_mode": {
+          "type": "boolean"
+        },
+        "session_score": {
+          "type": "boolean"
+        },
+        "auto_update_model": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_ai_finetune",
+    "description": "Create a new AI finetune (custom model) in Cloudflare Workers AI.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "ai",
+      "finetune",
+      "create",
+      "model"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "cf_r2_list_objects",
+    "description": "List objects in a Cloudflare R2 bucket with optional prefix filter.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "objects",
+      "list",
+      "bucket"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "cursor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket"
+      ]
+    }
+  },
+  {
+    "name": "cf_r2_delete_object",
+    "description": "Delete an object from a Cloudflare R2 bucket.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "object",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_r2_head_object",
+    "description": "Get metadata for an object in a Cloudflare R2 bucket without downloading it.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "r2",
+      "object",
+      "metadata",
+      "head"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bucket",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_analytics_engine_datasets",
+    "description": "List Analytics Engine datasets in a Cloudflare account.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "analytics",
+      "engine",
+      "datasets",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "cf_query_analytics_engine",
+    "description": "Run a SQL query against Cloudflare Analytics Engine data.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "analytics",
+      "engine",
+      "sql",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sql": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sql"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_identity_providers",
+    "description": "List Cloudflare Access identity providers (SAML, OIDC, OAuth).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "identity",
+      "providers",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "cf_get_identity_provider",
+    "description": "Get a specific Cloudflare Access identity provider by ID.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "identity",
+      "provider",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "provider_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_create_identity_provider",
+    "description": "Create a new Cloudflare Access identity provider for SSO.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "identity",
+      "provider",
+      "create",
+      "sso"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "config"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_identity_provider",
+    "description": "Delete a Cloudflare Access identity provider.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "access",
+      "identity",
+      "provider",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "provider_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_list_api_tokens",
+    "description": "List all Cloudflare API tokens for the current user.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "api",
+      "tokens",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "cf_verify_api_token",
+    "description": "Verify the currently-configured Cloudflare API token is valid.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "api",
+      "token",
+      "verify",
+      "test"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "cf_roll_api_token",
+    "description": "Roll (rotate) a Cloudflare API token to generate a new value.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "api",
+      "token",
+      "rotate",
+      "roll"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_delete_api_token",
+    "description": "Delete a Cloudflare API token.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "api",
+      "token",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_invite_account_member",
+    "description": "Invite a new member to the Cloudflare account with specified roles.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "account",
+      "member",
+      "invite"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "email",
+        "roles"
+      ]
+    }
+  },
+  {
+    "name": "cf_remove_account_member",
+    "description": "Remove a member from the Cloudflare account.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "account",
+      "member",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "member_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "member_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_account_member_roles",
+    "description": "Update the roles assigned to a Cloudflare account member.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "account",
+      "member",
+      "roles",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "member_id": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "member_id",
+        "roles"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_all_zone_settings",
+    "description": "Get all settings for a Cloudflare zone at once.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "settings",
+      "get",
+      "all"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_zone_settings_bulk",
+    "description": "Update multiple zone settings in one Cloudflare API call.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "settings",
+      "bulk",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "array",
+          "description": "[{id: setting_name, value: setting_value}]"
+        }
+      },
+      "required": [
+        "zone_id",
+        "settings"
+      ]
+    }
+  },
+  {
+    "name": "cf_get_zone_ssl_setting",
+    "description": "Get the SSL mode for a Cloudflare zone (off, flexible, full, strict).",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "ssl",
+      "setting",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_update_zone_ssl_setting",
+    "description": "Update the SSL mode for a Cloudflare zone.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "ssl",
+      "setting",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "description": "off, flexible, full, or strict"
+        }
+      },
+      "required": [
+        "zone_id",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "cf_zone_health_report",
+    "description": "SUPER TOOL: Zone health report — zone status, SSL mode, HTTP/2, brotli, DNS count, rate limits, and firewall rules in one call.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "zone",
+      "health",
+      "report",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "zone_id"
+      ]
+    }
+  },
+  {
+    "name": "cf_workers_summary",
+    "description": "SUPER TOOL: Summary of all deployed Workers — names, sizes, modification dates, and active routes.",
+    "namespace": "cloudflare",
+    "tags": [
+      "cloudflare",
+      "workers",
+      "summary",
+      "deployment",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "zone_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  }
 ]

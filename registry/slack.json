@@ -1,39 +1,1843 @@
 [
-  {"name":"slack_send_message","description":"Send a message to a Slack channel. Supports plain text, Markdown, and Block Kit blocks. Can reply to a thread via thread_ts.","namespace":"slack","tags":["slack","message","send","channel","post","notify"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string","description":"Channel ID or name (defaults to SLACK_DEFAULT_CHANNEL)"},"text":{"type":"string"},"thread_ts":{"type":"string","description":"Parent message timestamp to reply in a thread"},"blocks":{"type":"array","description":"Block Kit blocks for rich formatting"},"unfurl_links":{"type":"boolean"},"unfurl_media":{"type":"boolean"}},"required":[]}},
-  {"name":"slack_send_dm","description":"Send a direct message to a Slack user by their user ID.","namespace":"slack","tags":["slack","dm","direct","message","user","private"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"},"text":{"type":"string"},"blocks":{"type":"array"}},"required":["user_id"]}},
-  {"name":"slack_update_message","description":"Edit an existing Slack message by its channel and timestamp.","namespace":"slack","tags":["slack","message","update","edit","modify"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string","description":"Message timestamp"},"text":{"type":"string"},"blocks":{"type":"array"}},"required":["channel","ts"]}},
-  {"name":"slack_delete_message","description":"Delete a Slack message by channel and timestamp.","namespace":"slack","tags":["slack","message","delete","remove"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"}},"required":["channel","ts"]}},
-  {"name":"slack_get_message","description":"Fetch a specific Slack message by channel and timestamp.","namespace":"slack","tags":["slack","message","get","fetch","read"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"}},"required":["channel","ts"]}},
-  {"name":"slack_get_thread","description":"Get all messages in a Slack thread by the parent message's channel and timestamp.","namespace":"slack","tags":["slack","thread","replies","conversation","get"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"thread_ts":{"type":"string"},"limit":{"type":"number"}},"required":["channel","thread_ts"]}},
-  {"name":"slack_reply_to_thread","description":"Reply to an existing Slack thread.","namespace":"slack","tags":["slack","reply","thread","respond","message"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"thread_ts":{"type":"string"},"text":{"type":"string"},"blocks":{"type":"array"}},"required":["channel","thread_ts"]}},
-  {"name":"slack_get_permalink","description":"Get a permanent link URL to a specific Slack message.","namespace":"slack","tags":["slack","permalink","link","message","share"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"}},"required":["channel","ts"]}},
-  {"name":"slack_list_channels","description":"List all Slack channels (public and private) in the workspace.","namespace":"slack","tags":["slack","channels","list","workspace"],"inputSchema":{"type":"object","properties":{"exclude_archived":{"type":"boolean"},"name_filter":{"type":"string","description":"Only return channels whose name contains this string"},"limit":{"type":"number"}},"required":[]}},
-  {"name":"slack_get_channel","description":"Get details for a specific Slack channel by ID or name.","namespace":"slack","tags":["slack","channel","get","info","details"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string","description":"Channel ID or name"}},"required":["channel"]}},
-  {"name":"slack_create_channel","description":"Create a new public or private Slack channel.","namespace":"slack","tags":["slack","channel","create","new","public","private"],"inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Channel name (spaces → hyphens, lowercase)"},"is_private":{"type":"boolean"}},"required":["name"]}},
-  {"name":"slack_archive_channel","description":"Archive a Slack channel.","namespace":"slack","tags":["slack","channel","archive","close","deactivate"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"}},"required":["channel"]}},
-  {"name":"slack_invite_to_channel","description":"Invite one or more users to a Slack channel.","namespace":"slack","tags":["slack","channel","invite","add","members"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"user_ids":{"type":"array","items":{"type":"string"}}},"required":["channel","user_ids"]}},
-  {"name":"slack_join_channel","description":"Make the bot join a Slack channel.","namespace":"slack","tags":["slack","channel","join","member"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"}},"required":["channel"]}},
-  {"name":"slack_leave_channel","description":"Make the bot leave a Slack channel.","namespace":"slack","tags":["slack","channel","leave","exit"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"}},"required":["channel"]}},
-  {"name":"slack_get_channel_history","description":"Get recent messages from a Slack channel with optional time range.","namespace":"slack","tags":["slack","channel","history","messages","recent","read"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"limit":{"type":"number"},"oldest":{"type":"string","description":"Unix timestamp — return messages after this time"},"latest":{"type":"string","description":"Unix timestamp — return messages before this time"}},"required":["channel"]}},
-  {"name":"slack_set_channel_topic","description":"Set the topic for a Slack channel.","namespace":"slack","tags":["slack","channel","topic","set"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"topic":{"type":"string"}},"required":["channel","topic"]}},
-  {"name":"slack_set_channel_purpose","description":"Set the purpose/description for a Slack channel.","namespace":"slack","tags":["slack","channel","purpose","description","set"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"purpose":{"type":"string"}},"required":["channel","purpose"]}},
-  {"name":"slack_list_users","description":"List all active (non-bot) users in the Slack workspace.","namespace":"slack","tags":["slack","users","list","members","workspace"],"inputSchema":{"type":"object","properties":{"limit":{"type":"number"}},"required":[]}},
-  {"name":"slack_get_user","description":"Get profile details for a Slack user by their user ID.","namespace":"slack","tags":["slack","user","get","profile","details"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]}},
-  {"name":"slack_lookup_user_by_email","description":"Find a Slack user by their email address.","namespace":"slack","tags":["slack","user","email","find","lookup"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"}},"required":["email"]}},
-  {"name":"slack_get_user_presence","description":"Check if a Slack user is online or away.","namespace":"slack","tags":["slack","user","presence","online","status","away"],"inputSchema":{"type":"object","properties":{"user_id":{"type":"string"}},"required":["user_id"]}},
-  {"name":"slack_add_reaction","description":"Add an emoji reaction to a Slack message.","namespace":"slack","tags":["slack","reaction","emoji","add","message"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"},"emoji":{"type":"string","description":"Emoji name without colons e.g. thumbsup, white_check_mark"}},"required":["channel","ts","emoji"]}},
-  {"name":"slack_remove_reaction","description":"Remove an emoji reaction from a Slack message.","namespace":"slack","tags":["slack","reaction","emoji","remove"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"},"emoji":{"type":"string"}},"required":["channel","ts","emoji"]}},
-  {"name":"slack_get_reactions","description":"Get all emoji reactions on a Slack message.","namespace":"slack","tags":["slack","reactions","emoji","list","message"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"ts":{"type":"string"}},"required":["channel","ts"]}},
-  {"name":"slack_list_files","description":"List files shared in a Slack channel or by a user.","namespace":"slack","tags":["slack","files","list","uploads","attachments"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"user":{"type":"string"},"types":{"type":"string","description":"all, images, videos, snippets, etc."},"count":{"type":"number"}},"required":[]}},
-  {"name":"slack_delete_file","description":"Delete a file from Slack.","namespace":"slack","tags":["slack","file","delete","remove"],"inputSchema":{"type":"object","properties":{"file_id":{"type":"string"}},"required":["file_id"]}},
-  {"name":"slack_search_messages","description":"Search across all Slack messages in the workspace.","namespace":"slack","tags":["slack","search","messages","find","text","query"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"count":{"type":"number"},"sort":{"type":"string","description":"timestamp or score"}},"required":["query"]}},
-  {"name":"slack_search_files","description":"Search for files in Slack by name or content.","namespace":"slack","tags":["slack","search","files","find"],"inputSchema":{"type":"object","properties":{"query":{"type":"string"},"count":{"type":"number"}},"required":["query"]}},
-  {"name":"slack_add_reminder","description":"Add a reminder in Slack for yourself or a user.","namespace":"slack","tags":["slack","reminder","add","schedule","todo"],"inputSchema":{"type":"object","properties":{"text":{"type":"string"},"time":{"type":"string","description":"Unix timestamp or English string like 'in 10 minutes' or '2025-06-01T10:00:00Z'"},"user":{"type":"string","description":"User ID (defaults to bot user)"}},"required":["text","time"]}},
-  {"name":"slack_list_reminders","description":"List all active reminders for the authenticated user.","namespace":"slack","tags":["slack","reminders","list","schedule","todo"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"slack_get_workspace_info","description":"Get basic info about the Slack workspace — name, domain, and icon.","namespace":"slack","tags":["slack","workspace","info","team","organization"],"inputSchema":{"type":"object","properties":{},"required":[]}},
-  {"name":"slack_announce_deployment","description":"SUPER TOOL: Send a structured deployment announcement to a Slack channel — app name, version, environment, status, changes, and URL formatted as a rich Block Kit card.","namespace":"slack","tags":["slack","deployment","announce","release","ci-cd","notification","super-tool"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"app_name":{"type":"string"},"version":{"type":"string"},"environment":{"type":"string","description":"production, staging, dev (default: production)"},"deployed_by":{"type":"string"},"changes":{"type":"string","description":"Markdown change list"},"status":{"type":"string","description":"success, failed, or rollback"},"url":{"type":"string"}},"required":["app_name","version"]}},
-  {"name":"slack_broadcast","description":"SUPER TOOL: Send the same message to multiple Slack channels at once.","namespace":"slack","tags":["slack","broadcast","multiple","channels","announce","super-tool"],"inputSchema":{"type":"object","properties":{"channels":{"type":"array","items":{"type":"string"},"description":"Array of channel IDs or names"},"text":{"type":"string"},"blocks":{"type":"array"}},"required":["channels"]}},
-  {"name":"slack_send_alert","description":"SUPER TOOL: Send a structured alert card with severity level (critical, error, warning, info) and optional action button.","namespace":"slack","tags":["slack","alert","notification","severity","error","warning","super-tool"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"title":{"type":"string"},"message":{"type":"string"},"severity":{"type":"string","description":"critical, error, warning, or info"},"action_url":{"type":"string"},"action_text":{"type":"string"}},"required":["title","message"]}},
-  {"name":"slack_dm_user_by_email","description":"SUPER TOOL: Look up a user by email and send them a DM in one call — no need to find their user ID first.","namespace":"slack","tags":["slack","dm","email","user","direct","super-tool"],"inputSchema":{"type":"object","properties":{"email":{"type":"string"},"text":{"type":"string"},"blocks":{"type":"array"}},"required":["email"]}},
-  {"name":"slack_channel_summary","description":"SUPER TOOL: Get a channel's info + recent message activity in one call — member count, topic, unique senders, thread count, and latest message.","namespace":"slack","tags":["slack","channel","summary","activity","overview","super-tool"],"inputSchema":{"type":"object","properties":{"channel":{"type":"string"},"message_count":{"type":"number","description":"Recent messages to include (default 25)"}},"required":["channel"]}}
+  {
+    "name": "slack_send_message",
+    "description": "Send a message to a Slack channel. Supports plain text, Markdown, and Block Kit blocks. Can reply to a thread via thread_ts.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "message",
+      "send",
+      "channel",
+      "post",
+      "notify"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel ID or name (defaults to SLACK_DEFAULT_CHANNEL)"
+        },
+        "text": {
+          "type": "string"
+        },
+        "thread_ts": {
+          "type": "string",
+          "description": "Parent message timestamp to reply in a thread"
+        },
+        "blocks": {
+          "type": "array",
+          "description": "Block Kit blocks for rich formatting"
+        },
+        "unfurl_links": {
+          "type": "boolean"
+        },
+        "unfurl_media": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_send_dm",
+    "description": "Send a direct message to a Slack user by their user ID.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "dm",
+      "direct",
+      "message",
+      "user",
+      "private"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_update_message",
+    "description": "Edit an existing Slack message by its channel and timestamp.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "message",
+      "update",
+      "edit",
+      "modify"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string",
+          "description": "Message timestamp"
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "channel",
+        "ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_delete_message",
+    "description": "Delete a Slack message by channel and timestamp.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "message",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_message",
+    "description": "Fetch a specific Slack message by channel and timestamp.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "message",
+      "get",
+      "fetch",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_thread",
+    "description": "Get all messages in a Slack thread by the parent message's channel and timestamp.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "thread",
+      "replies",
+      "conversation",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "thread_ts": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "channel",
+        "thread_ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_reply_to_thread",
+    "description": "Reply to an existing Slack thread.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reply",
+      "thread",
+      "respond",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "thread_ts": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "channel",
+        "thread_ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_permalink",
+    "description": "Get a permanent link URL to a specific Slack message.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "permalink",
+      "link",
+      "message",
+      "share"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_channels",
+    "description": "List all Slack channels (public and private) in the workspace.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channels",
+      "list",
+      "workspace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "exclude_archived": {
+          "type": "boolean"
+        },
+        "name_filter": {
+          "type": "string",
+          "description": "Only return channels whose name contains this string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_get_channel",
+    "description": "Get details for a specific Slack channel by ID or name.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "get",
+      "info",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "description": "Channel ID or name"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_create_channel",
+    "description": "Create a new public or private Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "create",
+      "new",
+      "public",
+      "private"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Channel name (spaces → hyphens, lowercase)"
+        },
+        "is_private": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "slack_archive_channel",
+    "description": "Archive a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "archive",
+      "close",
+      "deactivate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_invite_to_channel",
+    "description": "Invite one or more users to a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "invite",
+      "add",
+      "members"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "channel",
+        "user_ids"
+      ]
+    }
+  },
+  {
+    "name": "slack_join_channel",
+    "description": "Make the bot join a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "join",
+      "member"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_leave_channel",
+    "description": "Make the bot leave a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "leave",
+      "exit"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_channel_history",
+    "description": "Get recent messages from a Slack channel with optional time range.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "history",
+      "messages",
+      "recent",
+      "read"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        },
+        "oldest": {
+          "type": "string",
+          "description": "Unix timestamp — return messages after this time"
+        },
+        "latest": {
+          "type": "string",
+          "description": "Unix timestamp — return messages before this time"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_set_channel_topic",
+    "description": "Set the topic for a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "topic",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "topic": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "topic"
+      ]
+    }
+  },
+  {
+    "name": "slack_set_channel_purpose",
+    "description": "Set the purpose/description for a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "purpose",
+      "description",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "purpose"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_users",
+    "description": "List all active (non-bot) users in the Slack workspace.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "users",
+      "list",
+      "members",
+      "workspace"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_get_user",
+    "description": "Get profile details for a Slack user by their user ID.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "user",
+      "get",
+      "profile",
+      "details"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_lookup_user_by_email",
+    "description": "Find a Slack user by their email address.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "user",
+      "email",
+      "find",
+      "lookup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_user_presence",
+    "description": "Check if a Slack user is online or away.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "user",
+      "presence",
+      "online",
+      "status",
+      "away"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_add_reaction",
+    "description": "Add an emoji reaction to a Slack message.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reaction",
+      "emoji",
+      "add",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        },
+        "emoji": {
+          "type": "string",
+          "description": "Emoji name without colons e.g. thumbsup, white_check_mark"
+        }
+      },
+      "required": [
+        "channel",
+        "ts",
+        "emoji"
+      ]
+    }
+  },
+  {
+    "name": "slack_remove_reaction",
+    "description": "Remove an emoji reaction from a Slack message.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reaction",
+      "emoji",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        },
+        "emoji": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "ts",
+        "emoji"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_reactions",
+    "description": "Get all emoji reactions on a Slack message.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reactions",
+      "emoji",
+      "list",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "ts": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "ts"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_files",
+    "description": "List files shared in a Slack channel or by a user.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "files",
+      "list",
+      "uploads",
+      "attachments"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        },
+        "types": {
+          "type": "string",
+          "description": "all, images, videos, snippets, etc."
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_delete_file",
+    "description": "Delete a file from Slack.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "file",
+      "delete",
+      "remove"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_search_messages",
+    "description": "Search across all Slack messages in the workspace.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "search",
+      "messages",
+      "find",
+      "text",
+      "query"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        },
+        "sort": {
+          "type": "string",
+          "description": "timestamp or score"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "slack_search_files",
+    "description": "Search for files in Slack by name or content.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "search",
+      "files",
+      "find"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "slack_add_reminder",
+    "description": "Add a reminder in Slack for yourself or a user.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reminder",
+      "add",
+      "schedule",
+      "todo"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "description": "Unix timestamp or English string like 'in 10 minutes' or '2025-06-01T10:00:00Z'"
+        },
+        "user": {
+          "type": "string",
+          "description": "User ID (defaults to bot user)"
+        }
+      },
+      "required": [
+        "text",
+        "time"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_reminders",
+    "description": "List all active reminders for the authenticated user.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "reminders",
+      "list",
+      "schedule",
+      "todo"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "slack_get_workspace_info",
+    "description": "Get basic info about the Slack workspace — name, domain, and icon.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "workspace",
+      "info",
+      "team",
+      "organization"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "slack_announce_deployment",
+    "description": "SUPER TOOL: Send a structured deployment announcement to a Slack channel — app name, version, environment, status, changes, and URL formatted as a rich Block Kit card.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "deployment",
+      "announce",
+      "release",
+      "ci-cd",
+      "notification",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "app_name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string",
+          "description": "production, staging, dev (default: production)"
+        },
+        "deployed_by": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "string",
+          "description": "Markdown change list"
+        },
+        "status": {
+          "type": "string",
+          "description": "success, failed, or rollback"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_name",
+        "version"
+      ]
+    }
+  },
+  {
+    "name": "slack_broadcast",
+    "description": "SUPER TOOL: Send the same message to multiple Slack channels at once.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "broadcast",
+      "multiple",
+      "channels",
+      "announce",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of channel IDs or names"
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "channels"
+      ]
+    }
+  },
+  {
+    "name": "slack_send_alert",
+    "description": "SUPER TOOL: Send a structured alert card with severity level (critical, error, warning, info) and optional action button.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "alert",
+      "notification",
+      "severity",
+      "error",
+      "warning",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "description": "critical, error, warning, or info"
+        },
+        "action_url": {
+          "type": "string"
+        },
+        "action_text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "slack_dm_user_by_email",
+    "description": "SUPER TOOL: Look up a user by email and send them a DM in one call — no need to find their user ID first.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "dm",
+      "email",
+      "user",
+      "direct",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "email"
+      ]
+    }
+  },
+  {
+    "name": "slack_channel_summary",
+    "description": "SUPER TOOL: Get a channel's info + recent message activity in one call — member count, topic, unique senders, thread count, and latest message.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "summary",
+      "activity",
+      "overview",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "message_count": {
+          "type": "number",
+          "description": "Recent messages to include (default 25)"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_schedule_message",
+    "description": "Schedule a Slack message to be sent at a future time.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "schedule",
+      "message",
+      "future"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "post_at": {
+          "type": "number",
+          "description": "Unix timestamp when to send"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "channel",
+        "post_at"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_scheduled_messages",
+    "description": "List all scheduled (pending) Slack messages.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "scheduled",
+      "messages",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_delete_scheduled_message",
+    "description": "Delete a scheduled Slack message before it is sent.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "scheduled",
+      "message",
+      "delete",
+      "cancel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "scheduled_message_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "scheduled_message_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_pin_message",
+    "description": "Pin a message to a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "pin",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "timestamp"
+      ]
+    }
+  },
+  {
+    "name": "slack_unpin_message",
+    "description": "Unpin a message from a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "unpin",
+      "message"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "timestamp"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_pins",
+    "description": "List all pinned messages in a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "pins",
+      "list",
+      "channel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_list_bookmarks",
+    "description": "List bookmarks in a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "bookmarks",
+      "list",
+      "channel"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_add_bookmark",
+    "description": "Add a link bookmark to a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "bookmark",
+      "add",
+      "link"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "emoji": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "title",
+        "link"
+      ]
+    }
+  },
+  {
+    "name": "slack_remove_bookmark",
+    "description": "Remove a bookmark from a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "bookmark",
+      "remove",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "bookmark_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "bookmark_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_usergroups",
+    "description": "List all Slack user groups (@handle groups) in the workspace.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroups",
+      "handles",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "include_users": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_create_usergroup",
+    "description": "Create a Slack user group (@handle) for mentioning teams.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroup",
+      "create",
+      "handle",
+      "team"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "handle": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "channels": {
+          "description": "Channel IDs or array"
+        }
+      },
+      "required": [
+        "name",
+        "handle"
+      ]
+    }
+  },
+  {
+    "name": "slack_update_usergroup",
+    "description": "Update a Slack user group's name, handle, or description.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroup",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "usergroup": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "handle": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "usergroup"
+      ]
+    }
+  },
+  {
+    "name": "slack_disable_usergroup",
+    "description": "Disable a Slack user group so it can no longer be mentioned.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroup",
+      "disable",
+      "deactivate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "usergroup": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "usergroup"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_usergroup_members",
+    "description": "List members of a Slack user group.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroup",
+      "members",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "usergroup": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "usergroup"
+      ]
+    }
+  },
+  {
+    "name": "slack_update_usergroup_members",
+    "description": "Set the members of a Slack user group.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "usergroup",
+      "members",
+      "update",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "usergroup": {
+          "type": "string"
+        },
+        "users": {
+          "description": "User IDs array or comma-separated string"
+        }
+      },
+      "required": [
+        "usergroup",
+        "users"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_workflows",
+    "description": "List published Slack workflow triggers.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "workflows",
+      "list",
+      "triggers"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_create_canvas",
+    "description": "Create a Slack canvas document, optionally linked to a channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "canvas",
+      "create",
+      "document"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "markdown": {
+          "type": "string"
+        },
+        "channel_id": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_get_canvas",
+    "description": "Get sections from a Slack canvas document.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "canvas",
+      "get",
+      "document"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "canvas_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "canvas_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_edit_canvas",
+    "description": "Edit a Slack canvas document with a list of changes.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "canvas",
+      "edit",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "canvas_id": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "canvas_id",
+        "changes"
+      ]
+    }
+  },
+  {
+    "name": "slack_delete_canvas",
+    "description": "Delete a Slack canvas document.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "canvas",
+      "delete"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "canvas_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "canvas_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_share_canvas",
+    "description": "Share a Slack canvas with channels or users.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "canvas",
+      "share",
+      "access"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "canvas_id": {
+          "type": "string"
+        },
+        "channel_ids": {
+          "type": "array"
+        },
+        "user_ids": {
+          "type": "array"
+        },
+        "access_level": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "canvas_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_user_profile",
+    "description": "Get a Slack user's full profile including custom fields.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "user",
+      "profile",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id"
+      ]
+    }
+  },
+  {
+    "name": "slack_set_user_profile",
+    "description": "Set fields on a Slack user's profile.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "user",
+      "profile",
+      "update",
+      "set"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile"
+      ]
+    }
+  },
+  {
+    "name": "slack_rename_channel",
+    "description": "Rename a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "rename"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "name"
+      ]
+    }
+  },
+  {
+    "name": "slack_unarchive_channel",
+    "description": "Unarchive a previously archived Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "unarchive",
+      "restore"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_list_channel_members",
+    "description": "List all members of a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "members",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "channel"
+      ]
+    }
+  },
+  {
+    "name": "slack_kick_from_channel",
+    "description": "Remove a user from a Slack channel.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "kick",
+      "remove",
+      "user"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "user": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "user"
+      ]
+    }
+  },
+  {
+    "name": "slack_get_bot_info",
+    "description": "Get information about a Slack bot (app).",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "bot",
+      "info",
+      "app"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "bot": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_get_auth_test",
+    "description": "Test the Slack bot token and return identity info (team, bot user, scopes).",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "auth",
+      "test",
+      "token",
+      "validate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "slack_list_emoji",
+    "description": "List all custom emoji in the Slack workspace.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "emoji",
+      "list",
+      "custom"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "slack_channel_digest",
+    "description": "SUPER TOOL: Get channel info, recent messages, and member count in one call — ideal for summarizing channel activity.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "channel",
+      "digest",
+      "summary",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "type": "string"
+        },
+        "count": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "slack_multi_channel_announce",
+    "description": "SUPER TOOL: Send the same message to multiple channels simultaneously.",
+    "namespace": "slack",
+    "tags": [
+      "slack",
+      "announce",
+      "broadcast",
+      "multi-channel",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "text": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "channels",
+        "text"
+      ]
+    }
+  }
 ]

@@ -402,6 +402,135 @@ async function execute(tool, args) {
 
 
   throw new Error(`Unknown n8n tool: ${tool}`);
+
+  // ── WORKFLOW TEMPLATES ────────────────────────────────────────────────────
+  if (tool === 'n8n_duplicate_workflow') {
+    const original = await n8n('GET', `/workflows/${args.workflow_id}`);
+    const { name, nodes, connections, settings, staticData } = original;
+    const copy = { name: args.new_name || `${name} (copy)`, nodes, connections, settings };
+    if (staticData) copy.staticData = staticData;
+    return await n8n('POST', '/workflows', copy);
+  }
+  if (tool === 'n8n_list_workflow_templates') {
+    let path = `/templates/workflows?limit=${args.limit || 20}`;
+    if (args.search) path += `&search=${encodeURIComponent(args.search)}`;
+    if (args.category) path += `&category=${args.category}`;
+    return await n8n('GET', path);
+  }
+  if (tool === 'n8n_get_workflow_template') {
+    return await n8n('GET', `/templates/workflows/${args.template_id}`);
+  }
+
+  // ── EXECUTION MANAGEMENT ─────────────────────────────────────────────────
+  if (tool === 'n8n_get_executions_summary') {
+    const limit = args.limit || 50;
+    const executions = await n8n('GET', `/executions?limit=${limit}`);
+    const data = executions.data || executions;
+    const arr = Array.isArray(data) ? data : [];
+    const summary = { total: arr.length, success: 0, failed: 0, running: 0, waiting: 0, workflows: {} };
+    for (const e of arr) {
+      if (e.status === 'success') summary.success++;
+      else if (e.status === 'error') summary.failed++;
+      else if (e.status === 'running') summary.running++;
+      else if (e.status === 'waiting') summary.waiting++;
+      const wName = e.workflowData?.name || e.workflowId || 'unknown';
+      summary.workflows[wName] = (summary.workflows[wName] || 0) + 1;
+    }
+    return summary;
+  }
+  if (tool === 'n8n_clear_execution_history') {
+    const { before_date, status } = args;
+    let path = `/executions?limit=100`;
+    if (status) path += `&status=${status}`;
+    const list = await n8n('GET', path);
+    const items = list.data || list;
+    const arr = Array.isArray(items) ? items : [];
+    const toDelete = before_date ? arr.filter(e => new Date(e.startedAt) < new Date(before_date)) : arr;
+    let deleted = 0;
+    for (const e of toDelete) {
+      await n8n('DELETE', `/executions/${e.id}`).catch(() => {});
+      deleted++;
+    }
+    return { deleted, total_found: arr.length };
+  }
+
+  // ── CREDENTIAL TYPES ─────────────────────────────────────────────────────
+  if (tool === 'n8n_list_credential_types') {
+    return await n8n('GET', '/credentials/schema');
+  }
+  if (tool === 'n8n_test_credential') {
+    return await n8n('POST', `/credentials/${args.credential_id}/test`);
+  }
+  if (tool === 'n8n_transfer_credential') {
+    const { credential_id, destination_project_id } = args;
+    if (!credential_id || !destination_project_id) throw new Error('credential_id and destination_project_id are required');
+    return await n8n('PUT', `/credentials/${credential_id}/transfer`, { destinationProjectId: destination_project_id });
+  }
+
+  // ── VARIABLES BULK ────────────────────────────────────────────────────────
+  if (tool === 'n8n_list_all_variables') {
+    return await n8n('GET', '/variables?limit=100');
+  }
+  if (tool === 'n8n_update_variable') {
+    const { variable_id, key, value } = args;
+    if (!variable_id || !key) throw new Error('variable_id and key are required');
+    return await n8n('PATCH', `/variables/${variable_id}`, { key, value });
+  }
+
+  // ── INSTANCE MANAGEMENT ───────────────────────────────────────────────────
+  if (tool === 'n8n_get_instance_license') {
+    return await n8n('GET', '/license');
+  }
+  if (tool === 'n8n_activate_instance_license') {
+    const { activation_key } = args;
+    if (!activation_key) throw new Error('activation_key is required');
+    return await n8n('POST', '/license/activate', { activationKey: activation_key });
+  }
+  if (tool === 'n8n_get_instance_diagnostics') {
+    const [settings, health, info] = await Promise.all([
+      n8n('GET', '/settings'),
+      n8n('GET', '/health'),
+      n8n('GET', '/debug/multi-main-setup').catch(() => null)
+    ]);
+    return { settings, health, multi_main: info, generated_at: new Date().toISOString() };
+  }
+
+  // ── PROJECT MANAGEMENT ────────────────────────────────────────────────────
+  if (tool === 'n8n_list_project_workflows') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await n8n('GET', `/workflows?projectId=${project_id}&limit=${args.limit || 50}`);
+  }
+  if (tool === 'n8n_transfer_workflow_to_project') {
+    const { workflow_id, destination_project_id } = args;
+    if (!workflow_id || !destination_project_id) throw new Error('workflow_id and destination_project_id are required');
+    return await n8n('PUT', `/workflows/${workflow_id}/transfer`, { destinationProjectId: destination_project_id });
+  }
+
+  // ── SUPER TOOL: Full instance overview ───────────────────────────────────
+  if (tool === 'n8n_instance_overview') {
+    const [workflows, executions, credentials, variables, tags] = await Promise.all([
+      n8n('GET', '/workflows?limit=100'),
+      n8n('GET', '/executions?limit=50'),
+      n8n('GET', '/credentials?limit=100'),
+      n8n('GET', '/variables?limit=100'),
+      n8n('GET', '/tags?limit=100')
+    ]);
+    const wf = workflows.data || workflows;
+    const ex = executions.data || executions;
+    const wfArr = Array.isArray(wf) ? wf : [];
+    const exArr = Array.isArray(ex) ? ex : [];
+    return {
+      workflows: { total: wfArr.length, active: wfArr.filter(w => w.active).length, inactive: wfArr.filter(w => !w.active).length },
+      executions: { total: exArr.length, success: exArr.filter(e => e.status === 'success').length, failed: exArr.filter(e => e.status === 'error').length, running: exArr.filter(e => e.status === 'running').length },
+      credentials: Array.isArray(credentials.data) ? credentials.data.length : (credentials.count || 0),
+      variables: Array.isArray(variables.data) ? variables.data.length : (variables.count || 0),
+      tags: Array.isArray(tags.data) ? tags.data.length : (tags.count || 0),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown n8n tool: ${tool}`);
 }
 
 export default { execute };

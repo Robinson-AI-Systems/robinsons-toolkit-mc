@@ -627,6 +627,227 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Cloudflare tool: ${tool}`);
+
+  // ── EMAIL ROUTING ─────────────────────────────────────────────────────────
+  if (tool === 'cf_get_email_routing') {
+    return await cf('GET', `/zones/${args.zone_id}/email/routing`);
+  }
+  if (tool === 'cf_enable_email_routing') {
+    return await cf('POST', `/zones/${args.zone_id}/email/routing/enable`, {});
+  }
+  if (tool === 'cf_disable_email_routing') {
+    return await cf('POST', `/zones/${args.zone_id}/email/routing/disable`, {});
+  }
+  if (tool === 'cf_list_email_routing_rules') {
+    return await cf('GET', `/zones/${args.zone_id}/email/routing/rules`);
+  }
+  if (tool === 'cf_create_email_routing_rule') {
+    const { zone_id, name, matchers, actions, enabled = true } = args;
+    if (!zone_id || !matchers || !actions) throw new Error('zone_id, matchers, and actions are required');
+    return await cf('POST', `/zones/${zone_id}/email/routing/rules`, { name, matchers, actions, enabled });
+  }
+  if (tool === 'cf_update_email_routing_rule') {
+    const { zone_id, rule_id, name, matchers, actions, enabled } = args;
+    if (!zone_id || !rule_id) throw new Error('zone_id and rule_id are required');
+    const body = {};
+    if (name) body.name = name;
+    if (matchers) body.matchers = matchers;
+    if (actions) body.actions = actions;
+    if (enabled !== undefined) body.enabled = enabled;
+    return await cf('PUT', `/zones/${zone_id}/email/routing/rules/${rule_id}`, body);
+  }
+  if (tool === 'cf_delete_email_routing_rule') {
+    return await cf('DELETE', `/zones/${args.zone_id}/email/routing/rules/${args.rule_id}`);
+  }
+  if (tool === 'cf_list_email_routing_addresses') {
+    return await cf('GET', `/accounts/${accountId()}/email/routing/addresses`);
+  }
+  if (tool === 'cf_create_email_routing_address') {
+    const { email } = args;
+    if (!email) throw new Error('email is required');
+    return await cf('POST', `/accounts/${accountId()}/email/routing/addresses`, { email });
+  }
+  if (tool === 'cf_delete_email_routing_address') {
+    return await cf('DELETE', `/accounts/${accountId()}/email/routing/addresses/${args.address_id}`);
+  }
+
+  // ── WAF & BOT MANAGEMENT ─────────────────────────────────────────────────
+  if (tool === 'cf_list_waf_packages') {
+    return await cf('GET', `/zones/${args.zone_id}/firewall/waf/packages`);
+  }
+  if (tool === 'cf_list_waf_rule_groups') {
+    return await cf('GET', `/zones/${args.zone_id}/firewall/waf/packages/${args.package_id}/groups`);
+  }
+  if (tool === 'cf_list_waf_rules') {
+    return await cf('GET', `/zones/${args.zone_id}/firewall/waf/packages/${args.package_id}/rules?per_page=${args.limit || 25}`);
+  }
+  if (tool === 'cf_update_waf_rule') {
+    return await cf('PATCH', `/zones/${args.zone_id}/firewall/waf/packages/${args.package_id}/rules/${args.rule_id}`, { mode: args.mode });
+  }
+  if (tool === 'cf_get_bot_management_config') {
+    return await cf('GET', `/zones/${args.zone_id}/bot_management`);
+  }
+  if (tool === 'cf_update_bot_management_config') {
+    const { zone_id, fight_mode, session_score, auto_update_model, using_latest_model } = args;
+    if (!zone_id) throw new Error('zone_id is required');
+    const body = {};
+    if (fight_mode !== undefined) body.fight_mode = fight_mode;
+    if (session_score !== undefined) body.session_score = session_score;
+    if (auto_update_model !== undefined) body.auto_update_model = auto_update_model;
+    if (using_latest_model !== undefined) body.using_latest_model = using_latest_model;
+    return await cf('PUT', `/zones/${zone_id}/bot_management`, body);
+  }
+
+  // ── WORKERS AI (additional) ───────────────────────────────────────────────
+  if (tool === 'cf_list_ai_finetune_assets') {
+    return await cf('GET', `/accounts/${accountId()}/ai/finetunes/${args.finetune_id}/finetune-assets`);
+  }
+  if (tool === 'cf_create_ai_finetune') {
+    const { name, description } = args;
+    if (!name) throw new Error('name is required');
+    return await cf('POST', `/accounts/${accountId()}/ai/finetunes`, { name, description });
+  }
+
+  // ── R2 OBJECT OPERATIONS ─────────────────────────────────────────────────
+  if (tool === 'cf_r2_list_objects') {
+    const { bucket, prefix, limit = 100, cursor } = args;
+    if (!bucket) throw new Error('bucket is required');
+    let path = `/accounts/${accountId()}/r2/buckets/${bucket}/objects?per_page=${limit}`;
+    if (prefix) path += `&prefix=${encodeURIComponent(prefix)}`;
+    if (cursor) path += `&cursor=${cursor}`;
+    return await cf('GET', path);
+  }
+  if (tool === 'cf_r2_delete_object') {
+    const { bucket, key } = args;
+    if (!bucket || !key) throw new Error('bucket and key are required');
+    return await cf('DELETE', `/accounts/${accountId()}/r2/buckets/${bucket}/objects/${encodeURIComponent(key)}`);
+  }
+  if (tool === 'cf_r2_head_object') {
+    const { bucket, key } = args;
+    if (!bucket || !key) throw new Error('bucket and key are required');
+    return await cf('GET', `/accounts/${accountId()}/r2/buckets/${bucket}/objects/${encodeURIComponent(key)}/metadata`);
+  }
+
+  // ── WORKERS ANALYTICS ENGINE ──────────────────────────────────────────────
+  if (tool === 'cf_list_analytics_engine_datasets') {
+    return await cf('GET', `/accounts/${accountId()}/analytics_engine/datasets`);
+  }
+  if (tool === 'cf_query_analytics_engine') {
+    const { sql } = args;
+    if (!sql) throw new Error('sql query is required');
+    const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId()}/analytics_engine/sql`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiToken()}`, 'Content-Type': 'text/plain' },
+      body: sql
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`CF Analytics Engine: ${data.errors?.[0]?.message || JSON.stringify(data)}`);
+    return data;
+  }
+
+  // ── ACCESS IDENTITY PROVIDERS ────────────────────────────────────────────
+  if (tool === 'cf_list_identity_providers') {
+    return await cf('GET', `/accounts/${accountId()}/access/identity_providers`);
+  }
+  if (tool === 'cf_get_identity_provider') {
+    return await cf('GET', `/accounts/${accountId()}/access/identity_providers/${args.provider_id}`);
+  }
+  if (tool === 'cf_create_identity_provider') {
+    const { name, type, config } = args;
+    if (!name || !type || !config) throw new Error('name, type, and config are required');
+    return await cf('POST', `/accounts/${accountId()}/access/identity_providers`, { name, type, config });
+  }
+  if (tool === 'cf_delete_identity_provider') {
+    return await cf('DELETE', `/accounts/${accountId()}/access/identity_providers/${args.provider_id}`);
+  }
+
+  // ── ACCOUNT TOKENS & MEMBERS ─────────────────────────────────────────────
+  if (tool === 'cf_list_api_tokens') {
+    return await cf('GET', `/user/tokens`);
+  }
+  if (tool === 'cf_get_api_token') {
+    return await cf('GET', `/user/tokens/${args.token_id}`);
+  }
+  if (tool === 'cf_verify_api_token') {
+    return await cf('GET', `/user/tokens/verify`);
+  }
+  if (tool === 'cf_roll_api_token') {
+    return await cf('PUT', `/user/tokens/${args.token_id}/value`, {});
+  }
+  if (tool === 'cf_delete_api_token') {
+    return await cf('DELETE', `/user/tokens/${args.token_id}`);
+  }
+  if (tool === 'cf_invite_account_member') {
+    const { email, roles } = args;
+    if (!email || !roles) throw new Error('email and roles array are required');
+    return await cf('POST', `/accounts/${accountId()}/members`, { email, roles });
+  }
+  if (tool === 'cf_remove_account_member') {
+    return await cf('DELETE', `/accounts/${accountId()}/members/${args.member_id}`);
+  }
+  if (tool === 'cf_update_account_member_roles') {
+    return await cf('PUT', `/accounts/${accountId()}/members/${args.member_id}`, { roles: args.roles });
+  }
+
+  // ── ZONE SETTINGS BULK ───────────────────────────────────────────────────
+  if (tool === 'cf_get_all_zone_settings') {
+    return await cf('GET', `/zones/${args.zone_id}/settings`);
+  }
+  if (tool === 'cf_update_zone_settings_bulk') {
+    const { zone_id, settings } = args;
+    if (!zone_id || !settings?.length) throw new Error('zone_id and settings array are required');
+    return await cf('PATCH', `/zones/${zone_id}/settings`, { items: settings });
+  }
+  if (tool === 'cf_get_zone_ssl_setting') {
+    return await cf('GET', `/zones/${args.zone_id}/settings/ssl`);
+  }
+  if (tool === 'cf_update_zone_ssl_setting') {
+    return await cf('PATCH', `/zones/${args.zone_id}/settings/ssl`, { value: args.value });
+  }
+
+  // ── SUPER TOOL: Zone health report ───────────────────────────────────────
+  if (tool === 'cf_zone_health_report') {
+    const { zone_id } = args;
+    if (!zone_id) throw new Error('zone_id is required');
+    const [zone, settings, dnsRecords, rateLimits, firewallRules] = await Promise.all([
+      cf('GET', `/zones/${zone_id}`),
+      cf('GET', `/zones/${zone_id}/settings`),
+      cf('GET', `/zones/${zone_id}/dns_records?per_page=10`),
+      cf('GET', `/zones/${zone_id}/rate_limits?per_page=10`).catch(() => ({ result: [] })),
+      cf('GET', `/zones/${zone_id}/firewall/rules?per_page=10`).catch(() => ({ result: [] }))
+    ]);
+    const settingsMap = {};
+    for (const s of (settings.result || [])) settingsMap[s.id] = s.value;
+    return {
+      zone: { name: zone.result?.name, status: zone.result?.status, plan: zone.result?.plan?.name, paused: zone.result?.paused },
+      ssl: settingsMap['ssl'],
+      always_https: settingsMap['always_use_https'],
+      min_tls_version: settingsMap['min_tls_version'],
+      http2: settingsMap['http2'],
+      brotli: settingsMap['brotli'],
+      dns_record_count: dnsRecords.result_info?.count || dnsRecords.result?.length,
+      rate_limit_count: rateLimits.result?.length || 0,
+      firewall_rule_count: firewallRules.result?.length || 0,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Worker deployment summary ────────────────────────────────
+  if (tool === 'cf_workers_summary') {
+    const [workers, routes, secrets] = await Promise.all([
+      cf('GET', `/accounts/${accountId()}/workers/scripts`),
+      cf('GET', `/zones/${args.zone_id || ''}/workers/routes`).catch(() => ({ result: [] })),
+      Promise.resolve({ result: [] })
+    ]);
+    return {
+      total_workers: (workers.result || []).length,
+      workers: (workers.result || []).map(w => ({ id: w.id, etag: w.etag, size: w.size, created_on: w.created_on, modified_on: w.modified_on })),
+      routes: routes.result || [],
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Cloudflare tool: ${tool}`);
 }
 
 export default { execute };

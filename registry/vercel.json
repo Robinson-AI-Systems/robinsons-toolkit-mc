@@ -4090,5 +4090,761 @@
         "projectId"
       ]
     }
+  },
+  {
+    "name": "vercel_get_team_invoice",
+    "description": "Get a specific Vercel team invoice by its ID.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "invoice",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoice_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_payment_methods",
+    "description": "Get payment methods on file for the Vercel team.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "payment",
+      "methods"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_get_spend_summary",
+    "description": "Get a spend summary for the Vercel team over a time period.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "spend",
+      "cost",
+      "summary"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "period_start": {
+          "type": "string"
+        },
+        "period_end": {
+          "type": "string"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_upgrade_plan",
+    "description": "Upgrade the Vercel team plan (pro, enterprise).",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "billing",
+      "plan",
+      "upgrade"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan"
+      ]
+    }
+  },
+  {
+    "name": "vercel_encrypt_env_var",
+    "description": "Create an encrypted environment variable on a Vercel project.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "secret",
+      "encrypted",
+      "create"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "target": {
+          "type": "array",
+          "description": "production, preview, development"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "key",
+        "value"
+      ]
+    }
+  },
+  {
+    "name": "vercel_pull_env_vars",
+    "description": "Pull decrypted environment variables for a project and target environment.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "pull",
+      "decrypt",
+      "development"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string",
+          "description": "development, preview, production"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_promote_env_var_to_production",
+    "description": "Promote an environment variable to the production target on Vercel.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "env",
+      "promote",
+      "production"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "env_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "env_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_checks",
+    "description": "Get CI/CD checks attached to a Vercel deployment.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "checks",
+      "ci",
+      "status"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_rerun_deployment_check",
+    "description": "Re-request a failed deployment check on Vercel.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "check",
+      "rerun",
+      "retry"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        },
+        "check_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deployment_id",
+        "check_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_events",
+    "description": "Get build/deployment events for a Vercel deployment.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "events",
+      "build",
+      "logs"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_deployment_aliases",
+    "description": "Get all aliases assigned to a Vercel deployment.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "deployment",
+      "aliases",
+      "domains"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "deployment_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_update_firewall_rule",
+    "description": "Update a Vercel firewall rule's action or conditions.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "rule",
+      "update",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "array"
+        }
+      },
+      "required": [
+        "project_id",
+        "rule_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_list_attack_events",
+    "description": "List recent attack events detected by the Vercel firewall.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "firewall",
+      "attacks",
+      "security",
+      "events"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_waf_active_rules",
+    "description": "Get the active WAF rule configuration for a Vercel project.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "waf",
+      "firewall",
+      "rules",
+      "security"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_cron_job",
+    "description": "Get details of a specific cron job on a Vercel project.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "cron",
+      "job",
+      "get",
+      "schedule"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "cron_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "cron_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_trigger_cron_job",
+    "description": "Manually trigger a Vercel cron job immediately.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "cron",
+      "job",
+      "trigger",
+      "run"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "cron_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id",
+        "cron_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_team_members",
+    "description": "Get all members of a Vercel team with their roles.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "members",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_update_team_member",
+    "description": "Update a team member's role in a Vercel team.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "member",
+      "role",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user_id",
+        "role"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_team_audit_log",
+    "description": "Get the Vercel team audit log of administrative actions.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "audit",
+      "log",
+      "history"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_get_team_saml_config",
+    "description": "Get the SAML SSO configuration for a Vercel team.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "saml",
+      "sso",
+      "config"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_update_team_saml_config",
+    "description": "Update the SAML SSO configuration for a Vercel team.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "team",
+      "saml",
+      "sso",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "sso_url": {
+          "type": "string"
+        },
+        "cert": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "sso_url",
+        "cert"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_edge_config_item",
+    "description": "Get a specific key's value from a Vercel Edge Config.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "item",
+      "get",
+      "key"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edge_config_id": {
+          "type": "string"
+        },
+        "item_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "edge_config_id",
+        "item_key"
+      ]
+    }
+  },
+  {
+    "name": "vercel_delete_edge_config_items",
+    "description": "Delete specific keys from a Vercel Edge Config.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "edge-config",
+      "items",
+      "delete",
+      "keys"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edge_config_id": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "edge_config_id",
+        "keys"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_domain_ssl",
+    "description": "Get SSL certificate details for a domain on Vercel.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "ssl",
+      "certificate",
+      "tls"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_issue_domain_ssl",
+    "description": "Reissue the SSL certificate for a domain on Vercel.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "domain",
+      "ssl",
+      "reissue",
+      "renew"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_project_domains_config",
+    "description": "Get all domain configurations for a Vercel project.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "project",
+      "domains",
+      "config",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_get_log_drain",
+    "description": "Get a specific log drain by its ID.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drain",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "log_drain_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "log_drain_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_pause_log_drain",
+    "description": "Pause a Vercel log drain (stop forwarding logs temporarily).",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drain",
+      "pause",
+      "disable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "log_drain_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "log_drain_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_resume_log_drain",
+    "description": "Resume a paused Vercel log drain.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "log-drain",
+      "resume",
+      "enable"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "log_drain_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "log_drain_id"
+      ]
+    }
+  },
+  {
+    "name": "vercel_cost_forecast",
+    "description": "SUPER TOOL: Vercel cost forecast — team plan, bandwidth usage, and function invocation summary in one call.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "cost",
+      "billing",
+      "forecast",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "vercel_security_audit",
+    "description": "SUPER TOOL: Security audit for a Vercel project — firewall config, blocked IPs, protection settings, and bypass count.",
+    "namespace": "vercel",
+    "tags": [
+      "vercel",
+      "security",
+      "audit",
+      "firewall",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
   }
 ]

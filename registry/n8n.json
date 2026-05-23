@@ -453,7 +453,7 @@
         },
         "before_date": {
           "type": "string",
-          "description": "ISO datetime \u2014 delete executions before this date"
+          "description": "ISO datetime — delete executions before this date"
         }
       },
       "required": []
@@ -1121,7 +1121,7 @@
   },
   {
     "name": "n8n_workflow_dashboard",
-    "description": "SUPER TOOL: Get a full automation health dashboard \u2014 workflow counts by status, recent failures, user count, and tags.",
+    "description": "SUPER TOOL: Get a full automation health dashboard — workflow counts by status, recent failures, user count, and tags.",
     "namespace": "n8n",
     "tags": [
       "n8n",
@@ -1363,7 +1363,7 @@
   },
   {
     "name": "n8n_export_workflow",
-    "description": "Export a workflow's full JSON definition by ID. Returns the complete workflow object including all nodes, connections, and settings \u2014 ready to be imported into another n8n instance or saved as a backup.",
+    "description": "Export a workflow's full JSON definition by ID. Returns the complete workflow object including all nodes, connections, and settings — ready to be imported into another n8n instance or saved as a backup.",
     "namespace": "n8n",
     "tags": [
       "n8n",
@@ -1464,7 +1464,7 @@
   },
   {
     "name": "n8n_workflow_execution_stats",
-    "description": "Get aggregated execution statistics for a specific workflow \u2014 total runs, success/failure/error counts, success rate percentage, and average duration in milliseconds. Useful for monitoring workflow reliability.",
+    "description": "Get aggregated execution statistics for a specific workflow — total runs, success/failure/error counts, success rate percentage, and average duration in milliseconds. Useful for monitoring workflow reliability.",
     "namespace": "n8n",
     "tags": [
       "n8n",
@@ -1492,7 +1492,7 @@
   },
   {
     "name": "n8n_list_node_types",
-    "description": "List all available node types in this n8n instance \u2014 including built-in and community nodes. Returns name, display name, description, category, and version. Use this to discover what nodes are available before building a workflow definition.",
+    "description": "List all available node types in this n8n instance — including built-in and community nodes. Returns name, display name, description, category, and version. Use this to discover what nodes are available before building a workflow definition.",
     "namespace": "n8n",
     "tags": [
       "n8n",
@@ -1504,6 +1504,354 @@
     "inputSchema": {
       "type": "object",
       "properties": {}
+    }
+  },
+  {
+    "name": "n8n_duplicate_workflow",
+    "description": "Duplicate an existing n8n workflow under a new name.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "duplicate",
+      "copy",
+      "clone"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "new_name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_workflow_templates",
+    "description": "Search n8n workflow templates from the template library.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "templates",
+      "list",
+      "search"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_get_workflow_template",
+    "description": "Get a specific n8n workflow template by its ID.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "template",
+      "get"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "template_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "template_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_executions_summary",
+    "description": "Get an aggregated summary of recent n8n executions — success, failed, running counts by workflow.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "executions",
+      "summary",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_clear_execution_history",
+    "description": "Delete old execution records, optionally filtered by status or before a date.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "executions",
+      "clear",
+      "delete",
+      "cleanup"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "before_date": {
+          "type": "string",
+          "description": "ISO date string — delete executions before this date"
+        },
+        "status": {
+          "type": "string",
+          "description": "Filter by: success, error, waiting"
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_list_credential_types",
+    "description": "List available credential type schemas in n8n.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credentials",
+      "types",
+      "schema"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_test_credential",
+    "description": "Test an n8n credential to verify it connects successfully.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "test",
+      "validate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credential_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_transfer_credential",
+    "description": "Transfer an n8n credential to a different project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "credential",
+      "transfer",
+      "move"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "credential_id": {
+          "type": "string"
+        },
+        "destination_project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "credential_id",
+        "destination_project_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_list_all_variables",
+    "description": "List all n8n instance variables.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "variables",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_update_variable",
+    "description": "Update the value of an n8n instance variable.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "variable",
+      "update"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "variable_id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "variable_id",
+        "key"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_instance_license",
+    "description": "Get the n8n instance license details.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "license",
+      "instance"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_activate_instance_license",
+    "description": "Activate an n8n instance license with an activation key.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "license",
+      "activate"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "activation_key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "activation_key"
+      ]
+    }
+  },
+  {
+    "name": "n8n_get_instance_diagnostics",
+    "description": "Get n8n instance diagnostics — settings, health check, and multi-main setup info.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "diagnostics",
+      "instance",
+      "health",
+      "monitoring"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "n8n_list_project_workflows",
+    "description": "List n8n workflows belonging to a specific project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "project",
+      "workflows",
+      "list"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "project_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_transfer_workflow_to_project",
+    "description": "Move an n8n workflow to a different project.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "workflow",
+      "transfer",
+      "move",
+      "project"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workflow_id": {
+          "type": "string"
+        },
+        "destination_project_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "workflow_id",
+        "destination_project_id"
+      ]
+    }
+  },
+  {
+    "name": "n8n_instance_overview",
+    "description": "SUPER TOOL: Full n8n instance overview — workflow counts, execution stats, credentials, variables, and tags in one call.",
+    "namespace": "n8n",
+    "tags": [
+      "n8n",
+      "overview",
+      "dashboard",
+      "monitoring",
+      "super-tool"
+    ],
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "required": []
     }
   }
 ]

@@ -384,6 +384,205 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Slack tool: ${tool}`);
+
+  // ── SCHEDULED MESSAGES ────────────────────────────────────────────────────
+  if (tool === 'slack_schedule_message') {
+    const { channel, text, post_at, blocks } = args;
+    if (!channel || !post_at) throw new Error('channel and post_at (Unix timestamp) are required');
+    const params = { channel, post_at };
+    if (text) params.text = text;
+    if (blocks) params.blocks = JSON.stringify(blocks);
+    return await slack('chat.scheduleMessage', params);
+  }
+  if (tool === 'slack_list_scheduled_messages') {
+    return await slack('chat.scheduledMessages.list', { channel: args.channel, limit: args.limit || 100 });
+  }
+  if (tool === 'slack_delete_scheduled_message') {
+    const { channel, scheduled_message_id } = args;
+    if (!channel || !scheduled_message_id) throw new Error('channel and scheduled_message_id are required');
+    return await slack('chat.deleteScheduledMessage', { channel, scheduled_message_id });
+  }
+
+  // ── PINS ──────────────────────────────────────────────────────────────────
+  if (tool === 'slack_pin_message') {
+    const { channel, timestamp } = args;
+    if (!channel || !timestamp) throw new Error('channel and timestamp are required');
+    return await slack('pins.add', { channel, timestamp });
+  }
+  if (tool === 'slack_unpin_message') {
+    const { channel, timestamp } = args;
+    if (!channel || !timestamp) throw new Error('channel and timestamp are required');
+    return await slack('pins.remove', { channel, timestamp });
+  }
+  if (tool === 'slack_list_pins') {
+    return await slack('pins.list', { channel: args.channel || defaultChannel() });
+  }
+
+  // ── BOOKMARKS ─────────────────────────────────────────────────────────────
+  if (tool === 'slack_list_bookmarks') {
+    return await slack('bookmarks.list', { channel_id: args.channel });
+  }
+  if (tool === 'slack_add_bookmark') {
+    const { channel, title, link, type = 'link', emoji } = args;
+    if (!channel || !title || !link) throw new Error('channel, title, and link are required');
+    const params = { channel_id: channel, title, link, type };
+    if (emoji) params.emoji = emoji;
+    return await slack('bookmarks.add', params);
+  }
+  if (tool === 'slack_remove_bookmark') {
+    return await slack('bookmarks.remove', { channel_id: args.channel, bookmark_id: args.bookmark_id });
+  }
+
+  // ── USER GROUPS (Handles) ─────────────────────────────────────────────────
+  if (tool === 'slack_list_usergroups') {
+    return await slack('usergroups.list', { include_users: args.include_users || false, include_disabled: false });
+  }
+  if (tool === 'slack_create_usergroup') {
+    const { name, handle, description, channels } = args;
+    if (!name || !handle) throw new Error('name and handle are required');
+    const params = { name, handle };
+    if (description) params.description = description;
+    if (channels) params.channels = Array.isArray(channels) ? channels.join(',') : channels;
+    return await slack('usergroups.create', params);
+  }
+  if (tool === 'slack_update_usergroup') {
+    const { usergroup, name, handle, description } = args;
+    if (!usergroup) throw new Error('usergroup ID is required');
+    const params = { usergroup };
+    if (name) params.name = name;
+    if (handle) params.handle = handle;
+    if (description) params.description = description;
+    return await slack('usergroups.update', params);
+  }
+  if (tool === 'slack_disable_usergroup') {
+    return await slack('usergroups.disable', { usergroup: args.usergroup });
+  }
+  if (tool === 'slack_list_usergroup_members') {
+    return await slack('usergroups.users.list', { usergroup: args.usergroup });
+  }
+  if (tool === 'slack_update_usergroup_members') {
+    const { usergroup, users } = args;
+    if (!usergroup || !users) throw new Error('usergroup and users array are required');
+    return await slack('usergroups.users.update', { usergroup, users: Array.isArray(users) ? users.join(',') : users });
+  }
+
+  // ── WORKFLOWS / TRIGGERS ──────────────────────────────────────────────────
+  if (tool === 'slack_list_workflows') {
+    return await slack('workflows.triggers.list', { is_published: true, limit: args.limit || 50 });
+  }
+
+  // ── CANVAS ────────────────────────────────────────────────────────────────
+  if (tool === 'slack_create_canvas') {
+    const { title, markdown, channel_id } = args;
+    const body = {};
+    if (title) body.title = title;
+    if (markdown) body.document_content = { type: 'markdown', markdown };
+    if (channel_id) body.channel_id = channel_id;
+    return await slack('canvases.create', {}, body);
+  }
+  if (tool === 'slack_get_canvas') {
+    return await slack('canvases.sections.lookup', { canvas_id: args.canvas_id, criteria: { section_types: ['any_header'] } });
+  }
+  if (tool === 'slack_edit_canvas') {
+    const { canvas_id, changes } = args;
+    if (!canvas_id || !changes) throw new Error('canvas_id and changes are required');
+    return await slack('canvases.edit', {}, { canvas_id, changes });
+  }
+  if (tool === 'slack_delete_canvas') {
+    return await slack('canvases.delete', { canvas_id: args.canvas_id });
+  }
+  if (tool === 'slack_share_canvas') {
+    const { canvas_id, channel_ids, user_ids, access_level } = args;
+    if (!canvas_id) throw new Error('canvas_id is required');
+    const body = { canvas_id, access_level: access_level || 'read' };
+    if (channel_ids) body.channel_ids = channel_ids;
+    if (user_ids) body.user_ids = user_ids;
+    return await slack('canvases.access.set', {}, body);
+  }
+
+  // ── ADMIN (scim-light via users.admin) ────────────────────────────────────
+  if (tool === 'slack_set_user_active') {
+    return await slack('users.setActive', {});
+  }
+  if (tool === 'slack_get_user_profile') {
+    return await slack('users.profile.get', { user: args.user_id });
+  }
+  if (tool === 'slack_set_user_profile') {
+    const { user_id, profile } = args;
+    if (!profile) throw new Error('profile object is required');
+    const params = { profile: JSON.stringify(profile) };
+    if (user_id) params.user = user_id;
+    return await slack('users.profile.set', params);
+  }
+
+  // ── CONVERSATIONS ADVANCED ────────────────────────────────────────────────
+  if (tool === 'slack_rename_channel') {
+    const { channel, name } = args;
+    if (!channel || !name) throw new Error('channel and name are required');
+    return await slack('conversations.rename', { channel, name });
+  }
+  if (tool === 'slack_unarchive_channel') {
+    return await slack('conversations.unarchive', { channel: args.channel });
+  }
+  if (tool === 'slack_convert_channel_to_private') {
+    return await slack('conversations.convert', { channel_id: args.channel });
+  }
+  if (tool === 'slack_list_channel_members') {
+    return await slack('conversations.members', { channel: args.channel, limit: args.limit || 200 });
+  }
+  if (tool === 'slack_kick_from_channel') {
+    const { channel, user } = args;
+    if (!channel || !user) throw new Error('channel and user are required');
+    return await slack('conversations.kick', { channel, user });
+  }
+
+  // ── APP / BOT INFO ────────────────────────────────────────────────────────
+  if (tool === 'slack_get_bot_info') {
+    return await slack('bots.info', args.bot ? { bot: args.bot } : {});
+  }
+  if (tool === 'slack_get_auth_test') {
+    return await slack('auth.test', {});
+  }
+  if (tool === 'slack_list_apps') {
+    return await slack('apps.connections.open', {});
+  }
+
+  // ── EMOJI ─────────────────────────────────────────────────────────────────
+  if (tool === 'slack_list_emoji') {
+    return await slack('emoji.list', {});
+  }
+
+  // ── SUPER TOOL: Channel digest ────────────────────────────────────────────
+  if (tool === 'slack_channel_digest') {
+    const { channel, count = 20 } = args;
+    const ch = channel || defaultChannel();
+    const [history, info, members] = await Promise.all([
+      slack('conversations.history', { channel: ch, limit: count }),
+      slack('conversations.info', { channel: ch }),
+      slack('conversations.members', { channel: ch, limit: 50 })
+    ]);
+    const messages = history.messages.filter(m => m.type === 'message' && !m.subtype).slice(0, count);
+    return {
+      channel: { id: ch, name: info.channel?.name, topic: info.channel?.topic?.value, purpose: info.channel?.purpose?.value },
+      member_count: members.members?.length || info.channel?.num_members,
+      recent_messages: messages.map(m => ({ ts: m.ts, user: m.user, text: (m.text || '').slice(0, 200) })),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Announce to multiple channels ─────────────────────────────
+  if (tool === 'slack_multi_channel_announce') {
+    const { channels, text, blocks } = args;
+    if (!channels?.length || !text) throw new Error('channels array and text are required');
+    const results = await Promise.all(channels.map(ch =>
+      slack('chat.postMessage', { channel: ch }, blocks ? { channel: ch, text, blocks } : null)
+        .then(r => ({ channel: ch, ts: r.ts, ok: true }))
+        .catch(e => ({ channel: ch, ok: false, error: e.message }))
+    ));
+    return { sent: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length, results };
+  }
+
+  throw new Error(`Unknown Slack tool: ${tool}`);
 }
 
 export default { execute };

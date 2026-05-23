@@ -498,6 +498,227 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Supabase tool: ${tool}`);
+
+  // ── AUTH PROVIDERS & CONFIG ────────────────────────────────────────────────
+  if (tool === 'supabase_get_auth_config') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/auth`);
+  }
+  if (tool === 'supabase_update_auth_provider') {
+    const { project_id, provider, settings } = args;
+    if (!project_id || !provider || !settings) throw new Error('project_id, provider, and settings are required');
+    return await mgmt('PATCH', `/v1/projects/${project_id}/config/auth`, { external: { [provider]: settings } });
+  }
+  if (tool === 'supabase_enable_email_auth') {
+    const { project_id, enable_signup = true, double_confirm_changes = true, enable_confirmations = false } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('PATCH', `/v1/projects/${project_id}/config/auth`, {
+      email: { enable_signup, double_confirm_changes, enable_confirmations }
+    });
+  }
+  if (tool === 'supabase_enable_phone_auth') {
+    const { project_id, enable_signup = true, sms_provider } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const body = { phone: { enable_signup } };
+    if (sms_provider) body.sms_provider = sms_provider;
+    return await mgmt('PATCH', `/v1/projects/${project_id}/config/auth`, body);
+  }
+  if (tool === 'supabase_configure_saml') {
+    const { project_id, metadata_url, attribute_mapping } = args;
+    if (!project_id || !metadata_url) throw new Error('project_id and metadata_url are required');
+    return await mgmt('POST', `/v1/projects/${project_id}/config/auth/saml`, { metadata_url, attribute_mapping });
+  }
+  if (tool === 'supabase_list_saml_providers') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/auth/saml/providers`);
+  }
+
+  // ── MFA ───────────────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_user_factors') {
+    const { project_id, user_id } = args;
+    if (!project_id || !user_id) throw new Error('project_id and user_id are required');
+    return await mgmt('GET', `/v1/projects/${project_id}/auth/users/${user_id}/factors`);
+  }
+  if (tool === 'supabase_delete_user_factor') {
+    const { project_id, user_id, factor_id } = args;
+    if (!project_id || !user_id || !factor_id) throw new Error('project_id, user_id, and factor_id are required');
+    return await mgmt('DELETE', `/v1/projects/${project_id}/auth/users/${user_id}/factors/${factor_id}`);
+  }
+
+  // ── REALTIME ──────────────────────────────────────────────────────────────
+  if (tool === 'supabase_list_realtime_channels') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/realtime/channels`);
+  }
+
+  // ── STORAGE POLICIES ──────────────────────────────────────────────────────
+  if (tool === 'supabase_get_storage_config') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/storage`);
+  }
+  if (tool === 'supabase_update_storage_config') {
+    const { project_id, fileSizeLimit, allowedMimeTypes } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const body = {};
+    if (fileSizeLimit !== undefined) body.fileSizeLimit = fileSizeLimit;
+    if (allowedMimeTypes) body.allowedMimeTypes = allowedMimeTypes;
+    return await mgmt('PATCH', `/v1/projects/${project_id}/config/storage`, body);
+  }
+
+  // ── LOGS ──────────────────────────────────────────────────────────────────
+  if (tool === 'supabase_get_logs') {
+    const { project_id, service, limit = 100, search } = args;
+    if (!project_id || !service) throw new Error('project_id and service are required (api, auth, storage, realtime, postgres)');
+    let path = `/v1/projects/${project_id}/analytics/endpoints/logs.all?limit=${limit}&project=${project_id}`;
+    if (search) path += `&q=${encodeURIComponent(search)}`;
+    return await mgmt('GET', path);
+  }
+  if (tool === 'supabase_get_postgres_logs') {
+    const { project_id, limit = 100 } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/analytics/endpoints/logs.all?project=${project_id}&limit=${limit}`);
+  }
+
+  // ── CUSTOM DOMAINS ────────────────────────────────────────────────────────
+  if (tool === 'supabase_get_custom_domain') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/custom-hostname`);
+  }
+  if (tool === 'supabase_set_custom_domain') {
+    const { project_id, custom_hostname } = args;
+    if (!project_id || !custom_hostname) throw new Error('project_id and custom_hostname are required');
+    return await mgmt('POST', `/v1/projects/${project_id}/custom-hostname/initialize`, { custom_hostname });
+  }
+  if (tool === 'supabase_verify_custom_domain') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('POST', `/v1/projects/${project_id}/custom-hostname/reverify`, {});
+  }
+  if (tool === 'supabase_delete_custom_domain') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('DELETE', `/v1/projects/${project_id}/custom-hostname`);
+  }
+
+  // ── EDGE FUNCTIONS ADVANCED ───────────────────────────────────────────────
+  if (tool === 'supabase_get_edge_function_body') {
+    const { project_id, slug } = args;
+    if (!project_id || !slug) throw new Error('project_id and slug are required');
+    return await mgmt('GET', `/v1/projects/${project_id}/functions/${slug}/body`);
+  }
+  if (tool === 'supabase_get_edge_function_secrets') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/secrets`);
+  }
+  if (tool === 'supabase_set_edge_function_secrets') {
+    const { project_id, secrets } = args;
+    if (!project_id || !secrets) throw new Error('project_id and secrets array [{name, value}] are required');
+    return await mgmt('POST', `/v1/projects/${project_id}/secrets`, secrets);
+  }
+  if (tool === 'supabase_delete_edge_function_secrets') {
+    const { project_id, secret_names } = args;
+    if (!project_id || !secret_names) throw new Error('project_id and secret_names array are required');
+    return await mgmt('DELETE', `/v1/projects/${project_id}/secrets`, secret_names);
+  }
+
+  // ── POSTGRES CONFIG ───────────────────────────────────────────────────────
+  if (tool === 'supabase_get_postgres_config') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/database/postgres`);
+  }
+  if (tool === 'supabase_update_postgres_config') {
+    const { project_id, ...config } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('PUT', `/v1/projects/${project_id}/config/database/postgres`, config);
+  }
+  if (tool === 'supabase_get_pooler_config') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/database/pgbouncer`);
+  }
+  if (tool === 'supabase_update_pooler_config') {
+    const { project_id, pool_mode, default_pool_size, max_client_conn } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const body = {};
+    if (pool_mode) body.pool_mode = pool_mode;
+    if (default_pool_size) body.default_pool_size = default_pool_size;
+    if (max_client_conn) body.max_client_conn = max_client_conn;
+    return await mgmt('PUT', `/v1/projects/${project_id}/config/database/pgbouncer`, body);
+  }
+
+  // ── SSL ENFORCEMENT ───────────────────────────────────────────────────────
+  if (tool === 'supabase_get_ssl_enforcement') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('GET', `/v1/projects/${project_id}/config/database/ssl-enforcement`);
+  }
+  if (tool === 'supabase_update_ssl_enforcement') {
+    const { project_id, enforced = true } = args;
+    if (!project_id) throw new Error('project_id is required');
+    return await mgmt('PUT', `/v1/projects/${project_id}/config/database/ssl-enforcement`, { database: { enforced } });
+  }
+
+  // ── SUPER TOOL: Project security audit ────────────────────────────────────
+  if (tool === 'supabase_security_audit') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const [authConfig, networkRestrictions, sslEnforcement, apiKeys, networkBans, customDomain] = await Promise.all([
+      mgmt('GET', `/v1/projects/${project_id}/config/auth`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/network-restrictions`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/config/database/ssl-enforcement`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/api-keys`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/network-bans`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/custom-hostname`).catch(() => null)
+    ]);
+    return {
+      project_id,
+      auth: {
+        email_confirmations: authConfig?.email?.enable_confirmations,
+        mfa_enabled: authConfig?.mfa?.totp?.enroll_enabled,
+        captcha_enabled: authConfig?.security?.captcha?.enabled
+      },
+      database: {
+        ssl_enforced: sslEnforcement?.database?.enforced
+      },
+      network_restrictions: networkRestrictions?.allowed_cidrs?.length > 0 ? networkRestrictions.allowed_cidrs : 'unrestricted',
+      network_bans_count: networkBans?.banned_ipv4_addresses?.length || 0,
+      custom_domain: customDomain?.custom_hostname || null,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Full project status ───────────────────────────────────────
+  if (tool === 'supabase_project_status') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const [project, usage, functions, buckets, extensions] = await Promise.all([
+      mgmt('GET', `/v1/projects/${project_id}`),
+      mgmt('GET', `/v1/projects/${project_id}/usage`).catch(() => null),
+      mgmt('GET', `/v1/projects/${project_id}/functions`).catch(() => ({ result: [] })),
+      mgmt('GET', `/v1/projects/${project_id}/storage/buckets`).catch(() => []),
+      mgmt('GET', `/v1/projects/${project_id}/database/extensions`).catch(() => [])
+    ]);
+    const funcs = Array.isArray(functions) ? functions : (functions.result || []);
+    const bkts = Array.isArray(buckets) ? buckets : [];
+    const exts = Array.isArray(extensions) ? extensions.filter(e => e.installed_version) : [];
+    return {
+      project: { id: project.id, name: project.name, region: project.region, status: project.status, created_at: project.created_at },
+      edge_functions: funcs.length,
+      storage_buckets: bkts.length,
+      installed_extensions: exts.map(e => e.name),
+      usage,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Supabase tool: ${tool}`);
 }
 
 export default { execute };

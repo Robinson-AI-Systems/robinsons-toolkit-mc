@@ -517,6 +517,230 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Linear tool: ${tool}`);
+
+  // ── WEBHOOKS ──────────────────────────────────────────────────────────────
+  if (tool === 'linear_list_webhooks') {
+    const data = await gql(`{ webhooks { nodes { id url enabled label resourceTypes createdAt } } }`);
+    return data.webhooks.nodes;
+  }
+  if (tool === 'linear_create_webhook') {
+    const { url, resource_types, team_id, label, enabled = true } = args;
+    if (!url || !resource_types) throw new Error('url and resource_types array are required');
+    const data = await gql(`mutation CreateWebhook($input: WebhookCreateInput!) { webhookCreate(input: $input) { success webhook { id url enabled } } }`, {
+      input: { url, resourceTypes: resource_types, teamId: team_id, label, enabled }
+    });
+    return data.webhookCreate.webhook;
+  }
+  if (tool === 'linear_update_webhook') {
+    const { webhook_id, url, enabled, resource_types } = args;
+    if (!webhook_id) throw new Error('webhook_id is required');
+    const input = {};
+    if (url !== undefined) input.url = url;
+    if (enabled !== undefined) input.enabled = enabled;
+    if (resource_types) input.resourceTypes = resource_types;
+    const data = await gql(`mutation UpdateWebhook($id: String!, $input: WebhookUpdateInput!) { webhookUpdate(id: $id, input: $input) { success webhook { id url enabled } } }`, { id: webhook_id, input });
+    return data.webhookUpdate.webhook;
+  }
+  if (tool === 'linear_delete_webhook') {
+    const data = await gql(`mutation DeleteWebhook($id: String!) { webhookDelete(id: $id) { success } }`, { id: args.webhook_id });
+    return data.webhookDelete;
+  }
+
+  // ── TEAM MANAGEMENT ───────────────────────────────────────────────────────
+  if (tool === 'linear_create_team') {
+    const { name, key, description, color, timezone } = args;
+    if (!name || !key) throw new Error('name and key are required');
+    const input = { name, key };
+    if (description) input.description = description;
+    if (color) input.color = color;
+    if (timezone) input.timezone = timezone;
+    const data = await gql(`mutation CreateTeam($input: TeamCreateInput!) { teamCreate(input: $input) { success team { id name key } } }`, { input });
+    return data.teamCreate.team;
+  }
+  if (tool === 'linear_update_team') {
+    const { team_id, name, description, color, timezone, issue_estimation_type } = args;
+    if (!team_id) throw new Error('team_id is required');
+    const input = {};
+    if (name) input.name = name;
+    if (description) input.description = description;
+    if (color) input.color = color;
+    if (timezone) input.timezone = timezone;
+    if (issue_estimation_type) input.issueEstimationType = issue_estimation_type;
+    const data = await gql(`mutation UpdateTeam($id: String!, $input: TeamUpdateInput!) { teamUpdate(id: $id, input: $input) { success team { id name } } }`, { id: team_id, input });
+    return data.teamUpdate.team;
+  }
+  if (tool === 'linear_delete_team') {
+    const data = await gql(`mutation DeleteTeam($id: String!) { teamDelete(id: $id) { success } }`, { id: args.team_id });
+    return data.teamDelete;
+  }
+  if (tool === 'linear_list_team_memberships') {
+    const { team_id } = args;
+    if (!team_id) throw new Error('team_id is required');
+    const data = await gql(`query TeamMemberships($id: String!) { team(id: $id) { members { nodes { id name email displayName } } } }`, { id: team_id });
+    return data.team.members.nodes;
+  }
+  if (tool === 'linear_add_team_member') {
+    const { team_id, user_id } = args;
+    if (!team_id || !user_id) throw new Error('team_id and user_id are required');
+    const data = await gql(`mutation AddMember($input: TeamMembershipCreateInput!) { teamMembershipCreate(input: $input) { success teamMembership { id } } }`, { input: { teamId: team_id, userId: user_id } });
+    return data.teamMembershipCreate;
+  }
+  if (tool === 'linear_remove_team_member') {
+    const data = await gql(`mutation RemoveMember($id: String!) { teamMembershipDelete(id: $id) { success } }`, { id: args.membership_id });
+    return data.teamMembershipDelete;
+  }
+
+  // ── WORKFLOW STATES ───────────────────────────────────────────────────────
+  if (tool === 'linear_create_workflow_state') {
+    const { team_id, name, type, color, description } = args;
+    if (!team_id || !name || !type) throw new Error('team_id, name, and type are required');
+    const input = { teamId: team_id, name, type };
+    if (color) input.color = color;
+    if (description) input.description = description;
+    const data = await gql(`mutation CreateState($input: WorkflowStateCreateInput!) { workflowStateCreate(input: $input) { success state { id name type } } }`, { input });
+    return data.workflowStateCreate.state;
+  }
+  if (tool === 'linear_update_workflow_state') {
+    const { state_id, name, color, description } = args;
+    if (!state_id) throw new Error('state_id is required');
+    const input = {};
+    if (name) input.name = name;
+    if (color) input.color = color;
+    if (description) input.description = description;
+    const data = await gql(`mutation UpdateState($id: String!, $input: WorkflowStateUpdateInput!) { workflowStateUpdate(id: $id, input: $input) { success state { id name } } }`, { id: state_id, input });
+    return data.workflowStateUpdate.state;
+  }
+
+  // ── TEMPLATES ─────────────────────────────────────────────────────────────
+  if (tool === 'linear_list_templates') {
+    const { team_id } = args;
+    const filter = team_id ? `(filter: { team: { id: { eq: "${team_id}" } } })` : '';
+    const data = await gql(`{ templates${filter} { nodes { id name description type } } }`);
+    return data.templates.nodes;
+  }
+  if (tool === 'linear_get_template') {
+    const data = await gql(`query GetTemplate($id: String!) { template(id: $id) { id name description type templateData } }`, { id: args.template_id });
+    return data.template;
+  }
+
+  // ── ROADMAPS ──────────────────────────────────────────────────────────────
+  if (tool === 'linear_create_roadmap') {
+    const { name, description, owner_id, color } = args;
+    if (!name) throw new Error('name is required');
+    const input = { name };
+    if (description) input.description = description;
+    if (owner_id) input.ownerId = owner_id;
+    if (color) input.color = color;
+    const data = await gql(`mutation CreateRoadmap($input: RoadmapCreateInput!) { roadmapCreate(input: $input) { success roadmap { id name } } }`, { input });
+    return data.roadmapCreate.roadmap;
+  }
+  if (tool === 'linear_update_roadmap') {
+    const { roadmap_id, name, description, color } = args;
+    if (!roadmap_id) throw new Error('roadmap_id is required');
+    const input = {};
+    if (name) input.name = name;
+    if (description) input.description = description;
+    if (color) input.color = color;
+    const data = await gql(`mutation UpdateRoadmap($id: String!, $input: RoadmapUpdateInput!) { roadmapUpdate(id: $id, input: $input) { success roadmap { id name } } }`, { id: roadmap_id, input });
+    return data.roadmapUpdate.roadmap;
+  }
+
+  // ── INITIATIVES (formerly Roadmap items) ──────────────────────────────────
+  if (tool === 'linear_list_initiatives') {
+    const data = await gql(`{ initiatives { nodes { id name description color targetDate status } } }`);
+    return data.initiatives.nodes;
+  }
+  if (tool === 'linear_create_initiative') {
+    const { name, description, target_date, owner_id } = args;
+    if (!name) throw new Error('name is required');
+    const input = { name };
+    if (description) input.description = description;
+    if (target_date) input.targetDate = target_date;
+    if (owner_id) input.ownerId = owner_id;
+    const data = await gql(`mutation CreateInitiative($input: InitiativeCreateInput!) { initiativeCreate(input: $input) { success initiative { id name } } }`, { input });
+    return data.initiativeCreate.initiative;
+  }
+
+  // ── NOTIFICATIONS ─────────────────────────────────────────────────────────
+  if (tool === 'linear_list_notifications') {
+    const data = await gql(`{ notifications(first: ${args.limit || 20}) { nodes { id type read createdAt updatedAt } } }`);
+    return data.notifications.nodes;
+  }
+  if (tool === 'linear_mark_notification_read') {
+    const data = await gql(`mutation MarkRead($id: String!) { notificationMarkAsRead(input: { ids: [$id] }) { success } }`, { id: args.notification_id });
+    return data.notificationMarkAsRead;
+  }
+
+  // ── AUDIT LOG ─────────────────────────────────────────────────────────────
+  if (tool === 'linear_list_audit_entries') {
+    const data = await gql(`{ auditEntries(first: ${args.limit || 50}) { nodes { id type actorName createdAt metadata } } }`);
+    return data.auditEntries.nodes;
+  }
+
+  // ── ISSUE RELATIONS ───────────────────────────────────────────────────────
+  if (tool === 'linear_create_issue_relation') {
+    const { issue_id, related_issue_id, type = 'related' } = args;
+    if (!issue_id || !related_issue_id) throw new Error('issue_id and related_issue_id are required');
+    const data = await gql(`mutation CreateRelation($input: IssueRelationCreateInput!) { issueRelationCreate(input: $input) { success issueRelation { id type } } }`, { input: { issueId: issue_id, relatedIssueId: related_issue_id, type } });
+    return data.issueRelationCreate.issueRelation;
+  }
+  if (tool === 'linear_delete_issue_relation') {
+    const data = await gql(`mutation DeleteRelation($id: String!) { issueRelationDelete(id: $id) { success } }`, { id: args.relation_id });
+    return data.issueRelationDelete;
+  }
+
+  // ── ATTACHMENTS ───────────────────────────────────────────────────────────
+  if (tool === 'linear_create_attachment') {
+    const { issue_id, title, url, subtitle, icon_url } = args;
+    if (!issue_id || !title || !url) throw new Error('issue_id, title, and url are required');
+    const input = { issueId: issue_id, title, url };
+    if (subtitle) input.subtitle = subtitle;
+    if (icon_url) input.iconUrl = icon_url;
+    const data = await gql(`mutation CreateAttachment($input: AttachmentCreateInput!) { attachmentCreate(input: $input) { success attachment { id title url } } }`, { input });
+    return data.attachmentCreate.attachment;
+  }
+  if (tool === 'linear_list_attachments') {
+    const { issue_id } = args;
+    if (!issue_id) throw new Error('issue_id is required');
+    const data = await gql(`query IssueAttachments($id: String!) { issue(id: $id) { attachments { nodes { id title url subtitle } } } }`, { id: issue_id });
+    return data.issue.attachments.nodes;
+  }
+
+  // ── SUPER TOOL: Team health dashboard ────────────────────────────────────
+  if (tool === 'linear_team_health_dashboard') {
+    const { team_id } = args;
+    if (!team_id) throw new Error('team_id is required');
+    const data = await gql(`query TeamHealth($id: String!) {
+      team(id: $id) {
+        name
+        members { nodes { id name } }
+        issues(filter: { state: { type: { nin: ["completed","canceled"] } } }, first: 100) {
+          nodes { id identifier priority state { name type } assignee { name } dueDate }
+        }
+        cycles(filter: { isActive: { eq: true } }, first: 1) {
+          nodes { id number name startsAt endsAt
+            progress
+            issues { nodes { id state { type } } }
+          }
+        }
+      }
+    }`, { id: team_id });
+    const team = data.team;
+    const issues = team.issues.nodes;
+    const activeCycle = team.cycles.nodes[0] || null;
+    return {
+      team: team.name,
+      member_count: team.members.nodes.length,
+      open_issues: issues.length,
+      by_priority: { urgent: issues.filter(i => i.priority === 1).length, high: issues.filter(i => i.priority === 2).length, medium: issues.filter(i => i.priority === 3).length, low: issues.filter(i => i.priority === 4).length },
+      unassigned: issues.filter(i => !i.assignee).length,
+      overdue: issues.filter(i => i.dueDate && new Date(i.dueDate) < new Date()).length,
+      active_cycle: activeCycle ? { name: activeCycle.name, progress: activeCycle.progress, ends: activeCycle.endsAt } : null,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Linear tool: ${tool}`);
 }
 
 export default { execute };

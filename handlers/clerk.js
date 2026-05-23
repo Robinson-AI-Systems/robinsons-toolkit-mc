@@ -402,6 +402,162 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Clerk tool: ${tool}`);
+
+  // ── SAML CONNECTIONS ──────────────────────────────────────────────────────
+  if (tool === 'clerk_list_saml_connections') {
+    return await clerk('GET', '/saml_connections');
+  }
+  if (tool === 'clerk_get_saml_connection') {
+    return await clerk('GET', `/saml_connections/${args.saml_connection_id}`);
+  }
+  if (tool === 'clerk_create_saml_connection') {
+    const { name, provider, domain, idp_entity_id, idp_sso_url, idp_certificate, attribute_mapping } = args;
+    if (!name || !provider || !domain) throw new Error('name, provider, and domain are required');
+    const body = { name, provider, domain };
+    if (idp_entity_id) body.idp_entity_id = idp_entity_id;
+    if (idp_sso_url) body.idp_sso_url = idp_sso_url;
+    if (idp_certificate) body.idp_certificate = idp_certificate;
+    if (attribute_mapping) body.attribute_mapping = attribute_mapping;
+    return await clerk('POST', '/saml_connections', body);
+  }
+  if (tool === 'clerk_update_saml_connection') {
+    const { saml_connection_id, active, ...updates } = args;
+    if (!saml_connection_id) throw new Error('saml_connection_id is required');
+    return await clerk('PATCH', `/saml_connections/${saml_connection_id}`, updates);
+  }
+  if (tool === 'clerk_delete_saml_connection') {
+    return await clerk('DELETE', `/saml_connections/${args.saml_connection_id}`);
+  }
+
+  // ── OAUTH APPLICATIONS ────────────────────────────────────────────────────
+  if (tool === 'clerk_list_oauth_applications') {
+    return await clerk('GET', '/oauth_applications');
+  }
+  if (tool === 'clerk_get_oauth_application') {
+    return await clerk('GET', `/oauth_applications/${args.oauth_application_id}`);
+  }
+  if (tool === 'clerk_create_oauth_application') {
+    const { name, callback_url, public: isPublic = false } = args;
+    if (!name || !callback_url) throw new Error('name and callback_url are required');
+    return await clerk('POST', '/oauth_applications', { name, callback_url, public: isPublic });
+  }
+  if (tool === 'clerk_update_oauth_application') {
+    const { oauth_application_id, name, callback_url } = args;
+    if (!oauth_application_id) throw new Error('oauth_application_id is required');
+    const body = {};
+    if (name) body.name = name;
+    if (callback_url) body.callback_url = callback_url;
+    return await clerk('PATCH', `/oauth_applications/${oauth_application_id}`, body);
+  }
+  if (tool === 'clerk_delete_oauth_application') {
+    return await clerk('DELETE', `/oauth_applications/${args.oauth_application_id}`);
+  }
+  if (tool === 'clerk_rotate_oauth_application_secret') {
+    return await clerk('POST', `/oauth_applications/${args.oauth_application_id}/rotate_secret`, {});
+  }
+
+  // ── INSTANCE DOMAINS ──────────────────────────────────────────────────────
+  if (tool === 'clerk_list_domains') {
+    return await clerk('GET', '/domains');
+  }
+  if (tool === 'clerk_add_domain') {
+    const { name, is_satellite = false } = args;
+    if (!name) throw new Error('name is required');
+    return await clerk('POST', '/domains', { name, is_satellite });
+  }
+  if (tool === 'clerk_delete_domain') {
+    return await clerk('DELETE', `/domains/${args.domain_id}`);
+  }
+  if (tool === 'clerk_update_domain') {
+    const { domain_id, name } = args;
+    if (!domain_id) throw new Error('domain_id is required');
+    return await clerk('PATCH', `/domains/${domain_id}`, { name });
+  }
+
+  // ── SIGN-IN TOKENS ────────────────────────────────────────────────────────
+  if (tool === 'clerk_create_sign_in_token') {
+    const { user_id, expires_in_seconds = 3600 } = args;
+    if (!user_id) throw new Error('user_id is required');
+    return await clerk('POST', '/sign_in_tokens', { user_id, expires_in_seconds });
+  }
+  if (tool === 'clerk_revoke_sign_in_token') {
+    return await clerk('POST', `/sign_in_tokens/${args.token_id}/revoke`, {});
+  }
+
+  // ── SIGN-UP ATTEMPTS ──────────────────────────────────────────────────────
+  if (tool === 'clerk_list_sign_ups') {
+    return await clerk('GET', `/sign_ups?limit=${args.limit || 20}&offset=${args.offset || 0}`);
+  }
+  if (tool === 'clerk_get_sign_up') {
+    return await clerk('GET', `/sign_ups/${args.sign_up_id}`);
+  }
+  if (tool === 'clerk_update_sign_up') {
+    const { sign_up_id, ...updates } = args;
+    if (!sign_up_id) throw new Error('sign_up_id is required');
+    return await clerk('PATCH', `/sign_ups/${sign_up_id}`, updates);
+  }
+
+  // ── ORGANIZATION MEMBERSHIP REQUESTS ─────────────────────────────────────
+  if (tool === 'clerk_list_org_membership_requests') {
+    return await clerk('GET', `/organizations/${args.organization_id}/membership_requests?limit=${args.limit || 20}`);
+  }
+  if (tool === 'clerk_accept_org_membership_request') {
+    return await clerk('POST', `/organizations/${args.organization_id}/membership_requests/${args.request_id}/accept`, {});
+  }
+  if (tool === 'clerk_reject_org_membership_request') {
+    return await clerk('POST', `/organizations/${args.organization_id}/membership_requests/${args.request_id}/reject`, {});
+  }
+
+  // ── PROXY CHECKS ──────────────────────────────────────────────────────────
+  if (tool === 'clerk_verify_proxy_url') {
+    return await clerk('POST', '/proxy_checks', { proxy_url: args.proxy_url, domain: args.domain });
+  }
+
+  // ── TESTING TOKENS ────────────────────────────────────────────────────────
+  if (tool === 'clerk_create_testing_token') {
+    return await clerk('POST', '/testing_tokens', {});
+  }
+
+  // ── SUPER TOOL: Instance security overview ────────────────────────────────
+  if (tool === 'clerk_security_overview') {
+    const [instance, restrictions, blocklist, allowlist, samlConnections, webhooks] = await Promise.all([
+      clerk('GET', '/public/interstitial').catch(() => null),
+      clerk('GET', '/instance/restrictions'),
+      clerk('GET', '/blocklist_identifiers?limit=10'),
+      clerk('GET', '/allowlist_identifiers?limit=10'),
+      clerk('GET', '/saml_connections').catch(() => ({ data: [] })),
+      clerk('GET', '/webhooks/svix').catch(() => ({ data: [] }))
+    ]);
+    return {
+      restrictions: restrictions?.sign_up_mode === 'restricted' ? 'invite-only' : 'open',
+      blocklist_count: blocklist?.data?.length || 0,
+      allowlist_count: allowlist?.data?.length || 0,
+      saml_connections: samlConnections?.data?.length || 0,
+      webhooks: webhooks?.data?.length || 0,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Org member audit ─────────────────────────────────────────
+  if (tool === 'clerk_org_member_audit') {
+    const { organization_id } = args;
+    if (!organization_id) throw new Error('organization_id is required');
+    const [org, members, invitations, roles] = await Promise.all([
+      clerk('GET', `/organizations/${organization_id}`),
+      clerk('GET', `/organizations/${organization_id}/memberships?limit=100`),
+      clerk('GET', `/organizations/${organization_id}/invitations?limit=50`),
+      clerk('GET', '/roles?limit=50')
+    ]);
+    return {
+      organization: { id: org.id, name: org.name, slug: org.slug, members_count: org.members_count },
+      members: (members.data || []).map(m => ({ user_id: m.public_user_data?.user_id, name: `${m.public_user_data?.first_name || ''} ${m.public_user_data?.last_name || ''}`.trim(), email: m.public_user_data?.identifier, role: m.role, joined_at: m.created_at })),
+      pending_invitations: (invitations.data || []).filter(i => i.status === 'pending').length,
+      available_roles: (roles.data || []).map(r => r.key),
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Clerk tool: ${tool}`);
 }
 
 export default { execute };

@@ -1277,6 +1277,180 @@ async function execute(tool, args) {
   }
 
   throw new Error(`Unknown Vercel tool: ${tool}`);
+
+  // ── TEAM BILLING & SUBSCRIPTION ───────────────────────────────────────────
+  if (tool === 'vercel_get_team_invoice') {
+    return await vercel('GET', `/v1/payment/invoices/${args.invoice_id}`);
+  }
+  if (tool === 'vercel_get_payment_methods') {
+    return await vercel('GET', `/v1/payment/methods`);
+  }
+  if (tool === 'vercel_get_spend_summary') {
+    const { period_start, period_end } = args;
+    let path = `/v1/analytics/spend`;
+    if (period_start) path += `?from=${period_start}`;
+    if (period_end) path += `${period_start ? '&' : '?'}to=${period_end}`;
+    return await vercel('GET', path);
+  }
+  if (tool === 'vercel_upgrade_plan') {
+    const { plan } = args;
+    if (!plan) throw new Error('plan is required (pro, enterprise)');
+    return await vercel('POST', `/v1/teams/${teamParam()}/plan`, { plan });
+  }
+
+  // ── ENVIRONMENT VARIABLES (PRODUCTION SYNC) ───────────────────────────────
+  if (tool === 'vercel_encrypt_env_var') {
+    const { project_id, key, value, target = ['production', 'preview', 'development'], type = 'encrypted' } = args;
+    if (!project_id || !key || !value) throw new Error('project_id, key, and value are required');
+    return await vercel('POST', `/v10/projects/${project_id}/env`, { key, value, target, type });
+  }
+  if (tool === 'vercel_pull_env_vars') {
+    const { project_id, target = 'development' } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const envs = await vercel('GET', `/v9/projects/${project_id}/env?target=${target}&decrypt=true`);
+    return envs;
+  }
+  if (tool === 'vercel_promote_env_var_to_production') {
+    const { project_id, env_id } = args;
+    if (!project_id || !env_id) throw new Error('project_id and env_id are required');
+    return await vercel('POST', `/v10/projects/${project_id}/env/${env_id}/promote`, {});
+  }
+
+  // ── DEPLOYMENT INSPECTION ─────────────────────────────────────────────────
+  if (tool === 'vercel_get_deployment_checks') {
+    return await vercel('GET', `/v1/deployments/${args.deployment_id}/checks`);
+  }
+  if (tool === 'vercel_rerun_deployment_check') {
+    return await vercel('POST', `/v1/deployments/${args.deployment_id}/checks/${args.check_id}/rerequest`, {});
+  }
+  if (tool === 'vercel_get_deployment_events') {
+    const { deployment_id, limit = 100, follow = false } = args;
+    if (!deployment_id) throw new Error('deployment_id is required');
+    return await vercel('GET', `/v2/deployments/${deployment_id}/events?limit=${limit}&follow=${follow}`);
+  }
+  if (tool === 'vercel_get_deployment_aliases') {
+    return await vercel('GET', `/v2/deployments/${args.deployment_id}/aliases`);
+  }
+
+  // ── FIREWALL & SECURITY ───────────────────────────────────────────────────
+  if (tool === 'vercel_update_firewall_rule') {
+    const { project_id, rule_id, action, conditions } = args;
+    if (!project_id || !rule_id) throw new Error('project_id and rule_id are required');
+    const body = {};
+    if (action) body.action = action;
+    if (conditions) body.conditions = conditions;
+    return await vercel('PATCH', `/v1/security/firewall/config/${project_id}/rules/${rule_id}`, body);
+  }
+  if (tool === 'vercel_list_attack_events') {
+    return await vercel('GET', `/v1/security/firewall/attack-events?projectId=${args.project_id}&limit=${args.limit || 50}`);
+  }
+  if (tool === 'vercel_get_waf_active_rules') {
+    return await vercel('GET', `/v1/security/firewall/config/${args.project_id}`);
+  }
+
+  // ── CRON JOBS ─────────────────────────────────────────────────────────────
+  if (tool === 'vercel_get_cron_job') {
+    const { project_id, cron_id } = args;
+    if (!project_id || !cron_id) throw new Error('project_id and cron_id are required');
+    return await vercel('GET', `/v1/projects/${project_id}/crons/${cron_id}`);
+  }
+  if (tool === 'vercel_trigger_cron_job') {
+    const { project_id, cron_id } = args;
+    if (!project_id || !cron_id) throw new Error('project_id and cron_id are required');
+    return await vercel('POST', `/v1/projects/${project_id}/crons/${cron_id}/trigger`, {});
+  }
+
+  // ── TEAM SETTINGS ADVANCED ────────────────────────────────────────────────
+  if (tool === 'vercel_get_team_members') {
+    return await vercel('GET', `/v2/teams/${teamParam()}/members?limit=${args.limit || 100}`);
+  }
+  if (tool === 'vercel_update_team_member') {
+    const { user_id, role } = args;
+    if (!user_id || !role) throw new Error('user_id and role are required');
+    return await vercel('PATCH', `/v1/teams/${teamParam()}/members/${user_id}`, { role });
+  }
+  if (tool === 'vercel_get_team_audit_log') {
+    return await vercel('GET', `/v1/teams/${teamParam()}/audit-log?limit=${args.limit || 50}`);
+  }
+  if (tool === 'vercel_get_team_saml_config') {
+    return await vercel('GET', `/v1/teams/${teamParam()}/config/saml`);
+  }
+  if (tool === 'vercel_update_team_saml_config') {
+    const { entity_id, sso_url, cert } = args;
+    if (!entity_id || !sso_url || !cert) throw new Error('entity_id, sso_url, and cert are required');
+    return await vercel('PATCH', `/v1/teams/${teamParam()}/config/saml`, { entityId: entity_id, ssoUrl: sso_url, certificate: cert });
+  }
+
+  // ── EDGE CONFIG ADVANCED ─────────────────────────────────────────────────
+  if (tool === 'vercel_get_edge_config_item') {
+    const { edge_config_id, item_key } = args;
+    if (!edge_config_id || !item_key) throw new Error('edge_config_id and item_key are required');
+    return await vercel('GET', `/v1/edge-config/${edge_config_id}/item/${item_key}`);
+  }
+  if (tool === 'vercel_delete_edge_config_items') {
+    const { edge_config_id, keys } = args;
+    if (!edge_config_id || !keys?.length) throw new Error('edge_config_id and keys array are required');
+    return await vercel('DELETE', `/v1/edge-config/${edge_config_id}/items`, { items: keys.map(k => ({ key: k })) });
+  }
+
+  // ── DOMAINS ADVANCED ─────────────────────────────────────────────────────
+  if (tool === 'vercel_get_domain_ssl') {
+    return await vercel('GET', `/v5/domains/${args.domain}/certs`);
+  }
+  if (tool === 'vercel_issue_domain_ssl') {
+    return await vercel('POST', `/v5/domains/${args.domain}/certs/revalidate`, {});
+  }
+  if (tool === 'vercel_get_project_domains_config') {
+    return await vercel('GET', `/v9/projects/${args.project_id}/domains`);
+  }
+
+  // ── LOG DRAINS ADVANCED ───────────────────────────────────────────────────
+  if (tool === 'vercel_get_log_drain') {
+    return await vercel('GET', `/v1/log-drains/${args.log_drain_id}`);
+  }
+  if (tool === 'vercel_pause_log_drain') {
+    return await vercel('POST', `/v1/log-drains/${args.log_drain_id}/disable`, {});
+  }
+  if (tool === 'vercel_resume_log_drain') {
+    return await vercel('POST', `/v1/log-drains/${args.log_drain_id}/enable`, {});
+  }
+
+  // ── SUPER TOOL: Cost forecast ─────────────────────────────────────────────
+  if (tool === 'vercel_cost_forecast') {
+    const [billing, usage, bandwidth] = await Promise.all([
+      vercel('GET', `/v1/teams/${teamParam()}`).catch(() => null),
+      vercel('GET', `/v1/analytics/usage`).catch(() => null),
+      vercel('GET', `/v1/analytics/bandwidth`).catch(() => null)
+    ]);
+    return {
+      team_plan: billing?.plan,
+      usage_summary: usage,
+      bandwidth_summary: bandwidth,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  // ── SUPER TOOL: Security audit ────────────────────────────────────────────
+  if (tool === 'vercel_security_audit') {
+    const { project_id } = args;
+    if (!project_id) throw new Error('project_id is required');
+    const [firewall, blockedIps, protection, bypasses] = await Promise.all([
+      vercel('GET', `/v1/security/firewall/config/${project_id}`).catch(() => null),
+      vercel('GET', `/v1/security/firewall/ips?projectId=${project_id}`).catch(() => null),
+      vercel('GET', `/v1/projects/${project_id}/protection`).catch(() => null),
+      vercel('GET', `/v1/projects/${project_id}/protection/bypasses`).catch(() => null)
+    ]);
+    return {
+      project_id,
+      firewall_config: firewall,
+      blocked_ips_count: Array.isArray(blockedIps?.ips) ? blockedIps.ips.length : 0,
+      protection_settings: protection,
+      bypass_count: Array.isArray(bypasses) ? bypasses.length : 0,
+      generated_at: new Date().toISOString()
+    };
+  }
+
+  throw new Error(`Unknown Vercel tool: ${tool}`);
 }
 
 export default { execute };
